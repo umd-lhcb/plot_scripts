@@ -277,7 +277,7 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   Figure(),
   xaxis_(xaxis),
   cut_(cut),
-  weight_("1"),
+  weight_("weight"),
   tag_(""),
   left_label_({}),
   right_label_({}),
@@ -816,9 +816,13 @@ void Hist1D::StyleHisto(TH1D &h) const{
   switch(this_opt_.Stack()){
   default:
     DBG("Unrecognized stack option " << static_cast<int>(this_opt_.Stack()) << ".");
+    /* FALLTHRU */
   case StackType::signal_overlay:
+    /* FALLTHRU */
   case StackType::signal_on_top:
+    /* FALLTHRU */
   case StackType::data_norm:
+    /* FALLTHRU */
   case StackType::lumi_shapes:
     if(xaxis_.units_ == "" && bin_width == 1){
       title << Yunit;    
@@ -1006,8 +1010,10 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
     out.back()->SetTextSize(this_opt_.TitleSize());
 
     ostringstream oss;
-    if(this_opt_.Stack() != StackType::shapes) oss << luminosity_ << " fb^{-1} (13 TeV)" << flush;
-    else oss << "13 TeV" << flush;
+    if(this_opt_.Stack() != StackType::shapes) {
+      if (luminosity_<1.1) oss << "137 fb^{-1} (13 TeV)" << setprecision(1) << flush;
+      else oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
+    } else oss << "13 TeV" << flush;
     out.push_back(make_shared<TLatex>(right, bottom+0.2*(top-bottom),
                                       oss.str().c_str()));
     out.back()->SetNDC();
@@ -1053,6 +1059,7 @@ vector<TLine> Hist1D::GetCutLines(double y_min, double y_max, bool adjust_bottom
     switch(this_opt_.YAxis()){
     default:
       DBG("Bad YAxis type " << static_cast<int>(this_opt_.YAxis()));
+      /* FALLTHRU */
     case YAxisType::linear: bottom = y_min >= 0. ? 0. : y_min; break;
     case YAxisType::log:    bottom = y_min > this_opt_.LogMinimum() ? y_min : this_opt_.LogMinimum(); break;
     }
@@ -1346,12 +1353,11 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
   if(this_opt_.DisplayLumiEntry()){
     auto &leg = legends.at(GetLegendIndex(entries_added, n_entries, legends.size()));
     ostringstream label;
-    if(luminosity_ != 1.0) label << fixed << setprecision(1) << "L=" << luminosity_ << " fb^{-1}";
-    else label << fixed << setprecision(1);
+    if(luminosity_ != 1.0) label << fixed  << "L=" << setprecision(1) << luminosity_ << " fb^{-1}";
+    else label << fixed << setprecision(1) << "L=137 fb^{-1}";
     //else label << fixed << setprecision(1) << "L=" << 36.8 << " fb^{-1}";
     if(this_opt_.Stack() == StackType::data_norm && datas_.size() > 0){
-      if(luminosity_ != 1.0) label << ", (" << 100.*mc_scale_ << "#pm" << 100.*mc_scale_error_ << ")%";
-      else label << "Norm. ratio = " << 100.*mc_scale_ << "#pm" << 100.*mc_scale_error_ << "%";
+      label << ", (" << 100.*mc_scale_ << "#pm" << 100.*mc_scale_error_ << ")%";
     }
     auto entry = leg->AddEntry(&blank_, label.str().c_str(), "f");
     entry->SetFillStyle(0);
@@ -1391,8 +1397,11 @@ void Hist1D::AddEntries(vector<shared_ptr<TLegend> > &legends,
       switch(this_opt_.Stack()){
       default:
         DBG("Bad stack option: " << static_cast<int>(this_opt_.Stack()));
+        /* FALLTHRU */
       case StackType::signal_overlay:
+        /* FALLTHRU */
       case StackType::signal_on_top:
+        /* FALLTHRU */
       case StackType::data_norm:
         value = GetYield(h);
         if(value>=1.){
@@ -1402,6 +1411,7 @@ void Hist1D::AddEntries(vector<shared_ptr<TLegend> > &legends,
         }
         break;
       case StackType::lumi_shapes:
+        /* FALLTHRU */
       case StackType::shapes:
         value = GetMean(h);
         label += " [#mu=" + FixedDigits(value,3) + "]";

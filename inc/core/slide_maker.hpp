@@ -10,9 +10,13 @@ public:
   SlideMaker(std::string fname, std::string aspect_ratio = "169");
   ~SlideMaker() = default;
 
-  void AddSlide(std::vector<std::string> pnames, int ncols = -1, std::string title = "");
+  void AddSlide(std::vector<std::string> pnames, unsigned ncols = 0, std::string title = "", 
+    std::vector<std::string> col_labels = std::vector<std::string>(),
+    std::vector<std::string> row_labels = std::vector<std::string>());
   void AddSlideWithReplace(std::string oldexp, std::string newexp, 
-  	std::vector<std::string> pnames, int ncols = -1, std::string title = "");
+  	std::vector<std::string> pnames, unsigned ncols = 0, std::string title = "",
+    std::vector<std::string> col_labels = std::vector<std::string>(),
+    std::vector<std::string> row_labels = std::vector<std::string>());
   void Close();
 
 private:

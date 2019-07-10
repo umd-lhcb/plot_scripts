@@ -6,7 +6,7 @@ using namespace std;
 
 //// Constructor
 abcd_method::abcd_method(TString imethod, vector<TString> iplanecuts, vector<vector<TString> > ibincuts, 
-			 vector<TString> iabcdcuts, TString icaption, TString ibasecuts, TString ititle):
+                         vector<TString> iabcdcuts, TString icaption, TString ibasecuts, TString ititle):
   method(imethod),
   planecuts(iplanecuts),
   abcdcuts(iabcdcuts),
@@ -30,7 +30,7 @@ abcd_method::abcd_method(TString imethod, vector<TString> iplanecuts, vector<vec
   } // Constructor
 
 abcd_method::abcd_method(TString imethod, vector<TString> iplanecuts, vector<TString> ibincuts, 
-			 vector<TString> iabcdcuts, TString icaption, TString ibasecuts, TString ititle):
+                         vector<TString> iabcdcuts, TString icaption, TString ibasecuts, TString ititle):
   method(imethod),
   planecuts(iplanecuts),
   abcdcuts(iabcdcuts),
@@ -59,7 +59,7 @@ abcd_method::abcd_method(TString imethod, vector<TString> iplanecuts, vector<TSt
 void abcd_method::setFirstSignalBin(int firstSigBin){
   if(firstSigBin>=static_cast<int>(planecuts.size())) {
     cout<<"Tried to set firstSigBin to "<<firstSigBin<<", but there's only "<<planecuts.size()
-	<<" MET bins. Leaving all bins as signal"<<endl;
+        <<" MET bins. Leaving all bins as signal"<<endl;
     return;
   }
   int lastBkgBin = firstSigBin-1;
@@ -88,24 +88,47 @@ void abcd_method::serializeCuts(){
     //// Serializing all the cuts
     for(size_t ibin=0; ibin < bincuts[iplane].size(); ibin++){
       for(size_t iabcd=0; iabcd < abcdcuts.size(); iabcd++){
-	TString totcut = "";
-	if(basecuts != "") totcut += basecuts +"  &&  ";
-	totcut += planecuts[iplane] +"  &&  "+ abcdcuts[iabcd];
+        TString totcut = "";
+        if(basecuts != "") totcut += basecuts +"  &&  ";
+        totcut += planecuts[iplane] +"  &&  "+ abcdcuts[iabcd];
 
-	// Setting up the nbm/njets cuts
-	if(method.Contains("agg_")){
-	  totcut.ReplaceAll("nj_all_1l", "nbm>=1&&njets>=6");
-	}else if(int_nbnj && bincuts[iplane].size()>1){
-	  totcut.ReplaceAll("nj_all_1l", c_allnbnj);
-	  totcut.ReplaceAll("nj_all_2l", lowerNjets(c_allnbnj));
-	} else {
-	  totcut.ReplaceAll("nj_all_1l", bincuts[iplane][ibin]);
-	  totcut.ReplaceAll("nj_all_2l", lowerNjets(bincuts[iplane][ibin]));
-	}
-	totcut.ReplaceAll("nj_1l", bincuts[iplane][ibin]);
-	totcut.ReplaceAll("nj_2l", lowerNjets(bincuts[iplane][ibin]));
+        // Setting up the nbm/njets cuts
+        if(method.Contains("agg_")){
+          totcut.ReplaceAll("nj_all_1l", "nbm>=1&&njets>=6");
+        }else if(int_nbnj && bincuts[iplane].size()>1){
+          totcut.ReplaceAll("nj_all_1l", c_allnbnj);
+          totcut.ReplaceAll("nj_all_2l", lowerNjets(c_allnbnj));
+        } else {
+          totcut.ReplaceAll("nj_all_1l", bincuts[iplane][ibin]);
+          totcut.ReplaceAll("nj_all_2l", lowerNjets(bincuts[iplane][ibin]));
+        }
+        totcut.ReplaceAll("nj_1l", bincuts[iplane][ibin]);
+        totcut.ReplaceAll("nj_2l", lowerNjets(bincuts[iplane][ibin]));
 
-	allcuts.push_back(totcut);
+        bool low_abcd = false;
+        if (method.Contains("_lowmj_abcd")) low_abcd = true;
+        vector<string> midmj = {"350", "400","450", "500"};
+        vector<string> himj = {"450", "500","650", "800"};
+        totcut.ReplaceAll(" ","").ReplaceAll("&&"," && ");
+        if (totcut.Contains("met>100") || totcut.Contains("met>150")) {
+          totcut.ReplaceAll("mj14<=400","mj14<="+midmj[0]);
+          if (low_abcd) totcut.ReplaceAll("mj14>400","mj14>"+midmj[0]+" && mj14<="+himj[0]);
+          else totcut.ReplaceAll("mj14>400","mj14>"+himj[0]);
+        } else if (totcut.Contains("met>200")) {
+          totcut.ReplaceAll("mj14<=400","mj14<="+midmj[1]);
+          if (low_abcd) totcut.ReplaceAll("mj14>400","mj14>"+midmj[1]+" && mj14<="+himj[1]);
+          else totcut.ReplaceAll("mj14>400","mj14>"+himj[1]);
+        } else if (totcut.Contains("met>350")) {
+          totcut.ReplaceAll("mj14<=400","mj14<="+midmj[2]);
+          if (low_abcd) totcut.ReplaceAll("mj14>400","mj14>"+midmj[2]+" && mj14<="+himj[2]);
+          else totcut.ReplaceAll("mj14>400","mj14>"+himj[2]);
+        } else if (totcut.Contains("met>500")) {
+          totcut.ReplaceAll("mj14<=400","mj14<="+midmj[3]);
+          if (low_abcd) totcut.ReplaceAll("mj14>400","mj14>"+midmj[3]+" && mj14<="+himj[3]);
+          else totcut.ReplaceAll("mj14>400","mj14>"+himj[3]);
+        }
+
+        allcuts.push_back(totcut);
       } // Loop over ABCD cuts
     } // Loop over bin cuts
   } // Loop over plane cuts
@@ -164,7 +187,7 @@ void abcd_method::printCuts(){
     cout<<endl<<" **** Plane "<<planecuts[iplane]<<" ***"<<endl;
     for(size_t ibin=0; ibin < bincuts[iplane].size(); ibin++){
       for(size_t iabcd=0; iabcd < abcdcuts.size(); iabcd++)
-	cout<<allcuts[indexBin(iplane, ibin, iabcd)]<<endl;
+        cout<<allcuts[indexBin(iplane, ibin, iabcd)]<<endl;
       cout<<endl;
     } // Loop over bin cuts
   } // Loop over plane cuts

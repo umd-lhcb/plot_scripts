@@ -2,7 +2,7 @@ plot_scripts
 ========
 
 Repository for LHCb analysis plotting and table-making utilities.
-Based on https://github.com/ald77/ra4_draw
+Based on https://github.com/richstu/ra4_draw
 
 
 #### Setup and compilation

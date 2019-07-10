@@ -389,7 +389,8 @@ vector<shared_ptr<TLatex> > Hist2D::GetLabels(bool bkg_is_hist) const{
   }
 
   ostringstream oss;
-  oss << luminosity_ << " fb^{-1} (13 TeV)" << flush;
+  if (luminosity_<1.1) oss << "137 fb^{-1} (13 TeV)" << flush;
+  else oss << luminosity_ << " fb^{-1} (13 TeV)" << flush;
   labels.push_back(make_shared<TLatex>(right, top,
                                        oss.str().c_str()));
   labels.back()->SetNDC();

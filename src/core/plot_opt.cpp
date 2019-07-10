@@ -458,11 +458,15 @@ bool PlotOpt::BackgroundsStacked() const{
   switch(stack_type_){
   default:
     DBG("Invalid stack type " << static_cast<int>(stack_type_));
+    /* FALLTHRU */
   case StackType::signal_overlay:
+    /* FALLTHRU */
   case StackType::signal_on_top:
+    /* FALLTHRU */
   case StackType::data_norm:
     return true;
   case StackType::lumi_shapes:
+    /* FALLTHRU */
   case StackType::shapes:
     return false;
   }
@@ -478,6 +482,7 @@ string PlotOpt::TypeString() const{
 
   switch(stack_type_){
   default: DBG("Bad stack type: " << static_cast<int>(stack_type_));
+    /* FALLTHRU */
   case StackType::signal_overlay: out += "lumi_nonorm"; break;
   case StackType::signal_on_top: out += "sigontop"; break;
   case StackType::data_norm: out += "lumi"; break;
@@ -489,6 +494,7 @@ string PlotOpt::TypeString() const{
 
   switch(y_axis_type_){
   default: DBG("Bad y-axis type: " << static_cast<int>(y_axis_type_));
+    /* FALLTHRU */
   case YAxisType::linear: out += "lin"; break;
   case YAxisType::log: out += "log"; break;
   }

@@ -181,21 +181,39 @@ string CodeToRootTex(string code){
 
   ReplaceAll(code, "met>0&&met<=50", "met<=50");
   ReplaceAll(code, "met>0&&met<=75", "met<=75");
-  ReplaceAll(code, "met>50&&met<=100", "50<met<=100");
-  ReplaceAll(code, "met>75&&met<=150", "75<met<=150");
-  ReplaceAll(code, "met>100&&met<=150", "100<met<=150");
-  ReplaceAll(code, "met>100&&met<=200", "100<met<=200");
-  ReplaceAll(code, "met>150&&met<=200", "150<met<=200");
-  ReplaceAll(code, "met>200&&met<=300", "200<met<=300");
-  ReplaceAll(code, "met>200&&met<=350", "200<met<=350");
-  ReplaceAll(code, "met>300&&met<=450", "300<met<=450");
-  ReplaceAll(code, "met>300&&met<=500", "300<met<=500");
-  ReplaceAll(code, "met>350&&met<=500", "350<met<=500");
-  ReplaceAll(code, "met>200&&met<=500", "200<met<=500");
-  ReplaceAll(code, "njets>=4&&njets<=5", "4<=njets<=5");
-  ReplaceAll(code, "njets>=5&&njets<=7", "5<=njets<=7");
-  ReplaceAll(code, "njets>=6&&njets<=8", "6<=njets<=8");
-  ReplaceAll(code, "nbm>=1&&nbm<=2", "1<=nbm<=2");
+  ReplaceAll(code, "met>50&&met<=100", "50<met#leq 100");
+  ReplaceAll(code, "met>75&&met<=150", "75<met#leq 150");
+  ReplaceAll(code, "met>100&&met<=150", "100<met#leq 150");
+  ReplaceAll(code, "met>100&&met<=200", "100<met#leq 200");
+  ReplaceAll(code, "met>150&&met<=200", "150<met#leq 200");
+  ReplaceAll(code, "met>200&&met<=300", "200<met#leq 300");
+  ReplaceAll(code, "met>200&&met<=350", "200<met#leq 350");
+  ReplaceAll(code, "met>300&&met<=400", "300<met#leq 400");
+  ReplaceAll(code, "met>300&&met<=450", "300<met#leq 450");
+  ReplaceAll(code, "met>300&&met<=500", "300<met#leq 500");
+  ReplaceAll(code, "met>350&&met<=500", "350<met#leq 500");
+  ReplaceAll(code, "met>400&&met<=500", "400<met#leq 500");
+  ReplaceAll(code, "met>200&&met<=500", "200<met#leq 500");
+  ReplaceAll(code, "njets>=4&&njets<=5", "4-5j");
+  ReplaceAll(code, "njets>=5&&njets<=7", "5-7j");
+  ReplaceAll(code, "njets>=5&&njets<=6", "5-6j");
+  ReplaceAll(code, "njets>=6&&njets<=8", "6-8j");
+  ReplaceAll(code, "njets>=6&&njets<=7", "6-7j");
+  ReplaceAll(code, "njets==5", "5j");
+  ReplaceAll(code, "njets==6", "6j");
+  ReplaceAll(code, "njets==7", "7j");
+  ReplaceAll(code, "njets>=5", "#geq5j");
+  ReplaceAll(code, "njets>=6", "#geq6j");
+  ReplaceAll(code, "njets>=7", "#geq7j");
+  ReplaceAll(code, "njets>=8", "#geq8j");
+  ReplaceAll(code, "nbd>=1", "#geq1b");
+  ReplaceAll(code, "nbd==1", "1b");
+  ReplaceAll(code, "nbd==2", "2b");
+  ReplaceAll(code, "nbd>=3", "#geq3b");
+  ReplaceAll(code, "nbdm==1", "1b");
+  ReplaceAll(code, "nbdm==2", "2b");
+  ReplaceAll(code, "nbdm>=3", "#geq3b");
+  ReplaceAll(code, "nbdm>=1", "#geq1b");
 
   ReplaceAll(code, "1==1", "Full Sample");
   ReplaceAll(code, "el_tks_chg*lep_charge<0", "OS");
@@ -265,6 +283,9 @@ string CodeToRootTex(string code){
   ReplaceAll(code, "npv", "N_{PV}");
   ReplaceAll(code, "mumu_pt1", "p_{T}^{#mu}");
   ReplaceAll(code, "elel_pt1", "p_{T}^{e}");
+  ReplaceAll(code, "mj14>400&&mj14<=500", "M_{J} 400-500");
+  ReplaceAll(code, "mj14>450&&mj14<=650", "M_{J} 450-650");
+  ReplaceAll(code, "mj14>500&&mj14<=800", "M_{J} 500-800");
 
   ReplaceAll(code, "abs(mc_id)==1000006", "stop");
   ReplaceAll(code, "abs(mc_id)==1000022", "LSP");
@@ -302,7 +323,10 @@ string CodeToRootTex(string code){
   ReplaceAll(code, "ntks_chg==0", " ITV");
   ReplaceAll(code, "nbm_moriond","N_{b}");
   ReplaceAll(code, "nbm","N_{b}");
+  ReplaceAll(code, "nbd","N_{b}");
+  ReplaceAll(code, "nbdm","N_{b}");
   ReplaceAll(code, "nbl","N_{b,l}");
+  ReplaceAll(code, "mj14", " M_{J}");
   ReplaceAll(code, "mj", " M_{J}");
 
   ReplaceAll(code, "el_tks_mt", "Track m_{T}");
@@ -688,7 +712,7 @@ double Significance(double Nobs, double Nbkg, double Eup_bkg, double Edown_bkg){
 // powers[Nobs] defines kappa = Product_obs{ Sum_sam{yields[sam][obs]*weights[sam][obs]}^powers[obs] }
 double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weights,
                  vector<float> &powers, float &mSigma, float &pSigma, bool do_data,
-                 bool verbose, double syst, bool do_plot, int nrep){
+                 bool verbose, double syst, bool do_plot, int nrep, int nSigma){
   TRandom3 rand(1234);
   int nbadk(0);
   vector<float> fKappas;
@@ -728,7 +752,7 @@ double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weight
   mean /= static_cast<double>(ntot);
 
   sort(fKappas.begin(), fKappas.end());
-  double gSigma = intGaus(0,1,0,1);
+  double gSigma = intGaus(0,1,0,nSigma);
   int iMedian((nrep-nbadk+1)/2-1);
   int imSigma(iMedian-static_cast<int>(gSigma*ntot)), ipSigma(iMedian+static_cast<int>(gSigma*ntot));
   float median(fKappas[iMedian]);
@@ -790,6 +814,8 @@ double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weight
   if(do_plot) {
     herr.SetLineColor(0);
     herr.SetFillColor(kGray);
+    if (nSigma==2) herr.SetFillColor(kAzure+1);
+    else if (nSigma==2) herr.SetFillColor(kMagenta+1);
     histo.SetTitleOffset(1.1, "X");
     histo.SetTitleOffset(1.5, "Y");
     // histo.Scale(1/histo.Integral());
@@ -817,7 +843,7 @@ double calcKappa(vector<vector<float> > &entries, vector<vector<float> > &weight
       }
       title += RoundNumber(observed,0);
     }
-    TString pName = "gamma_"+title+".pdf"; 
+    TString pName = "gamma_"+title+"_"+RoundNumber(nSigma,0)+"sigma.pdf"; 
     pName.ReplaceAll("/", "_d_"); pName.ReplaceAll("#times","_");
     pName.ReplaceAll(" ","");
     title += (" #rightarrow "+RoundNumber(stdval,2)+"^{+"+RoundNumber(pSigma,2)+"}_{-"+RoundNumber(mSigma,2)+"}");
@@ -841,4 +867,10 @@ set<string> attach_folder(string folder, set<string> &fileset) {
   set<string> fset = set<string>();
   for (auto &ifile: fileset) fset.insert(folder+ifile);
   return fset; 
+}
+
+
+void parseMasses(const string &prs, int &mglu, int &mlsp){
+  mglu = stoi(prs.substr(prs.find("ino-")+4,prs.find("_mLSP")-prs.find("ino-")-4));
+  mlsp = stoi(prs.substr(prs.find("LSP-")+4,prs.find("_Tune")-prs.find("LSP-")-4));
 }
