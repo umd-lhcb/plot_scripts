@@ -26,7 +26,7 @@ void GetOptions(int argc, char *argv[]);
 
 namespace{
   float lumi = 4.3;
-  string sample = "search";
+  string example = "search";
 }
 
 
@@ -80,7 +80,7 @@ void GetOptions(int argc, char *argv[]){
   while(true){
     static struct option long_options[] = {
       {"lumi", required_argument, 0, 'l'},    // Luminosity to normalize MC with (no data)
-      {"sample", required_argument, 0, 's'},    // Which sample to use: standard, met150, 2015 data
+      {"example", required_argument, 0, 's'},    // Which example to use: standard, met150, 2015 data
       {0, 0, 0, 0}
     };
 
@@ -95,7 +95,7 @@ void GetOptions(int argc, char *argv[]){
       lumi = atof(optarg);
       break;
     case 's':
-      sample = optarg;
+      example = optarg;
       break;
     default:
       printf("Bad option! getopt_long returned character code 0%o\n", opt);
