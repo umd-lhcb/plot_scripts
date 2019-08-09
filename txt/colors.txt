@@ -10,3 +10,7 @@
  ttv      149   0  26
  other    255 200   0
  qcd      255 200   0
+ white    255 255 255
+ green     50 205  50
+ purple   140   0 140
+ blue       0   0 139

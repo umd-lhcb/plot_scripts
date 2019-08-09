@@ -42,6 +42,9 @@ private:
   std::map<std::string, std::string> type_map_;//!<Map from Baby type (basic, full, etc.) to variabl type (int, float, etc.)
 };
 
+//BEN EDIT, trying to make tree name not hardcoded in generate_baby.cxx
+//std::set<std::string> GetTreeName(const std::set<std::string> &files);
+
 std::set<Variable> GetVariables(const std::set<std::string> &files);
 
 bool IsComment(const std::string &line);
@@ -52,6 +55,10 @@ void RemoveExtraSpaces(std::string &line);
 
 void WriteBaseHeader(const std::set<Variable> &vars,
                      const std::set<std::string> &types);
+
+//BEN EDIT, trying to make tree name not hardcoded in generate_baby.cxx
+//void WriteBaseSource(const std::set<Variable> &vars,
+//                     const std::set<std::string> &tree_name);
 
 void WriteBaseSource(const std::set<Variable> &vars);
 

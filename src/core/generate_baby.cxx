@@ -36,6 +36,7 @@ int main(int argc, char *argv[]){
     files.insert(argv[argi]);
   }
 
+  //set<string> t_names = GetTreeName(files);
   set<Variable> vars = GetVariables(files);
   WriteBaseHeader(vars, files);
   WriteBaseSource(vars);
@@ -275,6 +276,36 @@ set<string> Variable::GetTypeSet() const{
   return types;
 }
 
+// BEN EDITS, UNCOMMENT LATER (MAYBE)
+/*!/brief Reads files to get tree names within the file
+  
+  \param[in] files Set of files to be read. Typically everything in
+  txt/variables
+
+  \return All tree names in string format
+*/
+/*
+set<string> GetTreeName(const set<string> &files){
+  set<string> tree_name;
+  for(const auto &file: files){
+    ifstream ifs_ben("txt/variables/"+file);
+    for(string line; std::getline(ifs_ben, line); ){
+
+      size_t f_colon = line.find(":"), f_space = line.find(" ");
+      if(f_colon!=std::string::npos && f_space==std::string::npos){
+        std::string t_name = line;
+        t_name.erase(f_colon);
+        size_t f_tree = tree_name.find(t_name);
+        if (f_tree==std::string::npos && ADD OPTION HERE FOR IF IT IS FIRST TIME f_tree OCCURS) {
+          tree_name.insert(t_name);
+        }
+      } else {ERROR("TTree name not found in"+file);}
+    }
+  }
+  return tree_name;
+}
+*/
+
 /*!/brief Reads files to get variable names and associated types
 
   \param[in] files Set of files to be read. Typically everything in
@@ -288,12 +319,17 @@ set<Variable> GetVariables(const set<string> &files){
     ifstream ifs("txt/variables/"+file);
     for(string line; std::getline(ifs, line); ){
       //DBG("Reading line: "+line);
+
       size_t fcolon = line.find(":"), fspace = line.find(" ");
       if(fcolon!=std::string::npos &&  fspace==std::string::npos){
-        size_t ftree = line.find("tree");
-        if(ftree==std::string::npos) {ERROR("TTree not named tree in "+line);}
-        else continue;
+        continue;
+        //COMMENT OUT MANUEL'S EDITS
+        /* replace with only continue statement for when there is a branch */
+        //size_t ftree = line.find("tree");
+        //if(ftree==std::string::npos) {ERROR("TTree not named tree in "+line);}
+        //else continue;
       }
+
       if(IsComment(line)) continue;
       SimpleVariable simple_var = GetVariable(line);
       Variable var(simple_var.name_);
@@ -528,6 +564,8 @@ void WriteBaseHeader(const set<Variable> &vars,
 
   \param[in] vars All variables for all Baby classes, with type information
 */
+//void WriteBaseSource(const set<Variable> &vars,
+//                     const set<string> &tree_name){
 void WriteBaseSource(const set<Variable> &vars){
   ofstream file("src/core/baby.cpp");
   file << "/*! \\class Baby\n\n";
@@ -779,7 +817,11 @@ void WriteBaseSource(const set<Variable> &vars){
   file << "void Baby::ActivateChain(){\n";
   file << "  if(chain_) ERROR(\"Chain has already been initialized\");\n";
   file << "  lock_guard<mutex> lock(Multithreading::root_mutex);\n";
-  file << "  chain_ = unique_ptr<TChain>(new TChain(\"tree\"));\n";
+  //for(long unsigned int val_ben=0; val_ben<tree_name.size(); val_ben++){
+  //  file << "  chain_ = unique_ptr<TChain>(new TChain(\"" << tree_name.find(val_ben) << "\"));\n";
+  //}
+  //file << "  chain_ = unique_ptr<TChain>(new TChain(\"tree\"));\n";
+  file << "  chain_ = unique_ptr<TChain>(new TChain(\"TupleY/DecayTree\"));\n";
   file << "  for(const auto &file: file_names_){\n";
   file << "    chain_->Add(file.c_str());\n";
   file << "  }\n";
