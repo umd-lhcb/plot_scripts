@@ -34,6 +34,8 @@ int main(int argc, char *argv[]){
   set<string> files;
   for(int argi = 1; argi < argc; ++argi){
     files.insert(argv[argi]);
+    string test = argv[argi];
+    DBG("Doing file "+test);
   }
 
   set<Variable> vars = GetVariables(files);
@@ -286,17 +288,21 @@ set<Variable> GetVariables(const set<string> &files){
   vector<Variable> vars;
   for(const auto &file: files){
     ifstream ifs("txt/variables/"+file);
+    //DBG("Doing file txt/variables/"+file+"\n\n");
     for(string line; std::getline(ifs, line); ){
       //DBG("Reading line: "+line);
       size_t fcolon = line.find(":"), fspace = line.find(" ");
       if(fcolon!=std::string::npos &&  fspace==std::string::npos){
-        size_t ftree = line.find("tree");
-        if(ftree==std::string::npos) {ERROR("TTree not named tree in "+line);}
+        string treename("TupleB0/DecayTree");
+        size_t ftree = line.find(treename);
+        //DBG("\n\n\nFound tree "+treename);
+        if(ftree==std::string::npos) {ERROR("TTree not named "+treename+" in "+line);}
         else continue;
       }
       if(IsComment(line)) continue;
       SimpleVariable simple_var = GetVariable(line);
       Variable var(simple_var.name_);
+      DBG("Found variable "+simple_var.name_);
       vector<Variable>::iterator this_var = vars.end();
       for(auto iter = vars.begin();
           iter != vars.end();
@@ -308,6 +314,7 @@ set<Variable> GetVariables(const set<string> &files){
       }else{
         var.SetEntry(file, simple_var.type_);
         vars.push_back(var);
+        //DBG("Added variable "+simple_var.name_);
       }
     }
   }
@@ -779,7 +786,7 @@ void WriteBaseSource(const set<Variable> &vars){
   file << "void Baby::ActivateChain(){\n";
   file << "  if(chain_) ERROR(\"Chain has already been initialized\");\n";
   file << "  lock_guard<mutex> lock(Multithreading::root_mutex);\n";
-  file << "  chain_ = unique_ptr<TChain>(new TChain(\"tree\"));\n";
+  file << "  chain_ = unique_ptr<TChain>(new TChain(\"TupleB0/DecayTree\"));\n";
   file << "  for(const auto &file: file_names_){\n";
   file << "    chain_->Add(file.c_str());\n";
   file << "  }\n";

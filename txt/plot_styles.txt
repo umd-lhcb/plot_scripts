@@ -1,4 +1,4 @@
-[CMSPaper]
+[LHCbPaper]
   CanvasW = 600
   CanvasH = 600
   TitleSize = 0.048

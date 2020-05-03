@@ -37,11 +37,13 @@ int main(int argc, char *argv[]){
   time_t begtime, endtime;
   time(&begtime);
 
-  PlotOpt log_lumi("txt/plot_styles.txt", "CMSPaper");
+  // Plot types
+  PlotOpt log_lumi("txt/plot_styles.txt", "LHCbPaper");
   log_lumi.Title(TitleType::data)
     .Bottom(BottomType::off)
     .YAxis(YAxisType::log)
-    .Stack(StackType::data_norm).LegendColumns(3);
+    .Stack(StackType::data_norm).LegendColumns(3)
+    .Overflow(OverflowType::none);
   PlotOpt lin_lumi = log_lumi().YAxis(YAxisType::linear);
   PlotOpt log_shapes = log_lumi().Stack(StackType::shapes)
     .ShowBackgroundError(false);
@@ -52,22 +54,24 @@ int main(int argc, char *argv[]){
   PlotOpt lin_shapes_info = lin_shapes().Title(TitleType::info).Bottom(BottomType::ratio);
   PlotOpt lin_lumi_info_print = lin_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   PlotOpt log_lumi_info_print = log_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
-  vector<PlotOpt> linplot = {lin_shapes_info, lin_lumi_info};
+  
+  vector<PlotOpt> linplot = {lin_shapes};
   Palette colors("txt/colors.txt", "default");
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////// Defining processes //////////////////////////////////////////
 
+  string repofolder = "/Users/manuelf/code/lhcb-ntuples-gen/";
   vector<shared_ptr<Process> > procs;
-  procs.push_back(Process::MakeShared<Baby_std>("test1", Process::Type::background, colors("tt_1l"),
-                                                set<string>({"ntuples/tree.root"}), "1"));
-  procs.push_back(Process::MakeShared<Baby_std>("test2", Process::Type::background, colors("qcd"),
-                                                set<string>({"ntuples/tree.root"}), "1"));
+  procs.push_back(Process::MakeShared<Baby_run1>("B #rightarrow D^{0}X#mu#nu 2011", Process::Type::background, colors("run1"),
+                                                set<string>({repofolder+"run1-b2D0MuXB2DMuNuForTauMuLine/ntuples/cutflow-Dst/BCands_Dst-yipeng-cutflow_mc-2011-mag_down.root"}), "1"));
+  procs.push_back(Process::MakeShared<Baby_run2>("B #rightarrow D^{0}X#mu#nu 2016", Process::Type::background, colors("run2"),
+                                                set<string>({repofolder+"run2-b2D0MuXB2DMuForTauMuLine/ntuples/cutflow-Dst/BCands_Dst-yipeng-cutflow_mc-2016-mag_down.root"}), "1"));
 
   PlotMaker pm;
 
-  pm.Push<Hist1D>(Axis(20, 0, 30,"y_pt/1000", "#Upsilon p_{T} (GeV)"), "1", procs, linplot);
-  pm.Push<Hist1D>(Axis(20, 0, 300,"y_pz/1000", "#Upsilon p_{Z} (GeV)"), "1", procs, linplot);
+  pm.Push<Hist1D>(Axis(100, 0, 10,"D0_PT/1000", " p_{T}(D^{0}) [GeV]"), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
+  pm.Push<Hist1D>(Axis(100, 0, 10,"(Kplus_PT+piminus0_PT)/1000", "p_{T}(K^{+}) + p_{T}(#pi^{-}) [GeV]",{1.4, 2.5}), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
 
   pm.min_print_ = true;
   pm.MakePlots(9);

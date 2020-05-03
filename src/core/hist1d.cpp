@@ -306,10 +306,10 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
     hist->raw_hist_.SetFillStyle(process->GetFillStyle());
     hist->raw_hist_.SetLineColor(process->GetLineColor());
     hist->raw_hist_.SetLineStyle(process->GetLineStyle());
-    hist->raw_hist_.SetLineWidth(process->GetLineWidth());
+    hist->raw_hist_.SetLineWidth(process->GetLineWidth()/2);
     hist->raw_hist_.SetMarkerColor(process->GetMarkerColor());
     hist->raw_hist_.SetMarkerStyle(process->GetMarkerStyle());
-    hist->raw_hist_.SetMarkerSize(process->GetMarkerSize());
+    hist->raw_hist_.SetMarkerSize(process->GetMarkerSize()/1.5);
 
     switch(process->type_){
     case Process::Type::data:
@@ -515,7 +515,7 @@ string Hist1D::Name() const{
   if(cut_.Name() != "1") cut = "__"+cut_.Name();
 
   string weight = "";
-  if(weight_.Name() != "weight") weight = "__"+weight_.Name();
+  if(weight_.Name() != "1") weight = "__"+weight_.Name();
   
   if(tag_ == ""){
     return CodeToPlainText(xaxis_.var_.Name()+cut+weight);
@@ -526,7 +526,7 @@ string Hist1D::Name() const{
 
 string Hist1D::Title() const{
   bool cut = (cut_.Name() != "" && cut_.Name() != "1");
-  bool weight = weight_.Name() != "weight";
+  bool weight = weight_.Name() != "1";
   if(cut && weight){
     return CodeToRootTex(cut_.Name())+" (weight="+CodeToRootTex(weight_.Name())+")";
   }else if(cut){
@@ -870,7 +870,7 @@ void Hist1D::AdjustFillStyles() const{
     TH1D &h = bkg->scaled_hist_;
     h.SetFillStyle(0);
     h.SetLineColor(h.GetFillColor());
-    h.SetLineWidth(5);
+    h.SetLineWidth(4);
   }
 }
 
@@ -954,7 +954,7 @@ void Hist1D::FixYAxis(vector<TH1D> &bottom_plots) const{
 
 /*!\brief Get text to print at top of plot
 
-  Depending on current plot style, this may be the CMS {Preliminary, Simulation,
+  Depending on current plot style, this may be the LHCb {Preliminary, Simulation,
   etc...} with luminosity or the cut and weight for the plot
 
   \return List of text items to be printed in title region of plot
@@ -1002,7 +1002,7 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
     }
    
     out.push_back(make_shared<TLatex>(left, bottom+0.2*(top-bottom),
-				      ("#font[62]{CMS}#scale[0.74]{#font[52]{ "+extra+"}}").c_str()));
+				      ("#font[62]{LHCb}#scale[0.74]{#font[52]{ "+extra+"}}").c_str()));
    
     out.back()->SetNDC();
     out.back()->SetTextAlign(11);
@@ -1013,7 +1013,7 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
     if(this_opt_.Stack() != StackType::shapes) {
       if (luminosity_<1.1) oss << "137 fb^{-1} (13 TeV)" << setprecision(1) << flush;
       else oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
-    } else oss << "13 TeV" << flush;
+    } else oss << "7/13 TeV" << flush;
     out.push_back(make_shared<TLatex>(right, bottom+0.2*(top-bottom),
                                       oss.str().c_str()));
     out.back()->SetNDC();
@@ -1188,6 +1188,7 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
         if(den == "") den = "MC";
       }else{
         if(num == "") num = "MC";
+        if(backgrounds_.size() == 0) num = backgrounds_.back()->process_->name_;
         if(den == "") den = backgrounds_.front()->process_->name_;
       }
       h.GetYaxis()->CenterTitle();
