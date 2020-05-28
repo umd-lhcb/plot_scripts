@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
   PlotOpt lin_lumi_info_print = lin_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   PlotOpt log_lumi_info_print = log_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   
-  vector<PlotOpt> linplot = {lin_shapes};
+  vector<PlotOpt> linplot = {lin_shapes, log_shapes};
   Palette colors("txt/colors.txt", "default");
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +72,8 @@ int main(int argc, char *argv[]){
 
   pm.Push<Hist1D>(Axis(100, 0, 10,"D0_PT/1000", " p_{T}(D^{0}) [GeV]"), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
   pm.Push<Hist1D>(Axis(100, 0, 10,"(Kplus_PT+piminus0_PT)/1000", "p_{T}(K^{+}) + p_{T}(#pi^{-}) [GeV]",{1.4, 2.5}), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
+  pm.Push<Hist1D>(Axis(60, 0, 300,"(Kplus_P+piminus0_P)/1000", "p(K^{+}) + p(#pi^{-}) [GeV]",{15}), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
+  pm.Push<Hist1D>(Axis(40, 0, 120,"(muplus_P)/1000", "p(#mu) [GeV]",{2.5}), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
 
   pm.min_print_ = true;
   pm.MakePlots(9);
