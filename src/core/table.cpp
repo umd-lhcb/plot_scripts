@@ -148,8 +148,8 @@ void Table::Print(double luminosity,
     ? "tables/"+subdir+"/"+name_+"_lumi_"+fmt_lumi+".tex"
     : "tables/"+name_+"_lumi_"+fmt_lumi+".tex";
   std::ofstream file(file_name);
-  if (print_pie_) file << fixed << setprecision(2);
-  else file << fixed << setprecision(1);
+  if (print_pie_) file << fixed << setprecision(1);
+  else file << fixed << setprecision(0);
   PrintHeader(file, luminosity);
   for(size_t i = 0; i < rows_.size(); ++i){
     PrintRow(file, i, luminosity);
@@ -280,11 +280,16 @@ void Table::PrintHeader(ofstream &file, double luminosity) const{
   file << "    \\hline\\hline\n";
   file <<" \\multicolumn{1}{c|}{${\\cal L} = "<<setprecision(1)<<luminosity<<"$ fb$^{-1}$} ";
 
-  if(backgrounds_.size() > 1){
+  if(backgrounds_.size() > 2){
     for(size_t i = 0; i < backgrounds_.size(); ++i){
       file << " & " << ToLatex(backgrounds_.at(i)->process_->name_);
     }
     file << " & SM Bkg.";
+  }else if(backgrounds_.size() == 2){
+    for(size_t i = 0; i < backgrounds_.size(); ++i){
+      file << " & " << ToLatex(backgrounds_.at(i)->process_->name_);
+    }
+    file << " & Ratio";
   }else if(backgrounds_.size() == 1){
     file << " & " <<ToLatex(backgrounds_.front()->process_->name_);
   }
@@ -321,7 +326,7 @@ void Table::PrintRow(ofstream &file, size_t irow, double luminosity) const{
 
   if(row.is_data_row_){
     file << "    " << row.label_;
-    if(backgrounds_.size() > 1){
+    if(backgrounds_.size() > 2){
       double totyield = luminosity*GetYield(backgrounds_, irow);
       for(size_t i = 0; i < backgrounds_.size(); ++i){
         if (print_pie_) 
@@ -331,6 +336,15 @@ void Table::PrintRow(ofstream &file, size_t irow, double luminosity) const{
           file << " & " << luminosity*backgrounds_.at(i)->sumw_.at(irow);
       }
       file << " & " << totyield << "$\\pm$" << luminosity*GetError(backgrounds_, irow);
+    }else if(backgrounds_.size() == 2){
+      double ratio;
+      file.imbue(std::locale(""));
+      for(size_t i = 0; i < backgrounds_.size(); ++i){
+        file << " & " << setprecision(0)<< luminosity*backgrounds_.at(i)->sumw_.at(irow);
+        if(i==0) ratio = 1/(luminosity*backgrounds_.at(i)->sumw_.at(irow));
+        else ratio *= luminosity*backgrounds_.at(i)->sumw_.at(irow);
+      }
+      file << " & " << setprecision(2)<<ratio/2/0.82 ;
     }else if(backgrounds_.size() == 1){
       file << " & " << luminosity*GetYield(backgrounds_, irow) << "$\\pm$" << luminosity*GetError(backgrounds_, irow);
     }
@@ -434,11 +448,16 @@ void Table::PrintFooter(ofstream &file) const{
   file << "    \\hline\n";
   file << "    ";
 
-  if(backgrounds_.size() > 1){
+  if(backgrounds_.size() > 2){
     for(size_t i = 0; i < backgrounds_.size(); ++i){
       file << " & " << ToLatex(backgrounds_.at(i)->process_->name_);
     }
     file << " & SM Bkg.";
+  }else if(backgrounds_.size() == 2){
+    for(size_t i = 0; i < backgrounds_.size(); ++i){
+      file << " & " << ToLatex(backgrounds_.at(i)->process_->name_);
+    }
+    file << " & Ratio";
   }else if(backgrounds_.size() == 1){
   file << " & " << ToLatex(backgrounds_.front()->process_->name_);
   }
