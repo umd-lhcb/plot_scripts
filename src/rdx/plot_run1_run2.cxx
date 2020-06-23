@@ -61,19 +61,26 @@ int main(int argc, char *argv[]){
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////// Defining processes //////////////////////////////////////////
 
-  string repofolder = "/Users/manuelf/code/lhcb-ntuples-gen/";
+  string repofolder = "/Users/manuelf/code/lhcb-ntuples-gen/ntuples/";
   vector<shared_ptr<Process> > procs;
   procs.push_back(Process::MakeShared<Baby_run1>("B #rightarrow D^{0}X#mu#nu 2011", Process::Type::background, colors("run1"),
-                                                set<string>({repofolder+"run1-b2D0MuXB2DMuNuForTauMuLine/ntuples/cutflow-Dst/BCands_Dst-yipeng-cutflow_mc-2011-mag_down.root"}), "1"));
+                                                set<string>({repofolder+"pre-0.9.0/Dst-cutflow_mc/Dst--20_03_18--cutflow_mc--cocktail--2011--md.root"}), "1"));
   procs.push_back(Process::MakeShared<Baby_run2>("B #rightarrow D^{0}X#mu#nu 2016", Process::Type::background, colors("run2"),
-                                                set<string>({repofolder+"run2-b2D0MuXB2DMuForTauMuLine/ntuples/cutflow-Dst/BCands_Dst-yipeng-cutflow_mc-2016-mag_down.root"}), "1"));
+                                                set<string>({repofolder+"pre-0.9.0/Dst-cutflow_mc/Dst--20_03_18--cutflow_mc--cocktail--2016--md.root"}), "1"));
 
+
+  NamedFunc mu_eta("mu_eta", [&](const Baby &b){
+       return log((b.muplus_P()+b.muplus_PZ())/(b.muplus_P()-b.muplus_PZ()))/2.;
+  });
+
+  
   PlotMaker pm;
 
   pm.Push<Hist1D>(Axis(100, 0, 10,"D0_PT/1000", " p_{T}(D^{0}) [GeV]"), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
   pm.Push<Hist1D>(Axis(100, 0, 10,"(Kplus_PT+piminus0_PT)/1000", "p_{T}(K^{+}) + p_{T}(#pi^{-}) [GeV]",{1.4, 2.5}), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
   pm.Push<Hist1D>(Axis(60, 0, 300,"(Kplus_P+piminus0_P)/1000", "p(K^{+}) + p(#pi^{-}) [GeV]",{15}), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
   pm.Push<Hist1D>(Axis(40, 0, 120,"(muplus_P)/1000", "p(#mu) [GeV]",{2.5}), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
+  pm.Push<Hist1D>(Axis(40, 1, 6,mu_eta, "#eta(#mu)", {2.4, 4}), "1", procs, linplot).RatioTitle("2016 MC", "2011 MC");
 
   pm.min_print_ = true;
   pm.MakePlots(9);
