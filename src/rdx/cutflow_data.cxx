@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
   // Missing HLT1 and HLT1_pT
   string step2_pi   = "(piminus0_PT > 800) && (!piminus0_isMuon) && piminus0_IPCHI2_OWNPV > 45";
   // Missing HLT2
-  string step2_d0 = "D0_P>2 && D0_DIRA_OWNPV > 0.9998 && D0_FDCHI2_OWNPV > 250 && (D0_MM-1864.83) < 23.4 && (D0_MM-1864.83) > -23.4 && (Kplus_PT>1700 || piminus0_PT>1700)";
+  string step2_d0 = "D0_P>2000 && D0_FDCHI2_OWNPV > 250 && (D0_MM-1864.83) < 23.4 && (D0_MM-1864.83) > -23.4 && (Kplus_PT>1700 || piminus0_PT>1700)";
 
   // Missing eta, BDTmu, log10
   string step2_mu = "muplus_isMuon && muplus_PIDmu > 2 && muplus_PIDe < 1 && muplus_P < 100000 ";
@@ -112,13 +112,13 @@ int main(int argc, char *argv[]){
   string step2_dsp = "(Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF) < 10 && (Dst_2010_minus_MM - D0_MM-145.43) < 2 &&  (Dst_2010_minus_MM - D0_MM-145.43) > -2";
 
   //Missing d_XY < 7 mm (FDCHI2_ORIVX/Y)
-  string step2_b0 = "Y_ISOLATION_BDT < 0.15 && (Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF) < 10 && Y_MM<5280 && Y_DIRA_OWNPV>0.9995";
+  string step2_b0 = "Y_ISOLATION_BDT < 0.15 && (Y_ENDVERTEX_CHI2/Y_ENDVERTEX_NDOF) < 6 && Y_MM<5280 && Y_DIRA_OWNPV>0.9995";
   
 
 
   PlotMaker pm;
   pm.Push<Table>("cutflow", vector<TableRow>{
-  TableRow("Stripping","1", 0,0, "1"),
+  TableRow("Trig. + Strip.","1", 0,0, "1"),
     TableRow("Kaon", step2_k,0,0, "1"),
     TableRow("Pion", step2_k+"&&"+step2_pi, 0,0, "1"),
     TableRow("$D^0 \\rightarrow K \\pi$", step2_k+"&&"+step2_pi+"&&"+step2_d0,0,0, "1"),
