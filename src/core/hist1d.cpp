@@ -1013,7 +1013,7 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
     if(this_opt_.Stack() != StackType::shapes) {
       if (luminosity_<1.1) oss << "137 fb^{-1} (13 TeV)" << setprecision(1) << flush;
       else oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
-    } else oss << "7/13 TeV" << flush;
+    } else oss << "8/13 TeV" << flush;
     out.push_back(make_shared<TLatex>(right, bottom+0.2*(top-bottom),
                                       oss.str().c_str()));
     out.back()->SetNDC();

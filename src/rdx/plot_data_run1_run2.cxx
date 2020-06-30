@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
     .Overflow(OverflowType::none);
   PlotOpt lin_lumi = log_lumi().YAxis(YAxisType::linear);
   PlotOpt log_shapes = log_lumi().Stack(StackType::shapes)
-    .ShowBackgroundError(false);
+    .ShowBackgroundError(false).Bottom(BottomType::ratio);
   PlotOpt lin_shapes = log_shapes().YAxis(YAxisType::linear);
   PlotOpt log_lumi_info = log_lumi().Title(TitleType::info);
   PlotOpt lin_lumi_info = lin_lumi().Title(TitleType::info);
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
   PlotOpt lin_lumi_info_print = lin_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   PlotOpt log_lumi_info_print = log_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   
-  vector<PlotOpt> linplot = {lin_shapes, log_shapes};
+  vector<PlotOpt> linplot = {lin_shapes};
   Palette colors("txt/colors.txt", "default");
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,35 +68,6 @@ int main(int argc, char *argv[]){
   string HLT2_run2 = "D0_Hlt2XcMuXForTauB2XcMuDecision_Dec";
   string trig_run1 = L0 + "&&(" + HLT1_run1 + ")&&"+HLT2_run1;
   string trig_run2 = L0 + "&&(" + HLT1_run2 + ")&&"+HLT2_run2;
-
-  string repofolder = "/Users/manuelf/code/lhcb-ntuples-gen/ntuples/";
-  vector<shared_ptr<Process> > procs;
-  procs.push_back(Process::MakeShared<Baby_run1>("Data~2012", Process::Type::background, colors("run1"),
-                                                set<string>({repofolder+"pre-0.9.0/Dst-cutflow_data/Dst--20_04_03--cutflow_data--data--2012--md.root"}), trig_run1));
-  procs.push_back(Process::MakeShared<Baby_run2>("Data~2016", Process::Type::background, colors("run2"),
-                                                set<string>({repofolder+"pre-0.9.0/Dst-cutflow_data/Dst--20_04_03--cutflow_data--data--2016--md.root"}), trig_run2));
-
-
-  // Stripping cuts for Run 1 as a reference
-  string strip1_k   = "(k_PIDK > 4) && (k_IPCHI2_OWNPV > 45) && (k_P > 2*1000) && (k_PT > 300) && (k_TRACK_GhostProb < 0.5)";
-  string strip1_pi  = "(pi_P > 2*1000) && (pi_PT > 300) && (pi_IPCHI2_OWNPV > 45) && (pi_PIDK < 2) && (pi_TRACK_GhostProb < 0.5)";
-  string strip1_d0  = "(k_PT+pi_PT > 1400) && (abs(d0_MM-1864.83) < 80) && (d0_ENDVERTEX_CHI2/d0_ENDVERTEX_NDOF < 4) && (d0_FDCHI2_OWNPV > 250) && (d0_DIRA_OWNPV > 0.9998)";
-  string strip1_spi = "(spi_IPCHI2_OWNPV > 0) && (spi_TRACK_CHI2NDOF < 3) && (spi_TRACK_GhostProb < 0.25)";
-  string strip1_dst = "(abs(dst_MM - 2010.26) < 125) && (dst_M - d0_M < 160) && (dst_ENDVERTEX_CHI2 / dst_ENDVERTEX_NDOF < 100)";
-  string strip1_mu  = "(mu_IPCHI2_OWNPV > 45) && (mu_TRACK_GhostProb < 0.5) && (mu_PIDmu > 2) && (mu_P > 3*1000) && (mu_TRACK_CHI2NDOF < 3)";
-  string strip1_b0  = "(0*1000 < b0_MM < 10*1000) && (b0_ENDVERTEX_CHI2 / b0_ENDVERTEX_NDOF < 6) && (b0_DIRA_OWNPV > 0.9995)";
-  string strip_run1 = strip1_k+"&&"+strip1_pi+"&&"+strip1_spi+"&&"+strip1_mu+"&&"+strip1_d0+"&&"+strip1_dst+"&&"+strip1_b0;
-  
-  // Stripping cuts for Run 2 as a reference
-  string strip2_k   = "(k_PIDK > 4) && (k_IPCHI2_OWNPV > 9) && (k_P > 2*1000) && (k_PT > 300) && (k_TRACK_GhostProb < 0.5)";
-  string strip2_pi  = "(pi_P > 2*1000) && (pi_PT > 300) && (pi_IPCHI2_OWNPV > 9) && (pi_PIDK < 2) && (pi_TRACK_GhostProb < 0.5)";
-  string strip2_d0  = "(k_PT+pi_PT > 2500) && (abs(d0_MM - 1864.83) < 80) && (d0_ENDVERTEX_CHI2 / d0_ENDVERTEX_NDOF < 4) && (d0_FDCHI2_OWNPV > 25) && (d0_DIRA_OWNPV > 0.999)";
-  string strip2_spi = "(spi_IPCHI2_OWNPV > 0) && (spi_TRACK_CHI2NDOF < 3) && (spi_TRACK_GhostProb < 0.25)";
-  string strip2_dst = "(abs(dst_MM - 2010.26) < 125) && (dst_M - d0_M < 160) && (dst_ENDVERTEX_CHI2 / dst_ENDVERTEX_NDOF < 100)";
-  string strip2_mu  = "(mu_IPCHI2_OWNPV > 16) && (mu_TRACK_GhostProb < 0.5) && (mu_PIDmu > -200) && (mu_P > 3*1000) && (mu_TRACK_CHI2NDOF < 3)";
-  string strip2_b0  = "(0*1000 < b0_MM < 10*1000) && (b0_ENDVERTEX_CHI2 / b0_ENDVERTEX_NDOF < 6) && (b0_DIRA_OWNPV > 0.999)";
-  string strip_run2 = strip2_k+"&&"+strip2_pi+"&&"+strip2_spi+"&&"+strip2_mu+"&&"+strip2_d0+"&&"+strip2_dst+"&&"+strip2_b0;
-
 
   // Custom NamedFunc
   NamedFunc mu_eta("mu_eta", [&](const Baby &b){
@@ -129,18 +100,18 @@ int main(int argc, char *argv[]){
   NamedFunc step2_b0 = "Y_ISOLATION_BDT < 0.15 && (Y_ENDVERTEX_CHI2/Y_ENDVERTEX_NDOF) < 6 && Y_MM<5280 && Y_DIRA_OWNPV>0.9995" && b0_dxy < 7;
   
 
+  string repofolder = "/Users/manuelf/code/lhcb-ntuples-gen/ntuples/";
+  vector<shared_ptr<Process> > procs;
+  procs.push_back(Process::MakeShared<Baby_run1>("Data 2012", Process::Type::background, colors("run1"),
+                                                set<string>({repofolder+"pre-0.9.0/Dst-cutflow_data/Dst--20_04_03--cutflow_data--data--2012--md.root"}), trig_run1 && step2_k && step2_pi && step2_d0 && step2_mu && step2_dsp && step2_b0));
+  procs.push_back(Process::MakeShared<Baby_run2>("Data 2016", Process::Type::background, colors("run2"),
+                                                set<string>({repofolder+"pre-0.9.0/Dst-cutflow_data/Dst--20_04_03--cutflow_data--data--2016--md.root"}), trig_run2 && step2_k && step2_pi && step2_d0 && step2_mu && step2_dsp && step2_b0));
+
+
 
   PlotMaker pm;
-  pm.Push<Table>("cutflow", vector<TableRow>{
-  TableRow("Trig. + Strip.","1", 0,0, "1"),
-    TableRow("Kaon", step2_k,0,0, "1"),
-    TableRow("Pion", step2_k && step2_pi, 0,0, "1"),
-    TableRow("$D^0 \\rightarrow K \\pi$", step2_k && step2_pi && step2_d0,0,0, "1"),
-    TableRow("$\\mu$", step2_k && step2_pi && step2_d0 && step2_mu,0,0, "1"),
-    TableRow("$D^{*+} \\rightarrow D^0 \\pi$", step2_k && step2_pi && step2_d0 && step2_mu && step2_dsp,0,0, "1"),
-    TableRow("$B^{0} \\rightarrow D^{*+} \\mu$", step2_k && step2_pi && step2_d0 && step2_mu && step2_dsp && step2_b0,0,0, "1"),
-
-    },procs,0); // Pushing table
+  pm.Push<Hist1D>(Axis(40, 1, 6,mu_eta, "#eta(#mu)", {2.4, 4}), "1", procs, linplot).RatioTitle("2016", "2012");
+  pm.Push<Hist1D>(Axis(40, -8, 12, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "1", procs, linplot).RatioTitle("2016", "2012");
   
   pm.min_print_ = true;
   pm.MakePlots(1);
