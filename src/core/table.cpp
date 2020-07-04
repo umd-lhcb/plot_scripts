@@ -344,7 +344,7 @@ void Table::PrintRow(ofstream &file, size_t irow, double luminosity) const{
         if(i==0) ratio = 1/(luminosity*backgrounds_.at(i)->sumw_.at(irow));
         else ratio *= luminosity*backgrounds_.at(i)->sumw_.at(irow);
       }
-      file << " & " << setprecision(2)<<ratio/2/0.82 ;
+      file << " & " << setprecision(2)<<ratio/1.81/0.82 ;
     }else if(backgrounds_.size() == 1){
       file << " & " << luminosity*GetYield(backgrounds_, irow) << "$\\pm$" << luminosity*GetError(backgrounds_, irow);
     }

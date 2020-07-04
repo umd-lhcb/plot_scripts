@@ -31,19 +31,20 @@
 using namespace std;
 
 int main(int argc, char *argv[]){
-  set<string> files;
+  vector<string> files;
   for(int argi = 1; argi < argc; ++argi){
-    files.insert(argv[argi]);
+    files.push_back(argv[argi]);
     string test = argv[argi];
     DBG("Doing file "+test);
   }
-
-  set<Variable> vars = GetVariables(files);
+  vector<string> tree_names;
+  set<Variable> vars = GetVariables(files, tree_names);
   WriteBaseHeader(vars, files);
   WriteBaseSource(vars);
-  for(const auto &file: files){
+  for(unsigned ifile=0; ifile<files.size(); ifile++){
+    string file = files[ifile], treename = tree_names[ifile];
     WriteSpecializedHeader(vars, file);
-    WriteSpecializedSource(vars, file);
+    WriteSpecializedSource(vars, file, treename);
   }
 }
 
@@ -284,7 +285,7 @@ set<string> Variable::GetTypeSet() const{
 
   \return All variables with associated types used for each derived Baby class
 */
-set<Variable> GetVariables(const set<string> &files){
+set<Variable> GetVariables(const vector<string> &files, vector<string> &tree_names){
   vector<Variable> vars;
   for(const auto &file: files){
     ifstream ifs("txt/variables/"+file);
@@ -293,16 +294,19 @@ set<Variable> GetVariables(const set<string> &files){
       //DBG("Reading line: "+line);
       size_t fcolon = line.find(":"), fspace = line.find(" ");
       if(fcolon!=std::string::npos &&  fspace==std::string::npos){
-        string treename("TupleB0/DecayTree");
+        //string treename("TupleB0/DecayTree");
+        string treename = line;
+        treename.erase(fcolon);
+        tree_names.push_back(treename);
         size_t ftree = line.find(treename);
-        //DBG("\n\n\nFound tree "+treename);
+        DBG("\n\n\nFound tree "+treename);
         if(ftree==std::string::npos) {ERROR("TTree not named "+treename+" in "+line);}
         else continue;
       }
       if(IsComment(line)) continue;
       SimpleVariable simple_var = GetVariable(line);
       Variable var(simple_var.name_);
-      DBG("Found variable "+simple_var.name_);
+      //DBG("Found variable "+simple_var.name_);
       vector<Variable>::iterator this_var = vars.end();
       for(auto iter = vars.begin();
           iter != vars.end();
@@ -422,7 +426,7 @@ string ToLower(string x){
   \param[in] types Names of derived Baby classes (basic, full, etc.)
 */
 void WriteBaseHeader(const set<Variable> &vars,
-                     const set<string> &types){
+                     const vector<string> &types){
   ofstream file("inc/core/baby.hpp");
   file << "#ifndef H_BABY\n";
   file << "#define H_BABY\n\n";
@@ -489,10 +493,12 @@ void WriteBaseHeader(const set<Variable> &vars,
 
   file << "  std::unique_ptr<Activator> Activate();\n\n";
 
+  file << "  std::unique_ptr<TChain> chain_;//!<Chain to load variables from\n";
+  file << "  std::set<std::string> file_names_;//!<Files loaded into TChain\n";
+
   file << "protected:\n";
   file << "  virtual void Initialize();\n\n";
 
-  file << "  std::unique_ptr<TChain> chain_;//!<Chain to load variables from\n";
   file << "  long entry_;//!<Current entry\n\n";
 
   file << "private:\n";
@@ -502,12 +508,11 @@ void WriteBaseHeader(const set<Variable> &vars,
   file << "  Baby(const Baby &) = delete;\n";
   file << "  Baby& operator=(const Baby &) = delete;\n\n";
 
-  file << "  std::set<std::string> file_names_;//!<Files loaded into TChain\n";
   file << "  int sample_type_;//!< Integer indicating what kind of sample the first file has\n";
   file << "  mutable long total_entries_;//!<Cached number of events in TChain\n";
   file << "  mutable bool cached_total_entries_;//!<Flag if cached event count up to date\n\n";
 
-  file << "  void ActivateChain();\n";
+  file << "  virtual void ActivateChain();\n";
   file << "  void DeactivateChain();\n\n";
 
   for(const auto &var: vars){
@@ -835,6 +840,7 @@ void WriteSpecializedHeader(const set<Variable> &vars, const string &type){
   file << "  virtual ~Baby_" << type << "() = default;\n\n";
 
   file << "  virtual void GetEntry(long entry);\n\n";
+  file << "  virtual void ActivateChain();\n";
 
   for(const auto &var: vars){
     if(var.VirtualInBase()){
@@ -882,7 +888,7 @@ void WriteSpecializedHeader(const set<Variable> &vars, const string &type){
   \param[in] type Name of derived Baby class (basic, full, etc.)
 */
 
-void WriteSpecializedSource(const set<Variable> &vars, const string &type){
+void WriteSpecializedSource(const set<Variable> &vars, const string &type, const string &treename){
   ofstream file("src/core/baby_"+type+".cpp");
   file << "/*! \\class Baby_" << type << "\n\n";
 
@@ -934,7 +940,6 @@ void WriteSpecializedSource(const set<Variable> &vars, const string &type){
   file << "}\n\n";
 
   file << "/*!\\brief Change current entry\n\n";
-
   file << "  \\param[in] entry Entry number to load\n";
   file << "*/\n";
   file << "void Baby_" << type << "::GetEntry(long entry){\n";
@@ -945,6 +950,18 @@ void WriteSpecializedSource(const set<Variable> &vars, const string &type){
   }
   file << "  Baby::GetEntry(entry);\n";
   file << "}\n\n";
+
+  file << "void Baby_" << type << "::ActivateChain(){\n";
+  file << "  if(chain_) ERROR(\"Chain has already been initialized\");\n";
+  file << "  lock_guard<mutex> lock(Multithreading::root_mutex);\n";
+  file << "  chain_ = unique_ptr<TChain>(new TChain(\""<<treename<<"\"));\n";
+  file << "  for(const auto &file: file_names_){\n";
+  file << "    chain_->Add(file.c_str());\n";
+  file << "  }\n";
+  file << "  Initialize();\n";
+  file << "}\n\n";
+
+  
 
   file << "/*! \\brief Setup all branches\n";
   file << "*/\n";

@@ -85,12 +85,12 @@ def getSubdirs(base, subdirs):
         subdirs.add(os.path.relpath(root, base))
             
 def genSubdirs(dirs):
-    ra4_draw = os.path.dirname(fullPath(__file__))
-    srcdir = fullPath(os.path.join(ra4_draw, dirs.src))
-    incdir = fullPath(os.path.join(ra4_draw, dirs.inc))
-    objdir = fullPath(os.path.join(ra4_draw, dirs.obj))
-    makedir = fullPath(os.path.join(ra4_draw, dirs.make))
-    exedir = fullPath(os.path.join(ra4_draw, dirs.exe))
+    plot_scripts = os.path.dirname(fullPath(__file__))
+    srcdir = fullPath(os.path.join(plot_scripts, dirs.src))
+    incdir = fullPath(os.path.join(plot_scripts, dirs.inc))
+    objdir = fullPath(os.path.join(plot_scripts, dirs.obj))
+    makedir = fullPath(os.path.join(plot_scripts, dirs.make))
+    exedir = fullPath(os.path.join(plot_scripts, dirs.exe))
 
     subdirs = set()
     getSubdirs(srcdir, subdirs)
@@ -105,8 +105,8 @@ def genSubdirs(dirs):
     return subdirs
 
 def writeMakefile(subdirs):
-    ra4_draw = os.path.dirname(fullPath(__file__))
-    with open(os.path.join(ra4_draw, ".subdirs.mk"), "w") as f:
+    plot_scripts = os.path.dirname(fullPath(__file__))
+    with open(os.path.join(plot_scripts, ".subdirs.mk"), "w") as f:
         for subdir in subdirs:
             make = os.path.join("$(MAKEDIR)", os.path.join(subdir, "%.d"))
             cpp = os.path.join("$(SRCDIR)", os.path.join(subdir, "%.cpp"))
@@ -174,7 +174,7 @@ def compile(mode, verbosity, dirs):
         raise Exception("Unrecognized option: "+mode)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description = "Compiles ra4_draw code",
+    parser = argparse.ArgumentParser(description = "Compiles plot_scripts code",
                                      formatter_class = argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("mode", nargs="?", default="build", choices=["build","clean","set_dirs","print_vars"],
                         help = "Selects which action to perform")

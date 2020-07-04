@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <vector>
 
 struct SimpleVariable{
   SimpleVariable(const std::string &type, const std::string &name);
@@ -42,7 +43,7 @@ private:
   std::map<std::string, std::string> type_map_;//!<Map from Baby type (basic, full, etc.) to variabl type (int, float, etc.)
 };
 
-std::set<Variable> GetVariables(const std::set<std::string> &files);
+std::set<Variable> GetVariables(const std::vector<std::string> &files, std::vector<std::string> &tree_names);
 
 bool IsComment(const std::string &line);
 
@@ -51,7 +52,7 @@ SimpleVariable GetVariable(std::string line);
 void RemoveExtraSpaces(std::string &line);
 
 void WriteBaseHeader(const std::set<Variable> &vars,
-                     const std::set<std::string> &types);
+                     const std::vector<std::string> &types);
 
 void WriteBaseSource(const std::set<Variable> &vars);
 
@@ -59,9 +60,9 @@ void WriteSpecializedHeader(const std::set<Variable> &vars,
                             const std::string &type);
 
 void WriteSpecializedSource(const std::set<Variable> &vars,
-                            const std::string &type);
+                            const std::string &type, const std::string &treename);
 
 void WriteMergedHeader(const std::set<Variable> &vars,
-                       const std::set<std::string> &types);
+                       const std::vector<std::string> &types);
 
 #endif
