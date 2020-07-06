@@ -100,25 +100,6 @@ string execute(const string &cmd){
 
 string CodeToPlainText(string code){
   ReplaceAll(code, " ", "");
-  ReplaceAll(code, "run<=276811", "RunsBD");
-  ReplaceAll(code, "run>=276831&&run<=278801", "RunsEF1");
-  ReplaceAll(code, "run>=278802&&run<=280385", "RunsF2G");
-  ReplaceAll(code, "run>=280919&&run<284044", "RunH");
-  ReplaceAll(code, "run<280919", "RunsBG");
-  ReplaceAll(code, "((leps_pt[0]>30&&leps_eta[0]<2.1&&leps_eta[0]>-2.1)||(leps_pt[1]>30&&leps_eta[1]<2.1&&leps_eta[1]>-2.1))", "SLtrig");
-  ReplaceAll(code, "(mumu_m*(mumu_m>0&&mumu_pt1>30)+elel_m*(elel_m>0&&elel_pt1>30))>80&&(mumu_m*(mumu_m>0&&mumu_pt1>30)+elel_m*(elel_m>0&&elel_pt1>30))<100", "zmasswindow");
-  ReplaceAll(code, "nbdm==0","0b");
-  ReplaceAll(code, "nbdm==1","1b");
-  ReplaceAll(code, "nbdt==2&&nbdm==2","2b");
-  ReplaceAll(code, "nbdt>=2&&nbdm==3&&nbdl==3","3b");
-  ReplaceAll(code, "nbdt>=2&&nbdm>=3&&nbdl>=4","4b");
-  ReplaceAll(code, "nbdt>=2&&nbdm>=3","ge3b");
-  ReplaceAll(code, "nbdt>=2","ge2b");
-  ReplaceAll(code, "pass&&stitch&&nvleps==0&&ntks==0&&!low_dphi&&njets>=4&&njets<=5","preseln");
-  ReplaceAll(code, "higd_am>100&&higd_am<=140&&higd_dm<=40","HIG");
-  ReplaceAll(code, "(higd_am<=100||(higd_am>140&&higd_am<=200))&&higd_dm<=40","SBD");
-  ReplaceAll(code, "mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0)","zpt");
-  ReplaceAll(code, "((elel_m>80&&elel_m<100)||(mumu_m>80&&mumu_m<100))","mll80to100");
   ReplaceAll(code, ".", "p");
   ReplaceAll(code, "(", "");
   ReplaceAll(code, ")", "");
@@ -155,193 +136,22 @@ string CodeToPlainText(string code){
 
 string CodeToRootTex(string code){
   ReplaceAll(code, " ", "");
-  ReplaceAll(code, "run<=276811", "Runs B-D");
-  ReplaceAll(code, "run>=276831&&run<=278801", "Runs E-F1");
-  ReplaceAll(code, "run>=278802&&run<=280385", "Runs F2-G");
-  ReplaceAll(code, "run>=280919&&run<284044", "Run H");
-  ReplaceAll(code, "run<280919", "Runs B-G");
-  ReplaceAll(code, "pass&&stitch", "ps");
-  ReplaceAll(code, "&&1", "");
-  ReplaceAll(code, "weight", "w");
-  ReplaceAll(code, "nbt<=1&&nbm==2","TM+MM");
-  ReplaceAll(code, "nbdm==0","0b");
-  ReplaceAll(code, "nbdm==1","1b");
-  ReplaceAll(code, "nbdt==2&&nbdm==2","2b");
-  ReplaceAll(code, "nbdt>=2&&nbdm==3&&nbdl==3","3b");
-  ReplaceAll(code, "nbdt>=2&&nbdm>=3&&nbdl>=4","4b");
-  ReplaceAll(code, "nbdt>=2&&nbdm>=3","#geq3b");
-  ReplaceAll(code, "nbdt>=2","#geq2b");
-  ReplaceAll(code, "higd_am>100&&higd_am<=140&&higd_dm<=40","HIG");
-  ReplaceAll(code, "(higd_am<=100||(higd_am>140&&higd_am<=200))&&higd_dm<=40","SBD");
-  ReplaceAll(code, "higd_dm","#Deltam");
-  ReplaceAll(code, "ht1l_stmin2l", "1l: H_{T}>500, 2l: H_{T} + p_{T}^{l,min}");
-  ReplaceAll(code, "ht1l_stmax2l", "1l: H_{T}>500, 2l: H_{T} + p_{T}^{l,max}");
-  ReplaceAll(code, "ht1l_stave2l", "1l: H_{T}>500, 2l: H_{T} + p_{T}^{l,ave}");
-  ReplaceAll(code, "st", "S_{T}");
+  ReplaceAll(code, "spi_", "#pixx_{slow} ");
+  ReplaceAll(code, "pi_", "#pi ");
+  ReplaceAll(code, "pixx_", "pi_"); // Needed because pi_ inside spi_
+  ReplaceAll(code, "k_", "K ");
+  ReplaceAll(code, "mu_", "#mu ");
+  ReplaceAll(code, " PT", " p^{reco}");
+  ReplaceAll(code, " TRUEPT", " p^{true}");
 
-  ReplaceAll(code, "met>0&&met<=50", "met<=50");
-  ReplaceAll(code, "met>0&&met<=75", "met<=75");
-  ReplaceAll(code, "met>50&&met<=100", "50<met#leq 100");
-  ReplaceAll(code, "met>75&&met<=150", "75<met#leq 150");
-  ReplaceAll(code, "met>100&&met<=150", "100<met#leq 150");
-  ReplaceAll(code, "met>100&&met<=200", "100<met#leq 200");
-  ReplaceAll(code, "met>150&&met<=200", "150<met#leq 200");
-  ReplaceAll(code, "met>200&&met<=300", "200<met#leq 300");
-  ReplaceAll(code, "met>200&&met<=350", "200<met#leq 350");
-  ReplaceAll(code, "met>300&&met<=400", "300<met#leq 400");
-  ReplaceAll(code, "met>300&&met<=450", "300<met#leq 450");
-  ReplaceAll(code, "met>300&&met<=500", "300<met#leq 500");
-  ReplaceAll(code, "met>350&&met<=500", "350<met#leq 500");
-  ReplaceAll(code, "met>400&&met<=500", "400<met#leq 500");
-  ReplaceAll(code, "met>200&&met<=500", "200<met#leq 500");
-  ReplaceAll(code, "njets>=4&&njets<=5", "4-5j");
-  ReplaceAll(code, "njets>=5&&njets<=7", "5-7j");
-  ReplaceAll(code, "njets>=5&&njets<=6", "5-6j");
-  ReplaceAll(code, "njets>=6&&njets<=8", "6-8j");
-  ReplaceAll(code, "njets>=6&&njets<=7", "6-7j");
-  ReplaceAll(code, "njets==5", "5j");
-  ReplaceAll(code, "njets==6", "6j");
-  ReplaceAll(code, "njets==7", "7j");
-  ReplaceAll(code, "njets>=5", "#geq5j");
-  ReplaceAll(code, "njets>=6", "#geq6j");
-  ReplaceAll(code, "njets>=7", "#geq7j");
-  ReplaceAll(code, "njets>=8", "#geq8j");
-  ReplaceAll(code, "nbd>=1", "#geq1b");
-  ReplaceAll(code, "nbd==1", "1b");
-  ReplaceAll(code, "nbd==2", "2b");
-  ReplaceAll(code, "nbd>=3", "#geq3b");
-  ReplaceAll(code, "nbdm==1", "1b");
-  ReplaceAll(code, "nbdm==2", "2b");
-  ReplaceAll(code, "nbdm>=3", "#geq3b");
-  ReplaceAll(code, "nbdm>=1", "#geq1b");
-
-  ReplaceAll(code, "1==1", "Full Sample");
-  ReplaceAll(code, "el_tks_chg*lep_charge<0", "OS");
-  ReplaceAll(code, "mu_tks_chg*lep_charge<0", "OS");
-  ReplaceAll(code, "had_tks_chg*lep_charge<0", "OS");
-  ReplaceAll(code, "Sum$(abs(mc_id)==11)","N^{true}_{e}");
-  ReplaceAll(code, "Sum$(abs(mc_id)==13)","N^{true}_{#mu}");
-  ReplaceAll(code, "Sum$(genels_pt>0)", "N^{true}_{e}");
-  ReplaceAll(code, "Sum$(genmus_pt>0)", "N^{true}_{#mu}");
-  ReplaceAll(code, "Sum$(mus_sigid&&mus_miniso<0.2)","N_{#mu}^{10}");
-  ReplaceAll(code, "Sum$(els_sigid&&els_miniso<0.1)","N_{e}^{10}");
-  ReplaceAll(code, "nvmus==1&&nmus==1&&nvels==0","1 #mu");
-  ReplaceAll(code, "nvmus10==0&&nvels10==0", "0 leptons");
-  ReplaceAll(code, "(nmus+nels)", "N_{lep}");
-  ReplaceAll(code, "(nels+nmus)", "N_{lep}");
-  ReplaceAll(code, "nveto", "N^{veto}_{tks}");
-  ReplaceAll(code, "(nvmus+nvels)", "N^{veto}_{lep}");
-  ReplaceAll(code, "nvmus==2&&nmus>=1","N_{#mu}#geq1, N^{veto}_{#mu}=2");
-  ReplaceAll(code, "nvels==2&&nels>=1","N_{e}#geq1, N^{veto}_{e}=2");
-  ReplaceAll(code, "(nvmus>=2||nvels>=2)","N^{veto}_{lep} #geq 2");
-  ReplaceAll(code, "(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))>0&&(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))<=50",
-                   "0<p_{T}^{Z}#leq50");  
-  ReplaceAll(code, "(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))>0&&(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))<=75",
-                   "0<p_{T}^{Z}#leq75");  
-  ReplaceAll(code, "(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))>50&&(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))<=100",
-                   "50<p_{T}^{Z}#leq100");
-  ReplaceAll(code, "(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))>75&&(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))<=150",
-                   "75<p_{T}^{Z}#leq150");
-  ReplaceAll(code, "(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))>100&&(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))<=150",
-                   "100<p_{T}^{Z}#leq150");
-  ReplaceAll(code, "(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))>150&&(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))<=200",
-                   "150<p_{T}^{Z}#leq200");
-  ReplaceAll(code, "(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))>200&&(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))<=300",
-                   "200<p_{T}^{Z}#leq300");
-  ReplaceAll(code, "(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))>300&&(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))<=450",
-                   "300<p_{T}^{Z}#leq450");
-  ReplaceAll(code, "(mumu_pt*(mumu_pt>0)+elel_pt*(elel_pt>0))","p_{T}^{Z}");
-
-  ReplaceAll(code, "(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))>80&&(mumu_m*(mumu_m>0)+elel_m*(elel_m>0))<100",
-             "80<m_{ll}<100");
-  ReplaceAll(code, "mumuv_m>80&&mumuv_m<100",
-             "80<m_{ll}<100");
-  ReplaceAll(code, "elelv_m>80&&elelv_m<100",
-             "80<m_{ll}<100");
-  ReplaceAll(code, "((elel_m>80&&elel_m<100)||(mumu_m>80&&mumu_m<100))",
-             "80<m_{ll}<100");
-  ReplaceAll(code, "leps_pt[0]","p_{T}^{max}(l)");
-  ReplaceAll(code, "onht>350&&onmet>100&&","");
-  ReplaceAll(code, "jets_islep[0]==0","");
-  ReplaceAll(code, "(nels==0&&nmus==1)","N_{#mu}=1");
-  ReplaceAll(code, "(nels==1&&nmus==0)","N_{#font[12]{e}}=1");
-  ReplaceAll(code, "Max$(abs(els_eta)*(els_sigid&&els_miniso<0.1&&els_pt>20))<1.479","barrel #font[12]{e}");
-  ReplaceAll(code, "Max$(abs(els_eta)*(els_sigid&&els_miniso<0.1&&els_pt>20))>1.479","endcap #font[12]{e}");
-
-  ReplaceAll(code, "!low_dphi", "high #Delta#phi");
-  ReplaceAll(code, "low_dphi", "low #Delta#phi");
-  ReplaceAll(code, "higd_drmax", "#DeltaR^{max}_{bb}");
-  ReplaceAll(code, "ntks", "N_{tks}");
-  ReplaceAll(code, "nleps", "N_{lep}");
-  ReplaceAll(code, "nvleps", "N_{lep}");
-  ReplaceAll(code, "nmus", "N_{#mu}");
-  ReplaceAll(code, "nels", "N_{e}");
-  ReplaceAll(code, "nvmus", "N^{veto}_{#mu}");
-  ReplaceAll(code, "nvels", "N^{veto}_{e}");
-  ReplaceAll(code, "ntruleps", "N^{true}_{lep}");
-  ReplaceAll(code, "_ra2b", "^{ra2b}");
-  ReplaceAll(code, "npv", "N_{PV}");
-  ReplaceAll(code, "mumu_pt1", "p_{T}^{#mu}");
-  ReplaceAll(code, "elel_pt1", "p_{T}^{e}");
-  ReplaceAll(code, "mj14>400&&mj14<=500", "M_{J} 400-500");
-  ReplaceAll(code, "mj14>450&&mj14<=650", "M_{J} 450-650");
-  ReplaceAll(code, "mj14>500&&mj14<=800", "M_{J} 500-800");
-
-  ReplaceAll(code, "abs(mc_id)==1000006", "stop");
-  ReplaceAll(code, "abs(mc_id)==1000022", "LSP");
-
-  ReplaceAll(code, "onmet", "MET^{on}");
-  ReplaceAll(code, "onht", "H_{T}^{on}");
-  ReplaceAll(code, "njets30","N_{jets}^{30}");
-  ReplaceAll(code, "els_pt","p^{e}_{T}");
-  ReplaceAll(code, "mus_pt","p^{#mu}_{T}");
-  ReplaceAll(code, "fjets_nconst","N_{const}^{fat jet}");
-  ReplaceAll(code, "fjets_30_m[0]","m(J_{1})");
-  ReplaceAll(code, "fjets_m[0]","m(J_{1})");
-  ReplaceAll(code, "(fjets_pt*cosh(fjets_eta))","p_{fatjet}");
-  ReplaceAll(code, "fjets_pt","p^{fatjet}_{T}");
-  ReplaceAll(code, "jets_pt","p^{jet}_{T}");
-  ReplaceAll(code, "mus_reliso","RelIso");
-  ReplaceAll(code, "els_reliso","RelIso");
-  ReplaceAll(code, "mus_miniso_tr15","MiniIso");
-  ReplaceAll(code, "els_miniso_tr15","MiniIso");
-  ReplaceAll(code, "njets","N_{jets}");
-  ReplaceAll(code, "abs(lep_id)==13&&","");
+  ReplaceAll(code, "mom_is_dsp", "mom D^{*+} ");
+  
   ReplaceAll(code, ">=", " #geq ");
   ReplaceAll(code, ">", " > ");
   ReplaceAll(code, "<=", " #leq ");
   ReplaceAll(code, "<", " < ");
   ReplaceAll(code, "&&", ", ");
   ReplaceAll(code, "==", " = ");
-  ReplaceAll(code, "met_calo", "E_{T,calo}^{miss}");
-  ReplaceAll(code, "higd_am","#LTm#GT");
-  ReplaceAll(code, "met", "p_{T}^{miss}");
-  ReplaceAll(code, "ht_hlt", "H_{T}^{HLT}");
-  ReplaceAll(code, "mht", "MHT");
-  ReplaceAll(code, "ht", "H_{T}");
-  ReplaceAll(code, "mt", "m_{T}");
-  ReplaceAll(code, "ntks_chg==0", " ITV");
-  ReplaceAll(code, "nbm_moriond","N_{b}");
-  ReplaceAll(code, "nbm","N_{b}");
-  ReplaceAll(code, "nbd","N_{b}");
-  ReplaceAll(code, "nbdm","N_{b}");
-  ReplaceAll(code, "nbl","N_{b,l}");
-  ReplaceAll(code, "mj14", " M_{J}");
-  ReplaceAll(code, "mj", " M_{J}");
-
-  ReplaceAll(code, "el_tks_mt", "Track m_{T}");
-  ReplaceAll(code, "mu_tks_mt", "Track m_{T}");
-  ReplaceAll(code, "had_tks_mt", "Track m_{T}");
-  ReplaceAll(code, "el_tks_pt", "Track p_{T}");
-  ReplaceAll(code, "mu_tks_pt", "Track p_{T}");
-  ReplaceAll(code, "had_tks_pt", "Track p_{T}");
-  ReplaceAll(code, "el_tks_miniso", "Track miniso");
-  ReplaceAll(code, "mu_tks_miniso", "Track miniso");
-  ReplaceAll(code, "had_tks_miniso", "Track miniso");
-  ReplaceAll(code, "el_tks_chg_miniso", "Track charged miniso");
-  ReplaceAll(code, "mu_tks_chg_miniso", "Track charged miniso");
-  ReplaceAll(code, "had_tks_chg_miniso", "Track charged miniso");
-  ReplaceAll(code, "jetsys_nob_pt", "ISR p_{T}");
   ReplaceAll(code, "(", "");
   ReplaceAll(code, ")", "");
 

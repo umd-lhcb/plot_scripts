@@ -279,6 +279,7 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   cut_(cut),
   weight_("1"),
   tag_(""),
+  top_right_(""),
   left_label_({}),
   right_label_({}),
   yaxis_zoom_(1.),
@@ -545,6 +546,11 @@ Hist1D & Hist1D::Weight(const NamedFunc &weight){
 
 Hist1D & Hist1D::Tag(const string &tag){
   tag_ = tag;
+  return *this;
+}
+
+Hist1D & Hist1D::TopRight(const string &label){
+  top_right_ = label;
   return *this;
 }
 
@@ -1010,10 +1016,10 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
     out.back()->SetTextSize(this_opt_.TitleSize());
 
     ostringstream oss;
-    if(this_opt_.Stack() != StackType::shapes) {
+    if(top_right_ == "") {
       if (luminosity_<1.1) oss << "137 fb^{-1} (13 TeV)" << setprecision(1) << flush;
       else oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
-    } else oss << "8/13 TeV" << flush;
+    } else oss << top_right_ << flush;
     out.push_back(make_shared<TLatex>(right, bottom+0.2*(top-bottom),
                                       oss.str().c_str()));
     out.back()->SetNDC();
@@ -1328,7 +1334,7 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
   size_t n_entries = datas_.size() + signals_.size() + backgrounds_.size();
   if(this_opt_.DisplayLumiEntry()) ++n_entries;
   size_t n_columns = min(n_entries, static_cast<size_t>(this_opt_.LegendColumns()));
-
+  
   double left = this_opt_.LeftMargin()+this_opt_.LegendPad();
   double top = 1.-this_opt_.TopMargin()-this_opt_.LegendPad();
   double bottom = top-this_opt_.TrueLegendHeight(n_entries);

@@ -23,6 +23,7 @@
   Font = 42
   ShowBackgroundError = 1
   UseCMYK = 0
+  LegendColumns = 2
 
 [Kappa]
   CanvasW	  = 1600

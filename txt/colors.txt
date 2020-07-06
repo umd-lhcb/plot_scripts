@@ -1,4 +1,10 @@
 [default]
- data       0   0   0
- run1       1 148 218
- run2       200 15   1
+ data         0   0   0
+ run1         1 148 218
+ run2        200 15   1
+ red        200   0  26
+ blue         1 148 218
+ purple     150 148 255
+ green        9 186   1
+ orange     255 102   0
+ yellow     255 200   0

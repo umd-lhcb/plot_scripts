@@ -43,7 +43,7 @@ namespace{
  */
 PlotMaker::PlotMaker():
   multithreaded_(true),
-  min_print_(false),
+  min_print_(true),
   figures_(){
 }
 
