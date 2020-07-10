@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////// Defining processes //////////////////////////////////////////
 
-  string repofolder = "/Users/manuelf/code/lhcb-ntuples-gen/ntuples/";
+  string repofolder = "ntuples/";
   vector<shared_ptr<Process> > procs;
   procs.push_back(Process::MakeShared<Baby_run1>("B #rightarrow D^{0}X#mu#nu 2011", Process::Type::background, colors("run1"),
                                                 set<string>({repofolder+"pre-0.9.0/Dst-cutflow_mc/Dst--20_03_18--cutflow_mc--cocktail--2011--md.root"}), "1"));

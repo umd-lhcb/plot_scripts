@@ -55,13 +55,14 @@ int main(int argc, char *argv[]){
   PlotOpt lin_lumi_info_print = lin_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   PlotOpt log_lumi_info_print = log_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   
-  vector<PlotOpt> linplot = {lin_lumi, log_lumi};
+  vector<PlotOpt> lumiplot = {lin_lumi, log_lumi};
+  vector<PlotOpt> shapeplot = {lin_shapes, log_shapes};
   Palette colors("txt/colors.txt", "default");
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////// Defining processes //////////////////////////////////////////
 
-  string repofolder = "/Users/manuelf/code/lhcb-ntuples-gen/ntuples/";
+  string repofolder = "ntuples/";
   string run2bare = "0.9.0-cutflow/Dst-cutflow_mc/Dst--20_06_05--cutflow_mc--bare--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09b_Trig0x6138160F_Reco16_Turbo03_Stripping26NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root";
   
   PlotMaker pm;
@@ -97,10 +98,10 @@ int main(int argc, char *argv[]){
                                                       Process::Type::background, colors("red"),
                                                       set<string>({repofolder+run2bare}), "spi_TRUEPT<250"));
 
-  pm.Push<Hist1D>(Axis(100, 0, 500,"spi_PT", "p_{T}^{reco}(#pi_{slow}) [MeV]",{300}), "spi_TRUEPT>0", procs_comp_spi, linplot).TopRight("13 TeV");
-  //pm.Push<Hist1D>(Axis(100, 0, 500,"spi_PT", "p_{T}^{reco}(#pi_{slow}) [MeV]",{300}), "spi_TRUEPT==0", procs_all_spi, linplot).TopRight("13 TeV");
+  pm.Push<Hist1D>(Axis(100, 0, 500,"spi_PT", "p_{T}^{reco}(#pi_{slow}) [MeV]",{300}), "spi_TRUEPT>0", procs_comp_spi, lumiplot).TopRight("13 TeV");
+  //pm.Push<Hist1D>(Axis(100, 0, 500,"spi_PT", "p_{T}^{reco}(#pi_{slow}) [MeV]",{300}), "spi_TRUEPT==0", procs_all_spi, lumiplot).TopRight("13 TeV");
   pm.Push<Hist1D>(Axis(60, -0.5, 0.5,"(spi_TRUEPT-spi_PT)/spi_PT", "(p_{T}^{true}(#pi_{slow}) - p_{T}^{reco}(#pi_{slow}))/p_{T}^{reco}(#pi_{slow})",{-25/300.}),
-                  "1", procs_low_spi, linplot).TopRight("13 TeV");
+                  "1", procs_low_spi, lumiplot).TopRight("13 TeV");
 
   pm.Push<Table>("spi", vector<TableRow>{
       TableRow("$250 < p_{T}^\\text{reco}(\\pi_\\text{slow}) < $500 MeV","1", 0,0, "1"),
@@ -131,9 +132,9 @@ int main(int argc, char *argv[]){
                                                       Process::Type::background, colors("red"),
                                                       set<string>({repofolder+run2bare}), "k_TRUEPT<250"));
 
-  pm.Push<Hist1D>(Axis(100, 200, 700,"k_PT", "p_{T}^{reco}(K) [MeV]",{300}), "1", procs_comp_k, linplot).TopRight("13 TeV");
+  pm.Push<Hist1D>(Axis(100, 200, 700,"k_PT", "p_{T}^{reco}(K) [MeV]",{300}), "1", procs_comp_k, lumiplot).TopRight("13 TeV");
   pm.Push<Hist1D>(Axis(60, -0.5, 0.5,"(k_TRUEPT-k_PT)/k_PT", "(p_{T}^{true}(K) - p_{T}^{reco}(K))/p_{T}^{reco}(K)",{-25/300.}),
-                  "1", procs_low_k, linplot).TopRight("13 TeV");
+                  "1", procs_low_k, lumiplot).TopRight("13 TeV");
 
   pm.Push<Table>("k", vector<TableRow>{
       TableRow("$250 < p_{T}^\\text{reco}(K) < $500 MeV","1", 0,0, "1"),
@@ -174,10 +175,10 @@ int main(int argc, char *argv[]){
                                                       Process::Type::background, colors("red"),
                                                       set<string>({repofolder+run2bare}), "k_TRUEPT+pi_TRUEPT<2400"));
 
-  pm.Push<Hist1D>(Axis(40, 2000, 3000,"k_PT+pi_PT", "p_{T}^{reco}(K)+p_{T}^{reco}(#pi) [MeV]",{2500}), kpi_mom_is_d0, procs_comp_kpi, linplot).TopRight("13 TeV");
-  pm.Push<Hist1D>(Axis(160, 0, 4000,"k_PT+pi_PT", "p_{T}^{reco}(K)+p_{T}^{reco}(#pi) [MeV]",{2500}), kpi_mom_is_d0, procs_comp_kpi, linplot).TopRight("13 TeV").Tag("full");
+  pm.Push<Hist1D>(Axis(40, 2000, 3000,"k_PT+pi_PT", "p_{T}^{reco}(K)+p_{T}^{reco}(#pi) [MeV]",{2500}), kpi_mom_is_d0, procs_comp_kpi, lumiplot).TopRight("13 TeV");
+  pm.Push<Hist1D>(Axis(160, 0, 4000,"k_PT+pi_PT", "p_{T}^{reco}(K)+p_{T}^{reco}(#pi) [MeV]",{2500}), kpi_mom_is_d0, procs_comp_kpi, lumiplot).TopRight("13 TeV").Tag("full");
   pm.Push<Hist1D>(Axis(50, -0.25, 0.25,"(k_TRUEPT+pi_TRUEPT-k_PT-pi_PT)/(k_PT+pi_PT)", "p_{T}(K)+p_{T}(#pi) resolution (true-reco)/reco",{-50/2500.}),
-                  kpi_mom_is_d0, procs_low_kpi, linplot).TopRight("13 TeV");
+                  kpi_mom_is_d0, procs_low_kpi, lumiplot).TopRight("13 TeV");
 
   pm.Push<Table>("kpi", vector<TableRow>{
       TableRow("$2000 < p_{T}^\\text{reco}(K)+p_{T}^\\text{reco}(\\pi) < $3000 MeV","1", 0,0, "1"),
@@ -210,10 +211,10 @@ int main(int argc, char *argv[]){
                                                       set<string>({repofolder+run2bare}), "mu_TRUEP_E<2925"));
 
 
-  pm.Push<Hist1D>(Axis(50, 2500, 5000,"mu_P", "p^{reco}(#mu) [MeV]",{3000.}), "1", procs_comp_mu, linplot).TopRight("13 TeV");
-  pm.Push<Hist1D>(Axis(250, 0, 25000,"mu_P", "p^{reco}(#mu) [MeV]",{3000.}), "1", procs_comp_mu, linplot).TopRight("13 TeV").Tag("mufull");
+  pm.Push<Hist1D>(Axis(50, 2500, 5000,"mu_P", "p^{reco}(#mu) [MeV]",{3000.}), "1", procs_comp_mu, lumiplot).TopRight("13 TeV");
+  pm.Push<Hist1D>(Axis(250, 0, 25000,"mu_P", "p^{reco}(#mu) [MeV]",{3000.}), "1", procs_comp_mu, lumiplot).TopRight("13 TeV").Tag("mufull");
   pm.Push<Hist1D>(Axis(60, -0.25, 0.25,"(mu_TRUEP_E-mu_P)/mu_P", "(p^{true}(#mu) - p^{reco}(#mu))/p^{reco}(#mu)",{-50/3000.}),
-                  "1", procs_low_mu, linplot).TopRight("13 TeV");
+                  "1", procs_low_mu, lumiplot).TopRight("13 TeV");
 
   pm.Push<Table>("mu", vector<TableRow>{
       TableRow("3000 < p^\\text{reco}(\\mu) < $4000 MeV","1", 0,0, "1"),
@@ -225,60 +226,88 @@ int main(int argc, char *argv[]){
 
 
   /////////////////////////// Cut on muon angle ////////////////////////////////
-  NamedFunc mu_thetax("mu_thetax",
+  NamedFunc mu_pxpz("mu_pxpz",
                           [&](const Baby &b){
                             return fabs(b.mu_PX()/b.mu_PZ());
   });
-  NamedFunc mu_thetax_tru("mu_thetax_tru",
+  NamedFunc mu_pxpz_tru("mu_pxpz_tru",
                           [&](const Baby &b){
                             return fabs(b.mu_TRUEP_X()/b.mu_TRUEP_Z());
   });
-  NamedFunc mu_thetay("mu_thetay",
+  NamedFunc mu_pypz("mu_pypz",
                           [&](const Baby &b){
-                            return fabs(b.mu_TRUEP_Y()/b.mu_TRUEP_Z());
+                            return fabs(b.mu_PY()/b.mu_PZ());
   });
-  NamedFunc mu_thetay_tru("mu_thetay_tru",
+  NamedFunc mu_pypz_tru("mu_pypz_tru",
                           [&](const Baby &b){
                             return fabs(b.mu_TRUEP_Y()/b.mu_TRUEP_Z());
   });
 
   vector<shared_ptr<Process> > procs_edgex_mu;
-  procs_edgex_mu.push_back(Process::MakeShared<Baby_run2_bare>("#theta_{x}^{reco}(#mu) > 0.25",
+  procs_edgex_mu.push_back(Process::MakeShared<Baby_run2_bare>("p_{x}^{true}/p_{z}^{true}(#mu) > 0.25",
                                                       Process::Type::background, colors("purple"),
-                                                      set<string>({repofolder+run2bare}), mu_thetax>0.25));
+                                                      set<string>({repofolder+run2bare}), mu_pxpz>0.25));
 
-  vector<shared_ptr<Process> > procs_comp_thetax_mu;
-  procs_comp_thetax_mu.push_back(Process::MakeShared<Baby_run2_bare>("#theta_{x}^{true}(#mu) < 0.36 MeV",
+  vector<shared_ptr<Process> > procs_comp_pxpz_mu;
+  procs_comp_pxpz_mu.push_back(Process::MakeShared<Baby_run2_bare>("p_{x}^{true}/p_{z}^{true}(#mu) < 0.37",
                                                       Process::Type::background, colors("green"),
-                                                      set<string>({repofolder+run2bare}), mu_thetax_tru<0.36));
-  procs_comp_thetax_mu.push_back(Process::MakeShared<Baby_run2_bare>("0.36 < #theta_{x}^{true}(#mu) < 0.37",
+                                                      set<string>({repofolder+run2bare}), mu_pxpz_tru<0.37));
+  procs_comp_pxpz_mu.push_back(Process::MakeShared<Baby_run2_bare>("0.37 < p_{x}^{true}/p_{z}^{true}(#mu) < 0.38",
                                                       Process::Type::background, colors("blue"),
-                                                      set<string>({repofolder+run2bare}), mu_thetax_tru>0.36 && mu_thetax_tru<0.37));
-  procs_comp_thetax_mu.push_back(Process::MakeShared<Baby_run2_bare>("0.37 < #theta_{x}^{true}(#mu) < 0.38",
+                                                      set<string>({repofolder+run2bare}), mu_pxpz_tru>0.37 && mu_pxpz_tru<0.38));
+  procs_comp_pxpz_mu.push_back(Process::MakeShared<Baby_run2_bare>("0.38 < p_{x}^{true}/p_{z}^{true}(#mu) < 0.39",
                                                       Process::Type::background, colors("yellow"),
-                                                      set<string>({repofolder+run2bare}), mu_thetax_tru>0.37 && mu_thetax_tru<0.38));
-  procs_comp_thetax_mu.push_back(Process::MakeShared<Baby_run2_bare>("#theta_{x}^{true}(#mu) > 0.38",
+                                                      set<string>({repofolder+run2bare}), mu_pxpz_tru>0.38 && mu_pxpz_tru<0.39));
+  procs_comp_pxpz_mu.push_back(Process::MakeShared<Baby_run2_bare>("p_{x}^{true}/p_{z}^{true}(#mu) > 0.39",
                                                       Process::Type::background, colors("red"),
-                                                      set<string>({repofolder+run2bare}), mu_thetax_tru>0.38));
+                                                      set<string>({repofolder+run2bare}), mu_pxpz_tru>0.39));
+
+  vector<shared_ptr<Process> > procs_comp_pxpz_mureco;
+  procs_comp_pxpz_mureco.push_back(Process::MakeShared<Baby_run2_bare>("p_{x}^{reco}/p_{z}^{reco}(#mu) < 0.10",
+                                                      Process::Type::background, colors("green"),
+                                                      set<string>({repofolder+run2bare}), mu_pxpz<0.10));
+  procs_comp_pxpz_mureco.push_back(Process::MakeShared<Baby_run2_bare>("0.10 < p_{x}^{reco}/p_{z}^{reco}(#mu) < 0.20",
+                                                      Process::Type::background, colors("blue"),
+                                                      set<string>({repofolder+run2bare}), mu_pxpz>0.10 && mu_pxpz<0.20));
+  procs_comp_pxpz_mureco.push_back(Process::MakeShared<Baby_run2_bare>("0.20 < p_{x}^{reco}/p_{z}^{reco}(#mu) < 0.25",
+                                                      Process::Type::background, colors("yellow"),
+                                                      set<string>({repofolder+run2bare}), mu_pxpz>0.20 && mu_pxpz<0.25));
+  procs_comp_pxpz_mureco.push_back(Process::MakeShared<Baby_run2_bare>("p_{x}^{reco}/p_{z}^{reco}(#mu) > 0.25",
+                                                      Process::Type::background, colors("red"),
+                                                      set<string>({repofolder+run2bare}), mu_pxpz>0.25));
 
   vector<shared_ptr<Process> > procs_edgey_mu;
-  procs_edgey_mu.push_back(Process::MakeShared<Baby_run2_bare>("#theta_{y}^{reco}(#mu) > 0.25",
+  procs_edgey_mu.push_back(Process::MakeShared<Baby_run2_bare>("p_{y}^{true}/p_{z}^{true}(#mu) > 0.25",
                                                       Process::Type::background, colors("purple"),
-                                                      set<string>({repofolder+run2bare}), mu_thetay>0.25));
+                                                      set<string>({repofolder+run2bare}), mu_pypz>0.25));
 
-  vector<shared_ptr<Process> > procs_comp_thetay_mu;
-  procs_comp_thetay_mu.push_back(Process::MakeShared<Baby_run2_bare>("#theta_{y}^{true}(#mu) < 0.26 MeV",
+  vector<shared_ptr<Process> > procs_comp_pypz_mu;
+  procs_comp_pypz_mu.push_back(Process::MakeShared<Baby_run2_bare>("p_{y}^{true}/p_{z}^{true}(#mu) < 0.27",
                                                       Process::Type::background, colors("green"),
-                                                      set<string>({repofolder+run2bare}), mu_thetay_tru<0.26));
-  procs_comp_thetay_mu.push_back(Process::MakeShared<Baby_run2_bare>("0.26 < #theta_{y}^{true}(#mu) < 0.27",
+                                                      set<string>({repofolder+run2bare}), mu_pypz_tru<0.27));
+  procs_comp_pypz_mu.push_back(Process::MakeShared<Baby_run2_bare>("0.27 < p_{y}^{true}/p_{z}^{true}(#mu) < 0.28",
                                                       Process::Type::background, colors("blue"),
-                                                      set<string>({repofolder+run2bare}), mu_thetay_tru>0.26 && mu_thetay_tru<0.27));
-  procs_comp_thetay_mu.push_back(Process::MakeShared<Baby_run2_bare>("0.27 < #theta_{y}^{true}(#mu) < 0.28",
+                                                      set<string>({repofolder+run2bare}), mu_pypz_tru>0.27 && mu_pypz_tru<0.28));
+  procs_comp_pypz_mu.push_back(Process::MakeShared<Baby_run2_bare>("0.28 < p_{y}^{true}/p_{z}^{true}(#mu) < 0.29",
                                                       Process::Type::background, colors("yellow"),
-                                                      set<string>({repofolder+run2bare}), mu_thetay_tru>0.27 && mu_thetay_tru<0.28));
-  procs_comp_thetay_mu.push_back(Process::MakeShared<Baby_run2_bare>("#theta_{y}^{true}(#mu) > 0.28",
+                                                      set<string>({repofolder+run2bare}), mu_pypz_tru>0.28 && mu_pypz_tru<0.29));
+  procs_comp_pypz_mu.push_back(Process::MakeShared<Baby_run2_bare>("p_{y}^{true}/p_{z}^{true}(#mu) > 0.29",
                                                       Process::Type::background, colors("red"),
-                                                      set<string>({repofolder+run2bare}), mu_thetay_tru>0.28));
+                                                      set<string>({repofolder+run2bare}), mu_pypz_tru>0.29));
+
+  vector<shared_ptr<Process> > procs_comp_pypz_mureco;
+  procs_comp_pypz_mureco.push_back(Process::MakeShared<Baby_run2_bare>("p_{y}^{reco}/p_{z}^{reco}(#mu) < 0.10",
+                                                      Process::Type::background, colors("green"),
+                                                      set<string>({repofolder+run2bare}), mu_pypz<0.10));
+  procs_comp_pypz_mureco.push_back(Process::MakeShared<Baby_run2_bare>("0.10 < p_{y}^{reco}/p_{z}^{reco}(#mu) < 0.20",
+                                                      Process::Type::background, colors("blue"),
+                                                      set<string>({repofolder+run2bare}), mu_pypz>0.10 && mu_pypz<0.20));
+  procs_comp_pypz_mureco.push_back(Process::MakeShared<Baby_run2_bare>("0.20 < p_{y}^{reco}/p_{z}^{reco}(#mu) < 0.25",
+                                                      Process::Type::background, colors("yellow"),
+                                                      set<string>({repofolder+run2bare}), mu_pypz>0.20 && mu_pypz<0.25));
+  procs_comp_pypz_mureco.push_back(Process::MakeShared<Baby_run2_bare>("p_{y}^{reco}/p_{z}^{reco}(#mu) > 0.25",
+                                                      Process::Type::background, colors("red"),
+                                                      set<string>({repofolder+run2bare}), mu_pypz>0.25));
 
 
   NamedFunc mu_eta("mu_eta", [&](const Baby &b){
@@ -286,10 +315,15 @@ int main(int argc, char *argv[]){
   });
 
   
-  pm.Push<Hist1D>(Axis(80, 0, 0.4, mu_thetax, "|p_{x}^{reco}(#mu)/p_{z}^{reco}(#mu)|", {0.361}), "1", procs_comp_thetax_mu, linplot).TopRight("13 TeV");
-  pm.Push<Hist1D>(Axis(62, 0, 0.31, mu_thetay, "|p_{y}^{reco}(#mu)/p_{z}^{reco}(#mu)|"), "1", procs_comp_thetay_mu, linplot).TopRight("13 TeV");
-  pm.Push<Hist1D>(Axis(100, -0.05, 0.05,(mu_thetax_tru - mu_thetax)/mu_thetax, "|p_{x}^{reco}(#mu)/p_{z}^{reco}(#mu)| resolution (true-reco)/reco",{0.01/0.37}),
-                  "1", procs_edgex_mu, linplot).TopRight("13 TeV");
+  pm.Push<Hist1D>(Axis(80, 0, 0.4, mu_pxpz, "|p_{x}^{reco}(#mu)/p_{z}^{reco}(#mu)|", {0.378}), "1", procs_comp_pxpz_mu, lumiplot).TopRight("13 TeV");
+  pm.Push<Hist1D>(Axis(100, -0.05, 0.05,(mu_pxpz_tru - mu_pxpz)/mu_pxpz, "|p_{x}^{reco}(#mu)/p_{z}^{reco}(#mu)| resolution (true-reco)/reco",{0.012/0.39}),
+                  "1", procs_edgex_mu, lumiplot).TopRight("13 TeV");
+  pm.Push<Hist1D>(Axis(100, -0.05, 0.05,(mu_pxpz_tru - mu_pxpz)/mu_pxpz, "|p_{x}^{reco}(#mu)/p_{z}^{reco}(#mu)| resolution (true-reco)/reco",{0.012/0.39}),
+                  "1", procs_comp_pxpz_mureco, shapeplot).TopRight("13 TeV");
+
+  pm.Push<Hist1D>(Axis(62, 0, 0.31, mu_pypz, "|p_{y}^{reco}(#mu)/p_{z}^{reco}(#mu)|"), "1", procs_comp_pypz_mu, lumiplot).TopRight("13 TeV");
+  pm.Push<Hist1D>(Axis(100, -0.05, 0.05,(mu_pypz_tru - mu_pypz)/mu_pypz, "|p_{y}^{reco}(#mu)/p_{z}^{reco}(#mu)| resolution (true-reco)/reco"),
+                  "1", procs_comp_pypz_mureco, shapeplot).TopRight("13 TeV");
 
 
   

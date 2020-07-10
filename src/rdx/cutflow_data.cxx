@@ -69,7 +69,7 @@ int main(int argc, char *argv[]){
   string trig_run1 = L0 + "&&(" + HLT1_run1 + ")&&"+HLT2_run1;
   string trig_run2 = L0 + "&&(" + HLT1_run2 + ")&&"+HLT2_run2;
 
-  string repofolder = "/Users/manuelf/code/lhcb-ntuples-gen/ntuples/";
+  string repofolder = "ntuples/";
   vector<shared_ptr<Process> > procs;
   procs.push_back(Process::MakeShared<Baby_run1>("Data~2012", Process::Type::background, colors("run1"),
                                                 set<string>({repofolder+"pre-0.9.0/Dst-cutflow_data/Dst--20_04_03--cutflow_data--data--2012--md.root"}), trig_run1));

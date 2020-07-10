@@ -100,7 +100,7 @@ int main(int argc, char *argv[]){
   NamedFunc step2_b0 = "Y_ISOLATION_BDT < 0.15 && (Y_ENDVERTEX_CHI2/Y_ENDVERTEX_NDOF) < 6 && Y_MM<5280 && Y_DIRA_OWNPV>0.9995" && b0_dxy < 7;
   
 
-  string repofolder = "/Users/manuelf/code/lhcb-ntuples-gen/ntuples/";
+  string repofolder = "ntuples/";
   vector<shared_ptr<Process> > procs;
   procs.push_back(Process::MakeShared<Baby_run1>("Data 2012", Process::Type::background, colors("run1"),
                                                 set<string>({repofolder+"pre-0.9.0/Dst-cutflow_data/Dst--20_04_03--cutflow_data--data--2012--md.root"}), trig_run1 && step2_k && step2_pi && step2_d0 && step2_mu && step2_dsp && step2_b0));
