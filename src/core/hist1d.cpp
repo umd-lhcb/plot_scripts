@@ -153,7 +153,7 @@ Hist1D::SingleHist1D::SingleHist1D(const Hist1D &figure,
 
 void Hist1D::SingleHist1D::RecordEvent(const Baby &baby){
   const Hist1D& stack = static_cast<const Hist1D&>(figure_);
-  size_t min_vec_size;
+  size_t min_vec_size=0;
   bool have_vec = false;
 
   const NamedFunc &cut = proc_and_hist_cut_;

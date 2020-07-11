@@ -34,7 +34,7 @@ Hist2D::SingleHist2D::SingleHist2D(const Hist2D &figure,
 
 void Hist2D::SingleHist2D::RecordEvent(const Baby &baby){
   const Hist2D& hist = static_cast<const Hist2D&>(figure_);
-  size_t min_vec_size;
+  size_t min_vec_size=0;
   bool have_vec = false;
 
   const NamedFunc &cut = proc_and_hist_cut_;

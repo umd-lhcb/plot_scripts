@@ -337,7 +337,7 @@ void Table::PrintRow(ofstream &file, size_t irow, double luminosity) const{
       }
       file << " & " << totyield << "$\\pm$" << luminosity*GetError(backgrounds_, irow);
     }else if(backgrounds_.size() == 2){
-      double ratio;
+      double ratio=0;
       file.imbue(std::locale(""));
       for(size_t i = 0; i < backgrounds_.size(); ++i){
         file << " & " << setprecision(0)<< luminosity*backgrounds_.at(i)->sumw_.at(irow);
