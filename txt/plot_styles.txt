@@ -25,22 +25,6 @@
   UseCMYK = 0
   LegendColumns = 2
 
-[Kappa]
-  CanvasW	  = 1600
-  CanvasH	  = 700
-  TitleSize	  = 0.076
-  LabelSize	  = 0.054
-  xTitleOffset	  = 1.
-  yTitleOffset	  = 0.5
-  PadLeftMargin	  = 0.075
-  PadRightMargin  = 0.01
-  PadTopMargin	  = 0.09
-  PadBottomMargin = 0.15
-  LegendEntrySize = 0.043
-  NDivisions	  = 708
-  Font		  = 42
-  UseCMYK	  = 0
-
 [Std1D]
   CanvasW	  = 1100
   CanvasH	  = 700

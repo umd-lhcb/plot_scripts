@@ -143,6 +143,7 @@ string CodeToRootTex(string code){
   ReplaceAll(code, "mu_", "#mu ");
   ReplaceAll(code, " PT", " p^{reco}");
   ReplaceAll(code, " TRUEPT", " p^{true}");
+  ReplaceAll(code, "FitVar_q2/1000000", " q^{2}");
 
   ReplaceAll(code, "mom_is_dsp", "mom D^{*+} ");
   
@@ -184,9 +185,10 @@ string MakeDir(string prefix){
   char *dir_name = new char[prefix.size()];
   if(dir_name == nullptr) ERROR("Could not allocate directory name");
   strcpy(dir_name, prefix.c_str());
-  mkdtemp(dir_name);
+  char *unused = mkdtemp(dir_name);
   prefix = dir_name;
   delete[] dir_name;
+  delete[] unused;
   return prefix;
 }
 
@@ -195,7 +197,8 @@ string MakeTemp(string prefix){
   char *file_name = new char[prefix.size()];
   if(file_name == nullptr) ERROR("Could not allocate file name");
   strcpy(file_name, prefix.c_str());
-  mkstemp(file_name);
+  int unused = mkstemp(file_name);
+  unused += 0;
   prefix = file_name;
   delete[] file_name;
   return prefix;

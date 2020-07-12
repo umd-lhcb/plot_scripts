@@ -379,16 +379,23 @@ void Hist1D::Print(double luminosity,
     if(this_opt_.Bottom() != BottomType::off){
       bottom->cd();
 
-
-      if(bot_plots.size()>0) bot_plots.at(0).Draw("e0");
-      bottom_background.Draw("2 same");
-      string draw_opt = "e0 same";
-      for(auto &h: bot_plots){
-        h.Draw(draw_opt.c_str());
-      }
-
-
       horizontal.Draw("same");
+      if(this_opt_.Bottom() == BottomType::pull){
+         TLine horpm2 = horizontal;
+        horpm2.SetLineWidth(1); horpm2.SetLineColor(2);
+        double left = xaxis_.Bins().front();
+        double right = xaxis_.Bins().back();
+        horpm2.DrawLine(left, -2, right, -2);
+        horpm2.DrawLine(left, 2, right, 2);
+        bot_plots.at(0).Draw("p0");
+      } else {
+        if(bot_plots.size()>0) bot_plots.at(0).Draw("e0");
+        bottom_background.Draw("2 same");
+        string draw_opt = "e0 same";
+        for(auto &h: bot_plots){
+          h.Draw(draw_opt.c_str());
+        }
+      }
 
       bottom->RedrawAxis();
       bottom->RedrawAxis("g");
@@ -1017,8 +1024,7 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
 
     ostringstream oss;
     if(top_right_ == "") {
-      if (luminosity_<1.1) oss << "137 fb^{-1} (13 TeV)" << setprecision(1) << flush;
-      else oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
+      oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
     } else oss << top_right_ << flush;
     out.push_back(make_shared<TLatex>(right, bottom+0.2*(top-bottom),
                                       oss.str().c_str()));
@@ -1150,10 +1156,12 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
   out.back().SetMarkerSize(0);
   out.back().SetName(("bot_plot_band_"+counter()).c_str());
 
-  for(int bin = 0; bin <= denom.GetNbinsX()+1; ++bin){
-    denom.SetBinError(bin, 0.);
+  if(this_opt_.Bottom() != BottomType::pull){
+    for(int bin = 0; bin <= denom.GetNbinsX()+1; ++bin){
+      denom.SetBinError(bin, 0.);
+    }
   }
-
+  
   switch(this_opt_.Bottom()){
   case BottomType::ratio:
     for(auto &h: out){
@@ -1163,6 +1171,16 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
   case BottomType::diff:
     for(auto &h: out){
       h = h - denom;
+    }
+    break;
+  case BottomType::pull:
+    for(auto &h: out){
+      for(int bin = 1; bin <= h.GetNbinsX(); ++bin){
+        double hval = h.GetBinContent(bin), herr = h.GetBinErrorUp(bin);
+        double dval = denom.GetBinContent(bin), derr = denom.GetBinErrorUp(bin);
+        h.SetBinContent(bin, (hval-dval)/sqrt(herr*herr + derr*derr));
+        h.SetBinError(bin, 0);
+      }
     }
     break;
   case BottomType::off:
@@ -1212,6 +1230,13 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
       h.SetMaximum(the_max);
       h.GetYaxis()->CenterTitle();
     }
+  }else if(this_opt_.Bottom() == BottomType::pull){
+    for(auto &h: out){
+      h.GetYaxis()->SetTitle("Pull");
+      h.SetMinimum(-5.2);
+      h.SetMaximum(5.2);
+      h.GetYaxis()->CenterTitle();
+    }
   }
   return out;
 }
@@ -1228,7 +1253,7 @@ TLine Hist1D::GetBottomHorizontal() const{
   double y;
   switch(this_opt_.Bottom()){
   case BottomType::ratio: y = 1.; break;
-  case BottomType::diff: y = 0.; break;
+  case BottomType::diff: case BottomType::pull: y = 0.; break;
   case BottomType::off: y = 0.; break;
   default:
     y = 0.;
@@ -1410,6 +1435,8 @@ void Hist1D::AddEntries(vector<shared_ptr<TLegend> > &legends,
       case StackType::signal_on_top:
         /* FALLTHRU */
       case StackType::data_norm:
+        /* FALLTHRU */
+      case StackType::lumi_shapes:
         value = GetYield(h);
         if(value>=1.){
           label += " [N=" + FixedDigits(value, 2) + "]";
@@ -1417,8 +1444,6 @@ void Hist1D::AddEntries(vector<shared_ptr<TLegend> > &legends,
           label += " [N=" + FixedDigits(value, 1) + "]";
         }
         break;
-      case StackType::lumi_shapes:
-        /* FALLTHRU */
       case StackType::shapes:
         value = GetMean(h);
         label += " [#mu=" + FixedDigits(value,3) + "]";

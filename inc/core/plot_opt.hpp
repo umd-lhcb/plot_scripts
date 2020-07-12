@@ -7,7 +7,7 @@
 #include <string>
 
 namespace PlotOptTypes{
-  enum class BottomType{off, ratio, diff};
+  enum class BottomType{off, ratio, diff, pull};
   enum class YAxisType{linear, log};
   enum class TitleType{info, preliminary, simulation, simulation_preliminary, simulation_supplementary, supplementary, data};
   enum class StackType{signal_overlay, signal_on_top, data_norm, lumi_shapes, shapes};
