@@ -104,6 +104,7 @@ Hist2D::Hist2D(const Axis &xaxis, const Axis &yaxis, const NamedFunc &cut,
   cut_(cut),
   weight_("1"),
   tag_(""),
+  top_right_("unset"),
   plot_options_(plot_options),
   backgrounds_(),
   signals_(),
@@ -198,11 +199,30 @@ void Hist2D::MakeOnePlot(const string &subdir){
 
   vector<TLine> lines = GetLines();
   vector<shared_ptr<TLatex> > labels = GetLabels(bkg_is_hist);
-  TLegend legend(this_opt_.LeftMargin(), 1.-this_opt_.TopMargin(),
-                 bkg_is_hist ? 1.-this_opt_.RightMargin() : 1.-0.05, 1.);
-  legend.SetNColumns(datas_.size() + signals_.size() + (bkg_is_hist ? 0 : backgrounds_.size()));
-  legend.SetBorderSize(0);
-  legend.SetFillStyle(4000);
+
+  // Making legends
+  size_t n_columns = datas_.size() + signals_.size() + (bkg_is_hist ? 0 : backgrounds_.size());
+  double left = this_opt_.LeftMargin()+this_opt_.LegendPad();
+  double top = 1;
+  double bottom = 1.-this_opt_.TopMargin() + 0.01;
+  double delta_x = this_opt_.TrueLegendWidth(n_columns);
+  
+  vector<shared_ptr<TLegend> > legends(n_columns);
+  for(size_t i = 0; i < n_columns; ++i){
+    double x = left+i*delta_x;
+    legends.at(i) = make_shared<TLegend>(x, bottom, x+this_opt_.LegendMarkerWidth(), top);
+    legends.at(i)->SetFillStyle(4000);
+    legends.at(i)->SetBorderSize(0);
+    legends.at(i)->SetTextSize(this_opt_.TrueLegendEntryHeight(n_columns));
+    legends.at(i)->SetTextFont(this_opt_.Font());
+  }
+
+  
+  // TLegend legend(this_opt_.LeftMargin(), 1.-this_opt_.TopMargin(),
+  //                bkg_is_hist ? 1.-this_opt_.RightMargin() : 1.-0.05, 1.);
+  // legend.SetNColumns(datas_.size() + signals_.size() + (bkg_is_hist ? 0 : backgrounds_.size()));
+  // legend.SetBorderSize(0);
+  // legend.SetFillStyle(4000);
   
   TH2D bkg_hist = GetBkgHist(bkg_is_hist);
   vector<TGraph> bkg_graphs;
@@ -212,17 +232,17 @@ void Hist2D::MakeOnePlot(const string &subdir){
   vector<TGraph> sig_graphs = GetGraphs(signals_, true);
   vector<TGraph> data_graphs = GetGraphs(datas_, false);
 
-  for(size_t i = 0; i < datas_.size(); ++i){
-    AddEntry(legend, *datas_.at(i), data_graphs.at(i));
-  }
-  for(size_t i = 0; i < signals_.size(); ++i){
-    AddEntry(legend, *signals_.at(i), sig_graphs.at(i));
-  }
-  if(!bkg_is_hist){
-    for(size_t i = 0; i < backgrounds_.size(); ++i){
-      AddEntry(legend, *backgrounds_.at(i), bkg_graphs.at(i));
-    }
-  }
+  // for(size_t i = 0; i < datas_.size(); ++i){
+  //   AddEntry(legend, *datas_.at(i), data_graphs.at(i));
+  // }
+  // for(size_t i = 0; i < signals_.size(); ++i){
+  //   AddEntry(legend, *signals_.at(i), sig_graphs.at(i));
+  // }
+  // if(!bkg_is_hist){
+  //   for(size_t i = 0; i < backgrounds_.size(); ++i){
+  //     AddEntry(legend, *backgrounds_.at(i), bkg_graphs.at(i));
+  //   }
+  // }
 
   bkg_hist.Draw("axis");
   if(bkg_is_hist){
@@ -244,41 +264,27 @@ void Hist2D::MakeOnePlot(const string &subdir){
   for(auto &l: labels){
     l->Draw("same");
   }
-  legend.Draw("same");
+  
+  int ileg=0;
+  for(size_t i = 0; i < datas_.size(); ++i){
+    AddEntry(*legends[ileg], *datas_.at(i), data_graphs.at(i));
+    ileg++;
+  }
+  for(size_t i = 0; i < signals_.size(); ++i){
+    AddEntry(*legends[ileg], *signals_.at(i), sig_graphs.at(i));
+    ileg++;
+  }
+  if(!bkg_is_hist){
+    for(size_t i = 0; i < backgrounds_.size(); ++i){
+      AddEntry(*legends[ileg], *backgrounds_.at(i), bkg_graphs.at(i));
+      ileg++;
+    }
+  }
+for(size_t i = 0; i < n_columns; ++i)
+  legends[i]->Draw("same");
+ 
+  //  legend.Draw("same");
   bkg_hist.Draw("axis same");
-
-    double height = 0.125;
-    double width = 0.125;
-    TPaveText l1(this_opt_.LeftMargin()+0.16,  -0.014,
-		 this_opt_.LeftMargin()+width+0.16, -0.014+height, "NDCNB");
-    TPaveText l2(1.- this_opt_.RightMargin()+0.1-width,  this_opt_.BottomMargin(),
-		 1.- this_opt_.RightMargin()+0.1,  this_opt_.BottomMargin()+height, "NDCNB");
-    TPaveText l3(this_opt_.LeftMargin()+0.16, 1.- this_opt_.TopMargin()-2.0*height,
-		 this_opt_.LeftMargin()+0.16+width, 1.- this_opt_.TopMargin()-height, "NDCNB");
-    TPaveText l4(1.- this_opt_.RightMargin()+0.1-width, 1.- this_opt_.TopMargin()-2.0*height,
-		 1.- this_opt_.RightMargin()+0.1, 1.- this_opt_.TopMargin()-height, "NDCNB");
-
-    TArrow arrow;
-    arrow.SetLineColor(kGray+2); arrow.SetFillColor(kGray+2);
-    arrow.SetArrowSize(0.015); arrow.SetLineWidth(4);
-
-    l1.AddText("R1");
-    l2.AddText("R2");
-    l3.AddText("R3");
-    l4.AddText("R4");
-    
-    SetStyle(l1);
-    SetStyle(l2);
-    SetStyle(l3);
-    SetStyle(l4);
-    if(!bkg_is_hist){
-      l1.Draw("same");
-      l2.Draw("same");
-      l3.Draw("same");
-      l4.Draw("same");
-      arrow.DrawArrow(325, -29, 325, -10);
-   }
-
 
   if(subdir != "") mkdir(("plots/"+subdir).c_str(), 0777);
   string base_name = subdir != ""
@@ -292,7 +298,11 @@ void Hist2D::MakeOnePlot(const string &subdir){
 }
 
 TH2D Hist2D::GetBkgHist(bool bkg_is_hist) const{
-  string units = (xaxis_.units_ == yaxis_.units_) ? (xaxis_.units_+"^{2}") : (xaxis_.units_+"*"+yaxis_.units_);
+  string units = xaxis_.units_+"*"+yaxis_.units_;
+  if(xaxis_.units_ == yaxis_.units_) {
+    if(xaxis_.units_ == "") units ="";
+    else units =xaxis_.units_+"^{2}";
+  }
   string z_title = bkg_is_hist
     ? ("Simulated Events/(" + ToString(xaxis_.AvgBinWidth()*yaxis_.AvgBinWidth())+" "+units+")")
     : "";
@@ -366,7 +376,7 @@ vector<shared_ptr<TLatex> > Hist2D::GetLabels(bool bkg_is_hist) const{
     ERROR("Did not understand title type "+to_string(static_cast<int>(this_opt_.Title())));
   }
   labels.push_back(make_shared<TLatex>(left-0.013, top+0.005,
-                                       "#font[62]{CMS}"));
+                                       "#font[62]{LHCb}"));
   labels.back()->SetNDC();
   labels.back()->SetTextAlign(13);
   labels.back()->SetTextFont(this_opt_.Font());
@@ -389,8 +399,9 @@ vector<shared_ptr<TLatex> > Hist2D::GetLabels(bool bkg_is_hist) const{
   }
 
   ostringstream oss;
-  if (luminosity_<1.1) oss << "137 fb^{-1} (13 TeV)" << flush;
-  else oss << luminosity_ << " fb^{-1} (13 TeV)" << flush;
+  if(top_right_ == "unset") {
+    oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
+  } else oss << top_right_ << flush;
   labels.push_back(make_shared<TLatex>(right, top,
                                        oss.str().c_str()));
   labels.back()->SetNDC();
@@ -421,6 +432,11 @@ Hist2D & Hist2D::Weight(const NamedFunc &weight){
 
 Hist2D & Hist2D::Tag(const std::string &tag){
   tag_ = tag;
+  return *this;
+}
+
+Hist2D & Hist2D::TopRight(const string &label){
+  top_right_ = label;
   return *this;
 }
 

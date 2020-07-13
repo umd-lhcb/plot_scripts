@@ -54,10 +54,12 @@ public:
 
   Hist2D & Weight(const NamedFunc &weight);
   Hist2D & Tag(const std::string &tag);
+  Hist2D & TopRight(const std::string &label);
 
   Axis xaxis_, yaxis_;
   NamedFunc cut_, weight_;
   std::string tag_;
+  std::string top_right_;//!<Label to plot on the right over the plot, typically TeV
   std::vector<PlotOpt> plot_options_;
 
 private:

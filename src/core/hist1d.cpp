@@ -279,7 +279,7 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   cut_(cut),
   weight_("1"),
   tag_(""),
-  top_right_(""),
+  top_right_("unset"),
   left_label_({}),
   right_label_({}),
   yaxis_zoom_(1.),
@@ -379,17 +379,19 @@ void Hist1D::Print(double luminosity,
     if(this_opt_.Bottom() != BottomType::off){
       bottom->cd();
 
-      horizontal.Draw("same");
       if(this_opt_.Bottom() == BottomType::pull){
-         TLine horpm2 = horizontal;
+        bot_plots.at(0).Draw("p0");
+        TLine horpm2 = horizontal;
         horpm2.SetLineWidth(1); horpm2.SetLineColor(2);
         double left = xaxis_.Bins().front();
         double right = xaxis_.Bins().back();
         horpm2.DrawLine(left, -2, right, -2);
         horpm2.DrawLine(left, 2, right, 2);
-        bot_plots.at(0).Draw("p0");
+        horizontal.Draw("same");
+        bot_plots.at(0).Draw("p0 same");
       } else {
         if(bot_plots.size()>0) bot_plots.at(0).Draw("e0");
+        horizontal.Draw("same");
         bottom_background.Draw("2 same");
         string draw_opt = "e0 same";
         for(auto &h: bot_plots){
@@ -961,7 +963,8 @@ void Hist1D::FixYAxis(vector<TH1D> &bottom_plots) const{
     hist->scaled_hist_.SetTitleOffset(offset, "y");
   }
   for(auto &hist: bottom_plots){
-    if(this_opt_.Bottom() != BottomType::ratio) hist.SetTitleOffset(offset, "y");
+    if(this_opt_.Bottom() != BottomType::ratio && this_opt_.Bottom() != BottomType::pull)
+      hist.SetTitleOffset(offset, "y");
   }
 }
 
@@ -1023,7 +1026,7 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
     out.back()->SetTextSize(this_opt_.TitleSize());
 
     ostringstream oss;
-    if(top_right_ == "") {
+    if(top_right_ == "unset") {
       oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
     } else oss << top_right_ << flush;
     out.push_back(make_shared<TLatex>(right, bottom+0.2*(top-bottom),
@@ -1233,9 +1236,10 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
   }else if(this_opt_.Bottom() == BottomType::pull){
     for(auto &h: out){
       h.GetYaxis()->SetTitle("Pull");
-      h.SetMinimum(-5.2);
-      h.SetMaximum(5.2);
+      h.SetMinimum(-5.6);
+      h.SetMaximum(5.6);
       h.GetYaxis()->CenterTitle();
+      h.SetTitleOffset(h.GetTitleOffset("y")/1.7, "y");
     }
   }
   return out;
@@ -1385,9 +1389,7 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
   if(this_opt_.DisplayLumiEntry()){
     auto &leg = legends.at(GetLegendIndex(entries_added, n_entries, legends.size()));
     ostringstream label;
-    if(luminosity_ != 1.0) label << fixed  << "L=" << setprecision(1) << luminosity_ << " fb^{-1}";
-    else label << fixed << setprecision(1) << "L=137 fb^{-1}";
-    //else label << fixed << setprecision(1) << "L=" << 36.8 << " fb^{-1}";
+    label << fixed  << "L=" << setprecision(1) << luminosity_ << " fb^{-1}";
     if(this_opt_.Stack() == StackType::data_norm && datas_.size() > 0){
       label << ", (" << 100.*mc_scale_ << "#pm" << 100.*mc_scale_error_ << ")%";
     }
@@ -1450,6 +1452,11 @@ void Hist1D::AddEntries(vector<shared_ptr<TLegend> > &legends,
         break;
       }
     }
+    // Change baseline of text because seems to be off by default
+    double fudge_offset = -0.18;
+    for(auto &leg: legends)
+      leg->SetEntrySeparation(fudge_offset);
+    
     //Shrink text size if label is long
     double fudge_factor = 0.25;//Not sure how TLegend width affects marker width, but this seems to work
     double max_width = (this_opt_.TrueLegendWidth(n_entries)-this_opt_.LegendMarkerWidth()*fudge_factor) * this_opt_.CanvasWidth();
@@ -1463,6 +1470,8 @@ void Hist1D::AddEntries(vector<shared_ptr<TLegend> > &legends,
       latex.SetTextSize(0.95*latex.GetTextSize());
       for(auto &leg: legends){
         leg->SetTextSize(0.95*leg->GetTextSize());
+        fudge_offset *= 0.5;
+        leg->SetEntrySeparation(fudge_offset);
       }
       latex.GetBoundingBox(width, height);
     }
