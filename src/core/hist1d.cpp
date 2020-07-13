@@ -433,7 +433,7 @@ void Hist1D::Print(double luminosity,
         if(this_opt_.DisplayLumiEntry()) ++num_plots;
         double legend_height = this_opt_.TrueLegendHeight(num_plots);
         double left_bound = this_opt_.LeftMargin()+0.05;
-        double bottom_bound = 1-legend_height-this_opt_.LegendPad()*2-(ilabel+1)*this_opt_.ExtraLabelSize();
+        double bottom_bound = 1-legend_height-0.02-this_opt_.LegendPad()*2-(ilabel+1)*this_opt_.ExtraLabelSize();
         label.DrawLatexNDC(left_bound, bottom_bound, left_label_[ilabel].c_str());
       }
     }
@@ -447,7 +447,7 @@ void Hist1D::Print(double luminosity,
         if(this_opt_.DisplayLumiEntry()) ++num_plots;
         double legend_height = this_opt_.TrueLegendHeight(num_plots);
         double right_bound = 1-this_opt_.RightMargin()-0.03;
-        double bottom_bound = 1-legend_height-0.01-this_opt_.LegendPad()*2-(ilabel+1)*this_opt_.ExtraLabelSize();
+        double bottom_bound = 1-legend_height-0.02-this_opt_.LegendPad()*2-(ilabel+1)*this_opt_.ExtraLabelSize();
         label.DrawLatexNDC(right_bound, bottom_bound, right_label_[ilabel].c_str());
       }
     }
@@ -1107,6 +1107,7 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
   vector<TH1D> out;
   if(backgrounds_.size() != 0){
     denom = backgrounds_.front()->scaled_hist_;
+    if(datas_.size() == 0) ERROR("Need to have at least one data histo to make Ratio plot");
   }else if(datas_.size() != 0){
     denom = datas_.front()->scaled_hist_;
   }else if(signals_.size() != 0){

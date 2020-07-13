@@ -43,11 +43,10 @@ int main(){
   procs.push_back(Process::MakeShared<Baby_run2>("MC: q^{2} > 7 GeV^{2}", Process::Type::background, colors("green"),
                                                  set<string>({ntuple}), "FitVar_q2/1000000>7"));
 
-  // Making plots. Missing mass (plot in GeV^2 by dividing by 1e6)
+  // Making plots. Missing mass plot is set to GeV^2 by dividing by 1e6
   PlotMaker pm;
   pm.Push<Hist1D>(Axis(75, -5, 10,"FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "1", procs, plottypes);
-  pm.min_print_ = true;
-  pm.MakePlots(1);
+  pm.MakePlots(1); // The "1" is the luminosity scaling
 
   time(&endtime);
   cout<<endl<<"Making plots took "<<difftime(endtime, begtime)<<" seconds"<<endl<<endl;

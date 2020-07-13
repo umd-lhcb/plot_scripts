@@ -16,7 +16,7 @@
   LegendMarkerWidth = 0.12
   LegendPad = 0.028
   LegendDensity = 1.
-  ExtraLabelSize = 0.043
+  ExtraLabelSize = 0.035
   LogMinimum = 0.03
   NDivisions = 606
   NDivisionsBottom = 606
