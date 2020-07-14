@@ -72,7 +72,7 @@ the possible formatting options
 
 ![Stacking option plots](various/images/hist1d_stack_options.png)
 
-#### Main `PlotOpt` options (plot styles)
+### Main `PlotOpt` options (plot styles)
 
 The plot styles are the first things to be defined. As shown in the minimal example above, you set the style by creating a `PlotOpt` object typically based on one of the standard formats defined in [txt/plot_styles.txt](https://github.com/umd-lhcb/plot_scripts/blob/master/txt/plot_styles.txt). These set the font types and sizes for titles, labels, and legends, offsets, and canvas dimensions. 
 
@@ -104,7 +104,7 @@ The full list of options is in [inc/core/plot_opt.hpp](https://github.com/umd-lh
 - **`Overflow`**: Determines whether to include the events outside of the X axis (under/overflows). Types are `OverflowType{none, underflow, overflow, both}`.
 
 
-#### Main `Process` options (plot components)
+### Main `Process` options (plot components)
 
 Each `Process` object is pushed into a vector to define a plot component. They are of one of the types define by the tree structures in 
 [txt/variables](https://github.com/umd-lhcb/plot_scripts/tree/master/txt/variables). The full list of options is in [inc/core/process.hpp](https://github.com/umd-lhcb/plot_scripts/blob/master/inc/core/process.hpp). The input arguments are
@@ -113,6 +113,7 @@ Each `Process` object is pushed into a vector to define a plot component. They a
   - `Process::Type::data`: plotted with markers and compared in ratio/pull plots to the sum of `background` plus `signal` components.
   - `Process::Type::background`: plotted with solid histograms and stacked with other `background` and `signal` components.
   - `Process::Type::signal`: same as `background` except in `StackType::signal_overlay` and in tables.
+- **Color**: an integer, a ROOT defined color like `kBlack`, or a user RGB-defined color in [txt/colors.txt](https://github.com/umd-lhcb/plot_scripts/blob/master/txt/colors.txt) like `colors("data")`.
 - **Ntuple file names**: list of files to load trees from. It accepts wildcards on the file names but not on the folders. Repeated files are suppressed thanks to `std::set`.
 - **Selection cuts**: selects a subset of the events in the loaded files. These cuts do not get printed anywhere (plot file name or title with `TitleType::info`, so beware.
 
@@ -133,7 +134,7 @@ For instance, here we use the same ntuple to define three components: muons at h
   vector<shared_ptr<Process> > procs_mu = {mup_high, mupt_high, all_mu};
 ```
 
-#### Main `Hist1D` options
+### Main `Hist1D` options
 
 The `Hist1D` objects are pushed into a `PlotMaker` and generate one plot per plot style defined by the vector of `PlotOpt`. Input arguments for the standard constructor are:
 - **X axis**: An `Axis` object with the constructor `Axis(std::size_t nbins, double xmin, double xmax, const NamedFunc &var, const std::string &title = "", const std::set<double> &cut_vals = {})`
@@ -143,14 +144,7 @@ The `Hist1D` objects are pushed into a `PlotMaker` and generate one plot per plo
 - **List of `Process`**: plot components to be included.
 - **List of `PlotOpt`**: plot styles to be used. Produces one file per style.
 
-The full list of options is in [inc/core/hist1d.hpp](https://github.com/umd-lhcb/plot_scripts/blob/master/inc/core/hist1d.hpp). Some key options that can be changed as it is being pushed to `PlotMaker` are:
-- **`Weight`**: the weight to be used for the `backgroung` and `signal` components as a string or `NamedFunc`, eg, `weight_pid/1000`.
-- **`Tag`**: additional string added to the plot filename to label it or to make it different from other plots being created at the same time. The latter is an issue when you are making plots with the same X-axis variable and cuts, but different binnings or processes, because the latter are not registered in the file name.
-- **`TopRight`**: text to be added to the top right of the plot when not in `TitleType::info`. By default it is set to luminosity (energy), eg `1 ifb (13 TeV)`.
-- **`LeftLabel`** and **`LeftLabel`**: Labels added below the legend. Input is a vector of `string` that are placed on top of each other.
-- **`YAxisZoom`**: changes the Y-axis scale. It is set by default to include all distributions without clipping
-- **`RatioTitle(num, den)`**: title to be used in the bottom plot containing the ratio.
-
+The full list of options is in [inc/core/hist1d.hpp](https://github.com/umd-lhcb/plot_scripts/blob/master/inc/core/hist1d.hpp).
 Some of these options are illustrated below
 
 ![Additional option plots](various/images/hist1d_additional_options.png)
@@ -163,4 +157,51 @@ Some of these options are illustrated below
   pm.Push<Hist1D>(Axis(50, -0.5, 0.5,"(spi_TRUEPT-spi_PT)/spi_PT", "(p_{T}^{true}(#pi_{slow}) - p_{T}^{reco}(#pi_{slow}))/p_{T}^{reco}(#pi_{slow})",{-25/300., 50/300.}),
                   "1", procs_low_spi, plottypes_spi).TopRight("13 TeV").LeftLabel({"Slow pion", "p_{T} resolution"});
 
+```
+
+Some of the key options that can be changed as it is being pushed to `PlotMaker` are:
+- **`Weight`**: the weight to be used for the `backgroung` and `signal` components as a string or `NamedFunc`, eg, `weight_pid/1000`.
+- **`Tag`**: additional string added to the plot filename to label it or to make it different from other plots being created at the same time. The latter is an issue when you are making plots with the same X-axis variable and cuts, but different binnings or processes, because the latter are not registered in the file name.
+- **`TopRight`**: text to be added to the top right of the plot when not in `TitleType::info`. By default it is set to luminosity (energy), eg `1 ifb (13 TeV)`.
+- **`LeftLabel`** and **`LeftLabel`**: Labels added below the legend. Input is a vector of `string` that are placed on top of each other.
+- **`YAxisZoom`**: changes the Y-axis scale. It is set by default to include all distributions without clipping
+- **`RatioTitle(num, den)`**: title to be used in the bottom plot containing the ratio.
+
+
+## 2D plots
+
+Many of the options used to build a `Hist2D` are the same as those described above for the `Hist1D`, except that `Hist2D` takes two `Axis` and that you should define the marker properties on the processes. Here is an example
+
+![Scatter plot](various/images/hist2d_scatter.png)
+
+```c++
+  pm_mu.Push<Hist2D>(Axis(55, -0.6, 0.5, "mu_TRUEP_X/mu_TRUEP_Z", "p_{x}^{true}/p_{z}^{true}(#mu)", {-0.38, 0.38}),
+                  Axis(38, -0.38, 0.38, "mu_TRUEP_Y/mu_TRUEP_Z", "p_{y}^{true}/p_{z}^{true}(#mu)", {-0.28, 0.28}),
+                  "1", procs_mu, scattertype).TopRight("");
+```
+
+The optional underlying histogram is typically used to show how the background is expected to be distributed. The markers on the top are often the actual data. **BEWARE**, the plot is saved by default as `.pdf` file, so the location of each marker is kept in the file. If you plot many events in the scatter plot, the file can be huge and unmanageable. This is not an issue for the underlying histogram.
+
+## Event scans
+
+This functionality emulates ROOT's `TTree::Scan` but with the added power of user-defined functions via `NamedFunc`, the ability to quickly print all events to a file, and the flexibility of having it in the same package as your plots and tables.
+
+For example, the code below prints to a file the run and event numbers as well as the MC IDs of various particles for all events with missing mass greater than 8 GeV^2 that are not truthmatched to signal, normalization, or D**.
+
+```c++
+  pm_mm.Push<EventScan>("eventscan", !is_dsptau && !is_dspmu && !is_dss && "FitVar_Mmiss2/1000000 > 8", 
+                        vector<NamedFunc>{"runNumber", "eventNumber", "mu_MC_MOTHER_ID", "d0_MC_MOTHER_ID",
+                                            "d0_MC_GD_MOTHER_ID", "d0_MC_GD_GD_MOTHER_ID"}, procs_mm).Precision(10);
+```
+
+The `Precision` option controls the digits of precision for `float` variables and the width of the columns. The [output file](https://github.com/umd-lhcb/plot_scripts/blob/master/various/eventscan_SCAN_DataactuallyMC.txt) contains lists the values of the selected variables for all 287 events that pass the selection:
+
+```
+      Row        runNumber      eventNumber  mu_MC_MOTHER_ID  d0_MC_MOTHER_ID d0_MC_GD_MOTHER_ d0_MC_GD_GD_MOTH
+        0          5616918            70792              221             -413              511              513
+        1          5616835             3433              521             -413           -10413             -511
+        2          5616942            84858              313              413              511              513
+        3          5616942            84858              313              413              511              513
+        4          5617022           132703              211             -413              511              513
+      ...
 ```

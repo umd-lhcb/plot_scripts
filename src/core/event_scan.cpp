@@ -23,8 +23,9 @@ EventScan::SingleScan::SingleScan(const EventScan &event_scan,
 void EventScan::SingleScan::RecordEvent(const Baby &baby){
   const EventScan &scan = static_cast<const EventScan&>(figure_);
   int w = scan.width_;
+  bool isVector = !(full_cut_.IsScalar());
 
-  if(full_cut_.IsScalar()){
+  if(!isVector){
     if(!full_cut_.GetScalar(baby)) return;
   }else{
     cut_vector_ = full_cut_.GetVector(baby);
@@ -46,8 +47,9 @@ void EventScan::SingleScan::RecordEvent(const Baby &baby){
     max_size = cut_vector_.size();
   }
 
-  if(max_size > 0 && !(row_ & 0x7)){
-    out_ << "      Row Instance";
+  if(max_size > 0 && (row_ == 0)){
+    out_ << "      Row";
+    if(isVector) out_ <<" Instance";
     for(const auto &col: scan.columns_){
       out_ << ' ' << setw(w) << col.Name().substr(0,scan.width_);
     }
@@ -55,7 +57,8 @@ void EventScan::SingleScan::RecordEvent(const Baby &baby){
   }
 
   for(size_t instance = 0; instance < max_size; ++instance){
-    out_ << setw(9) << row_ << ' ' << setw(8) << instance;
+    out_ << setw(9) << row_;
+    if(isVector) out_ << ' ' << setw(8) << instance;
     for(size_t icol = 0; icol < scan.columns_.size(); ++icol){
       const NamedFunc& col = scan.columns_.at(icol);
       if(col.IsScalar()){

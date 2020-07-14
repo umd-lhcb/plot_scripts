@@ -15,6 +15,7 @@
 #include "core/plot_maker.hpp"
 #include "core/palette.hpp"
 #include "core/table.hpp"
+#include "core/event_scan.hpp"
 #include "core/hist1d.hpp"
 #include "core/hist2d.hpp"
 #include "core/plot_opt.hpp"
@@ -30,8 +31,15 @@ int main(){
   time_t begtime, endtime;
   time(&begtime);
 
+  //// User defined colors
+  Palette colors("txt/colors.txt", "default");
+
+  //// Typically you would only have one PlotMaker so that you do not run on the same ntuples
+  //// several times, but separated them here to make the examples modular and more clear
+  
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////// Defining plot types //////////////////////////////////////////
+  ////////////////////////////////////// 1D plot mmiss sig/norm/D** ///////////////////////////////////////
+
   PlotOpt lin_lumi("txt/plot_styles.txt", "LHCbPaper");
   lin_lumi.Title(TitleType::data)
     .Bottom(BottomType::pull)
@@ -43,22 +51,6 @@ int main(){
   PlotOpt lin_lumi_shapes = lin_shapes().Stack(StackType::lumi_shapes);
   
   vector<PlotOpt> plottypes = {lin_lumi, log_lumi, lin_shapes, lin_lumi_shapes};
-  //vector<PlotOpt> plottypes = {lin_lumi};
-
-  //// Styles for slow pion
-  PlotOpt lin_lumi_spi = lin_lumi().Bottom(BottomType::off).Title(TitleType::simulation);
-  PlotOpt log_lumi_spi = lin_lumi_spi().YAxis(YAxisType::log);
-  vector<PlotOpt> plottypes_spi = {lin_lumi_spi, log_lumi_spi};
-
-  //// Style for scatter plot
-  PlotOpt style("txt/plot_styles.txt", "Scatter");
-  vector<PlotOpt> scattertype = {style().Stack(StackType::signal_on_top).Title(TitleType::data)};
-
-  Palette colors("txt/colors.txt", "default");
-
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////// Defining processes //////////////////////////////////////////
 
   //////// NamedFuncs to select signal, normalization, and D**
   NamedFunc is_dsptau("is_dsptau",[&](const Baby &b){
@@ -74,11 +66,6 @@ int main(){
             (abs(b.mu_MC_MOTHER_ID())==511 && ((abs(b.d0_MC_MOTHER_ID())==415 && abs(b.d0_MC_GD_MOTHER_ID())==511) |
                                               (abs(b.d0_MC_GD_MOTHER_ID())==415 && abs(b.d0_MC_GD_GD_MOTHER_ID())==511))));
   });
-  NamedFunc spi_mom_is_dsp("spi_mom_is_dsp",
-                          [&](const Baby &b){
-                            return ((b.spi_MC_MOTHER_ID()==413) || (b.spi_MC_MOTHER_ID()==-413));
-  });
-
   //////// Signal, normalization, D** processes for mmiss2 plot
   string repofolder = "ntuples/";
   string run2bare = "0.9.0-cutflow/Dst-cutflow_mc/Dst--20_06_05--cutflow_mc--bare--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09b_Trig0x6138160F_Reco16_Turbo03_Stripping26NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root";
@@ -93,7 +80,40 @@ int main(){
   procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D** #mu #nu", Process::Type::background, colors("red"),
                                                       set<string>({repofolder+run2bare}), is_dss));
 
+  PlotMaker pm_mm;
+  // Missing mass (in GeV^2, so need to divide by 1e6)
+  pm_mm.Push<Hist1D>(Axis(75, -5, 10,"FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000>8",
+                  procs_mm, plottypes);
+  pm_mm.Push<Hist1D>(Axis(75, -5, 10,"FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000>8",
+                  procs_mm, plottypes).Tag("example").TopRight("#font[82]{TopRight} label").RatioTitle("Fake data","MC");
+  pm_mm.Push<Table>("pie", vector<TableRow>{
+      TableRow("All events","1", 0,1, "1"),
+        TableRow("$m_\\text{miss}^2 > 3\\text{ GeV}^2$",  "FitVar_Mmiss2/1000000 > 3",0,0, "1"),
+        TableRow("BDT$_\\text{iso}<0.15$",  "FitVar_Mmiss2/1000000 > 3 && b0_ISOLATION_BDT < 0.15",0,0, "1"),
+        },procs_mm,false, true, true, true); // Pushing table and pie charts
+  pm_mm.Push<EventScan>("eventscan", !is_dsptau && !is_dspmu && !is_dss && "FitVar_Mmiss2/1000000 > 8", 
+                        vector<NamedFunc>{"runNumber", "eventNumber", "mu_MC_MOTHER_ID", "d0_MC_MOTHER_ID",
+                                            "d0_MC_GD_MOTHER_ID", "d0_MC_GD_GD_MOTHER_ID"}, procs_mm).Precision(10);
+
+
+  pm_mm.MakePlots(1); // The "1" is the luminosity to rescale the bkg to  
+
+  ////////////////////////////////////// 1D plot mmiss sig/norm/D** ///////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////// Slow pion pT and resolutions /////////////////////////////////////
+
+  PlotOpt lin_lumi_spi = lin_lumi().Bottom(BottomType::off).Title(TitleType::simulation);
+  PlotOpt log_lumi_spi = lin_lumi_spi().YAxis(YAxisType::log);
+  vector<PlotOpt> plottypes_spi = {lin_lumi_spi, log_lumi_spi};
+
   //////// Processes for slow pion plots
+  NamedFunc spi_mom_is_dsp("spi_mom_is_dsp",
+                          [&](const Baby &b){
+                            return ((b.spi_MC_MOTHER_ID()==413) || (b.spi_MC_MOTHER_ID()==-413));
+  });
   vector<shared_ptr<Process> > procs_low_spi;
   procs_low_spi.push_back(Process::MakeShared<Baby_run2_bare>("250 < p_{T}^{reco}(#pi_{slow}) < 500 MeV",
                                                       Process::Type::background, colors("purple"),
@@ -113,6 +133,23 @@ int main(){
                                                       Process::Type::background, colors("red"),
                                                       set<string>({repofolder+run2bare}), "spi_TRUEPT<250"));
 
+ PlotMaker pm_spi;
+  // Slow pion momentum and resolution
+  pm_spi.Push<Hist1D>(Axis(100, 0, 500,"spi_PT", "p_{T}^{reco}(#pi_{slow}) [MeV]",{300}), "spi_TRUEPT>0",
+                  procs_comp_spi,plottypes_spi).TopRight("13 TeV").RightLabel({"Slow pion p_{T}"});
+  pm_spi.Push<Hist1D>(Axis(50, -0.5, 0.5,"(spi_TRUEPT-spi_PT)/spi_PT", "(p_{T}^{true}(#pi_{slow}) - p_{T}^{reco}(#pi_{slow}))/p_{T}^{reco}(#pi_{slow})",{-25/300., 50/300.}),
+                  "1", procs_low_spi, plottypes_spi).TopRight("13 TeV").LeftLabel({"Slow pion", "p_{T} resolution"});
+  pm_spi.MakePlots(1);  // The "1" is the luminosity to rescale the bkg to  
+
+  ////////////////////////////////////// Slow pion pT and resolutions /////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////// 2D scatter plot mu angles ////////////////////////////////////////
+
+  PlotOpt style("txt/plot_styles.txt", "Scatter");
+  vector<PlotOpt> scattertype = {style().Stack(StackType::signal_on_top).Title(TitleType::data)};
   //////// Processes for scatter plot
   auto mup_high = Process::MakeShared<Baby_run2_bare>("p^{reco}(#mu) > 100 GeV", Process::Type::data, kBlack,
                                                       set<string>({repofolder+run2bare}), "mu_P>100000");
@@ -125,31 +162,15 @@ int main(){
   
   vector<shared_ptr<Process> > procs_mu = {mup_high, mupt_high, all_mu};
 
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////
-  ////////////////////////////////////////// Defining histograms //////////////////////////////////////////
-  
-
-  PlotMaker pm;
-
-  // Missing mass (in GeV^2, so need to divide by 1e6)
-  pm.Push<Hist1D>(Axis(75, -5, 10,"FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000>8",
-                  procs_mm, plottypes);
-  pm.Push<Hist1D>(Axis(75, -5, 10,"FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000>8",
-                  procs_mm, plottypes).Tag("example").TopRight("#font[82]{TopRight} label").RatioTitle("Fake data","MC");
-
-  // Slow pion momentum and resolution
-  pm.Push<Hist1D>(Axis(100, 0, 500,"spi_PT", "p_{T}^{reco}(#pi_{slow}) [MeV]",{300}), "spi_TRUEPT>0",
-                  procs_comp_spi,plottypes_spi).TopRight("13 TeV").RightLabel({"Slow pion p_{T}"});
-  pm.Push<Hist1D>(Axis(50, -0.5, 0.5,"(spi_TRUEPT-spi_PT)/spi_PT", "(p_{T}^{true}(#pi_{slow}) - p_{T}^{reco}(#pi_{slow}))/p_{T}^{reco}(#pi_{slow})",{-25/300., 50/300.}),
-                  "1", procs_low_spi, plottypes_spi).TopRight("13 TeV").LeftLabel({"Slow pion", "p_{T} resolution"});
-
-  // Scatter plot of muon
-  pm.Push<Hist2D>(Axis(55, -0.6, 0.5, "mu_TRUEP_X/mu_TRUEP_Z", "p_{x}^{true}/p_{z}^{true}(#mu)", {-0.38, 0.38}),
+  PlotMaker pm_mu;
+  pm_mu.Push<Hist2D>(Axis(55, -0.6, 0.5, "mu_TRUEP_X/mu_TRUEP_Z", "p_{x}^{true}/p_{z}^{true}(#mu)", {-0.38, 0.38}),
                   Axis(38, -0.38, 0.38, "mu_TRUEP_Y/mu_TRUEP_Z", "p_{y}^{true}/p_{z}^{true}(#mu)", {-0.28, 0.28}),
                   "1", procs_mu, scattertype).TopRight("");
- 
-  pm.MakePlots(1);
+  pm_mu.MakePlots(1);  // The "1" is the luminosity to rescale the bkg to  
+
+  ////////////////////////////////////// 2D scatter plot mu angles ////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
   time(&endtime);
   cout<<endl<<"Making plots took "<<difftime(endtime, begtime)<<" seconds"<<endl<<endl;

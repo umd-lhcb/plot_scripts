@@ -144,6 +144,8 @@ string CodeToRootTex(string code){
   ReplaceAll(code, " PT", " p^{reco}");
   ReplaceAll(code, " TRUEPT", " p^{true}");
   ReplaceAll(code, "FitVar_q2/1000000", " q^{2}");
+  ReplaceAll(code, "FitVar_Mmiss2/1000000", " m^{2}_{miss}");
+  ReplaceAll(code, "b0_ISOLATION_BDT", " BDT_{iso}");
 
   ReplaceAll(code, "mom_is_dsp", "mom D^{*+} ");
   

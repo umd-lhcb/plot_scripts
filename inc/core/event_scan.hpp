@@ -39,7 +39,7 @@ class EventScan final : public Figure{
            const NamedFunc &cut,
            const std::vector<NamedFunc> &columns,
            const std::vector<std::shared_ptr<Process> > &processes,
-	   unsigned precision = 10);
+	   unsigned precision = 8);
  EventScan(EventScan &&) = default;
  EventScan& operator=(EventScan &&) = default;
  ~EventScan() = default;
