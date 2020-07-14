@@ -12,6 +12,13 @@ functions, described below. These all rely on defining the branch structure befo
 
 Originally created by Adam Dishaw at [https://github.com/richstu/ra4_draw](https://github.com/richstu/ra4_draw).
 
+- [Setup and overview](https://github.com/umd-lhcb/plot_scripts/blob/master/README.md#setup-and-overview)
+- [1D plots](https://github.com/umd-lhcb/plot_scripts/blob/master/README.md#1d-plots)
+- [Inner workings and `NamedFunc`](https://github.com/umd-lhcb/plot_scripts/blob/master/README.md#Inner-workings-and-NamedFunc)
+- [Tables and pie charts](https://github.com/umd-lhcb/plot_scripts/blob/master/README.md#tables-and-pie-charts)
+- [2D plots](https://github.com/umd-lhcb/plot_scripts/blob/master/README.md#2d-plots)
+- [Event scans](https://github.com/umd-lhcb/plot_scripts/blob/master/README.md#event-scans)
+
 
 ## Setup and overview
 Compilation requires `c++11` and `ROOT 6`. To compile it and run a minimal example, type in your terminal
@@ -167,6 +174,36 @@ Some of the key options that can be changed as it is being pushed to `PlotMaker`
 - **`YAxisZoom`**: changes the Y-axis scale. It is set by default to include all distributions without clipping
 - **`RatioTitle(num, den)`** (**Fig. 2a**): title to be used in the bottom plot containing the ratio.
 
+
+## Inner workings and `NamedFunc`
+
+When this project is compile, [src/core/generate_baby.cxx](https://github.com/umd-lhcb/plot_scripts/blob/master/src/core/generate_baby.cxx) is compiled and executed first. This script reads all the tree structures from [txt/variables](https://github.com/umd-lhcb/plot_scripts/tree/master/txt/variables) and produces `c++` classes named `Baby_<filename>` with functions calling each branch of each tree. This is done in an efficient way so that **only branches needed for that event are loaded from disk**. Even if a branch is used multiple times it is only read from disk once.
+
+**`PlotMaker` loops over each ntuple file just once**, even if that file is used in multiple processes and multiple plots, so it is reasonable efficient. However, something may be wrong with the implemenation because time does increase with the number of plots faster than one would expect from CPU limitations. Perhaps `NamedFunc` are memory inefficient.
+
+Cuts and weights are stored in `NamedFunc`. This is a flexible class that accepts strings in its constructor similar to the string used in `ROOT`, eg `mu_P/1000 > 3 && mu_PT/1000 > 0.5`. This string is parsed before looping over the events in the ntuples, so the loop itself is very fast.
+Arithmetic and logical operators, parentheses, and vector operations are implemented. Other features such as functions, eg `log()` or `abs()`, may come in the future. 
+
+One of the main features of `NamedFunc` is that you can mix the strings with custom c++ functions. For instance, the example below applies different trigger cuts depending on the name of the ntuple file, and makes a plot with a `q2 > 8` cut given by the string (which is transformed to a `NamedFunc`) and the `trigger` cut given by the `NamedFunc`:
+
+```c++
+  //////// NamedFunc to apply different trigger to Run 1 and Run 2
+  NamedFunc trigger("trigger",[&](const Baby &b){
+    set<std::string> files = b.FileNames();
+    TString firstfile = *files.cbegin();
+    bool L0 = b.mu_L0Global_TIS() && (b.b0_L0Global_TIS() || b.dst_L0HadronDecision_TOS());
+    if(firstfile.Contains("2011") || firstfile.Contains("2012"))
+      return L0 && (b.Kplus_Hlt1TrackAllL0Decision_TOS() || b.piminus0_Hlt1TrackAllL0Decision_TOS())
+        && b.D0_Hlt2CharmHadD02HH_D02KPiDecision_TOS();
+    else
+      return L0 && (b.k_Hlt1TrackMVALooseDecision_TOS() || b.pi_Hlt1TrackMVALooseDecision_TOS()
+                    || b.d0_Hlt1TwoTrackMVADecision_TOS()) && b.d0_Hlt2XcMuXForTauB2XcMuDecision_Dec();
+  });
+
+  pm_mm.Push<Hist1D>(Axis(75, -5, 10,"FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), 
+                     "FitVar_q2/1000000>8" && trigger, procs_mm, plottypes);
+
+```
 
 ## Tables and pie charts
 
