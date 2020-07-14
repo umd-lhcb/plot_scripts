@@ -107,7 +107,7 @@ std::string ToLongString(const T& x){
 }
 
 TString HoursMinSec(float fseconds);
-TString AddCommas(double num);
+TString AddCommas(double num, int decimals=0);
 TString RoundNumber(double num, int decimals, double denom=1.);
 
 double Significance(double Nobs, double Nbkg, double Eup_bkg, double Edown_bkg=-1.);

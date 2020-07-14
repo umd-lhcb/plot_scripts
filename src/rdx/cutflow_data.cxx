@@ -118,6 +118,28 @@ int main(int argc, char *argv[]){
                                return b.Y_FD_OWNPV()*sin(b.Y_FlightDir_Zangle());
   });
 
+  ///////// Automatically appending cutflow cuts
+  vector<NamedFunc> cuts = {"1", "(Kplus_PT > 800) && (!Kplus_isMuon) && Kplus_IPCHI2_OWNPV > 45",
+                            "(piminus0_PT > 800) && (!piminus0_isMuon) && piminus0_IPCHI2_OWNPV > 45",
+                            "D0_P>2000 && D0_FDCHI2_OWNPV > 250 && (D0_MM-1864.83) < 23.4 && (D0_MM-1864.83) > -23.4 && (Kplus_PT>1700 || piminus0_PT>1700) && D0_IPCHI2_OWNPV > 9"
+                            && log_ip > -3.5,
+                            "muplus_isMuon && muplus_PIDmu > 2 && muplus_PIDe < 1 && muplus_P < 100000"
+                            && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5,
+                            "piminus_TRACK_GhostProb < 0.5 && (Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF) < 10 && (Dst_2010_minus_MM - D0_MM-145.43) < 2 &&  (Dst_2010_minus_MM - D0_MM-145.43) > -2",
+                            "Y_ISOLATION_BDT < 0.15 && (Y_ENDVERTEX_CHI2/Y_ENDVERTEX_NDOF) < 6 && Y_MM<5280 && Y_DIRA_OWNPV>0.9995" && b0_dxy < 7};
+  
+                            
+  vector<string> rownames = {"Trig. + Strip.", "Kaon", "Pion", "$D^0 \\rightarrow K \\pi$","$\\mu$",
+                             "$D^{*+} \\rightarrow D^0 \\pi$", "$B^{0} \\rightarrow D^{*+} \\mu$"};
+  vector<TableRow> table_rows;
+  NamedFunc fullcut = "1";
+  for(size_t ind = 0; ind < cuts.size(); ind++) {
+    string title = (ind==0 ? rownames[ind] : "+ " + rownames[ind]);
+    int lines = (ind==0 ? 1 : 0);
+    fullcut = fullcut && cuts[ind];
+    table_rows.push_back(TableRow(title,fullcut, 0,lines, "1"));
+  }
+  
   //////////////////////// Step 2 cuts ////////////////////////
   NamedFunc step2_k   = "(Kplus_PT > 800) && (!Kplus_isMuon) && Kplus_IPCHI2_OWNPV > 45"; 
   NamedFunc step2_pi   = "(piminus0_PT > 800) && (!piminus0_isMuon) && piminus0_IPCHI2_OWNPV > 45";
@@ -127,20 +149,10 @@ int main(int argc, char *argv[]){
   // Added the spi cut here since it does nothing
   NamedFunc step2_dsp = "piminus_TRACK_GhostProb < 0.5 && (Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF) < 10 && (Dst_2010_minus_MM - D0_MM-145.43) < 2 &&  (Dst_2010_minus_MM - D0_MM-145.43) > -2";
   NamedFunc step2_b0 = "Y_ISOLATION_BDT < 0.15 && (Y_ENDVERTEX_CHI2/Y_ENDVERTEX_NDOF) < 6 && Y_MM<5280 && Y_DIRA_OWNPV>0.9995" && b0_dxy < 7;
-  
-
+ 
 
   PlotMaker pm;
-  pm.Push<Table>("cutflow", vector<TableRow>{
-  TableRow("Trig. + Strip.","1", 0,0, "1"),
-    TableRow("Kaon", step2_k,0,0, "1"),
-    TableRow("Pion", step2_k && step2_pi, 0,0, "1"),
-    TableRow("$D^0 \\rightarrow K \\pi$", step2_k && step2_pi && step2_d0,0,0, "1"),
-    TableRow("$\\mu$", step2_k && step2_pi && step2_d0 && step2_mu,0,0, "1"),
-    TableRow("$D^{*+} \\rightarrow D^0 \\pi$", step2_k && step2_pi && step2_d0 && step2_mu && step2_dsp,0,0, "1"),
-    TableRow("$B^{0} \\rightarrow D^{*+} \\mu$", step2_k && step2_pi && step2_d0 && step2_mu && step2_dsp && step2_b0,0,0, "1"),
-
-    },procs,0); // Pushing table
+  pm.Push<Table>("cutflow", table_rows,procs,0).TotColumn("Ratio", 1/(0.82*1.81)); // Pushing table
   
   pm.min_print_ = true;
   pm.MakePlots(1);

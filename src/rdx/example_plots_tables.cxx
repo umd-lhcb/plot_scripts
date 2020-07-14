@@ -52,6 +52,18 @@ int main(){
   
   vector<PlotOpt> plottypes = {lin_lumi, log_lumi, lin_shapes, lin_lumi_shapes};
 
+  //////// NamedFunc to apply different trigger to Run 1 and Run 2
+  NamedFunc trigger("trigger",[&](const Baby &b){
+    set<std::string> files = b.FileNames();
+    TString firstfile = *files.cbegin();
+    bool L0 = b.mu_L0Global_TIS() && (b.b0_L0Global_TIS() || b.dst_L0HadronDecision_TOS());
+    if(firstfile.Contains("2011") || firstfile.Contains("2012"))
+      return L0 && (b.Kplus_Hlt1TrackAllL0Decision_TOS() || b.piminus0_Hlt1TrackAllL0Decision_TOS())
+        && b.D0_Hlt2CharmHadD02HH_D02KPiDecision_TOS();
+    else
+      return L0 && (b.k_Hlt1TrackMVALooseDecision_TOS() || b.pi_Hlt1TrackMVALooseDecision_TOS()
+                    || b.d0_Hlt1TwoTrackMVADecision_TOS()) && b.d0_Hlt2XcMuXForTauB2XcMuDecision_Dec();
+  });
   //////// NamedFuncs to select signal, normalization, and D**
   NamedFunc is_dsptau("is_dsptau",[&](const Baby &b){
       return (abs(b.mu_MC_MOTHER_ID())==15 && abs(b.d0_MC_MOTHER_ID())==413 && abs(b.d0_MC_GD_MOTHER_ID())==511);
@@ -73,24 +85,47 @@ int main(){
   vector<shared_ptr<Process> > procs_mm;
   procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("Data (actually MC)",Process::Type::data, colors("data"),
                                                       set<string>({repofolder+run2bare}), "1"));
-  procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D*^{+} #tau #nu", Process::Type::signal, colors("green"),
+  procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D^{*+} #tau #nu", Process::Type::signal, colors("green"),
                                                       set<string>({repofolder+run2bare}), is_dsptau));
-  procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D*^{+} #mu #nu", Process::Type::background, colors("blue"),
+  procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D^{*+} #mu #nu", Process::Type::background, colors("blue"),
                                                       set<string>({repofolder+run2bare}), is_dspmu));
-  procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D** #mu #nu", Process::Type::background, colors("red"),
+  procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D^{**} #mu #nu", Process::Type::background, colors("red"),
                                                       set<string>({repofolder+run2bare}), is_dss));
 
+
+  ///////// Automatically appending cutflow cuts
+  vector<NamedFunc> cuts = {"1", trigger, "FitVar_Mmiss2/1000000 > 3", "FitVar_q2/1000000 > 7", "b0_ISOLATION_BDT < 0.15"};
+  vector<string> rownames = {"All events", "Trigger", "$m_\\text{miss}^2 > 3\\text{ GeV}^2$", "$q^2 > 7\\text{ GeV}^2$",
+                             "BDT$_\\text{iso}<0.15$"};
+  vector<TableRow> table_rows;
+  NamedFunc fullcut = "1";
+  for(size_t ind = 0; ind < cuts.size(); ind++) {
+    string title = (ind==0 ? rownames[ind] : "+ " + rownames[ind]);
+    int lines = (ind==0 ? 1 : 0);
+    fullcut = fullcut && cuts[ind];
+    table_rows.push_back(TableRow(title,fullcut, 0,lines, "1"));
+  }
+  
   PlotMaker pm_mm;
   // Missing mass (in GeV^2, so need to divide by 1e6)
   pm_mm.Push<Hist1D>(Axis(75, -5, 10,"FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000>8",
                   procs_mm, plottypes);
   pm_mm.Push<Hist1D>(Axis(75, -5, 10,"FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000>8",
                   procs_mm, plottypes).Tag("example").TopRight("#font[82]{TopRight} label").RatioTitle("Fake data","MC");
-  pm_mm.Push<Table>("pie", vector<TableRow>{
-      TableRow("All events","1", 0,1, "1"),
-        TableRow("$m_\\text{miss}^2 > 3\\text{ GeV}^2$",  "FitVar_Mmiss2/1000000 > 3",0,0, "1"),
-        TableRow("BDT$_\\text{iso}<0.15$",  "FitVar_Mmiss2/1000000 > 3 && b0_ISOLATION_BDT < 0.15",0,0, "1"),
-        },procs_mm, true, true, true, true, true, true).Precision(1); // Pushing table and pie charts
+  // Pushing table and pie charts
+  pm_mm.Push<Table>("optimization", vector<TableRow>{
+      TableRow("All events","1", 0,2, "1"),
+        TableRow("BDT$_\\text{iso}<0.10$",  "b0_ISOLATION_BDT < 0.10",0,0, "1"),
+        TableRow("BDT$_\\text{iso}<0.15$",  "b0_ISOLATION_BDT < 0.15",0,0, "1"),
+        TableRow("BDT$_\\text{iso}<0.20$",  "b0_ISOLATION_BDT < 0.20",0,1, "1"),
+        TableRow("$m_\\text{miss}^2 > 3\\text{ GeV}^2$, BDT$_\\text{iso}<0.10$",
+                 "FitVar_Mmiss2/1000000 > 3 && b0_ISOLATION_BDT < 0.10",0,0, "1"),
+        TableRow("$m_\\text{miss}^2 > 3\\text{ GeV}^2$, BDT$_\\text{iso}<0.15$",
+                 "FitVar_Mmiss2/1000000 > 3 && b0_ISOLATION_BDT < 0.15",0,0, "1"),
+        TableRow("$m_\\text{miss}^2 > 3\\text{ GeV}^2$, BDT$_\\text{iso}<0.20$",
+                 "FitVar_Mmiss2/1000000 > 3 && b0_ISOLATION_BDT < 0.20",0,0, "1"),
+        }, procs_mm, true, true).TotColumn("None");//do_fom, do_unc
+  pm_mm.Push<Table>("pie", table_rows, procs_mm, true, true, true, true, true, true); //do_fom, do_unc, do_eff, print_table,print_pie,print_titlepie
   pm_mm.Push<EventScan>("eventscan", !is_dsptau && !is_dspmu && !is_dss && "FitVar_Mmiss2/1000000 > 8", 
                         vector<NamedFunc>{"runNumber", "eventNumber", "mu_MC_MOTHER_ID", "d0_MC_MOTHER_ID",
                                             "d0_MC_GD_MOTHER_ID", "d0_MC_GD_GD_MOTHER_ID"}, procs_mm).Precision(10);

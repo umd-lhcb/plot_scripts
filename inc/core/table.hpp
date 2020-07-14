@@ -38,9 +38,9 @@ public:
   Table(const std::string &name,
 	const std::vector<TableRow> &rows,
 	const std::vector<std::shared_ptr<Process> > &processes,
-	bool do_fom=true,
-	bool do_unc=true,
-	bool do_eff=true,
+	bool do_unc=false,
+	bool do_fom=false,
+	bool do_eff=false,
 	bool print_table=true,
 	bool print_pie=false,
 	bool print_titlepie=true);
@@ -61,15 +61,18 @@ public:
   
   std::string name_;
   std::vector<TableRow> rows_;
-  bool do_fom_;
   bool do_unc_;
+  bool do_fom_;
   bool do_eff_;
   bool print_table_;
   bool print_pie_;
   bool print_titlepie_;
+  std::string tot_title_;
+  double tot_factor_;
   double precision_;
   std::vector<PlotOpt> plot_options_;//!<Styles with which to draw pie chart
 
+  Table & TotColumn(const std::string &title, const double &factor=1.);
   Table & Precision(const double &precision);
   
 private:

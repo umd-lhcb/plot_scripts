@@ -168,17 +168,89 @@ Some of the key options that can be changed as it is being pushed to `PlotMaker`
 - **`RatioTitle(num, den)`** (**Fig. 2a**): title to be used in the bottom plot containing the ratio.
 
 
+## Tables and pie charts
+
+Both tables and pie charts and produced with the `Table` class. A simple table to optimize the `BDTiso` cut in the full would look like
+
+```c++
+  pm_mm.Push<Table>("optimization", vector<TableRow>{
+      TableRow("All events","1", 0,2, "1"),
+        TableRow("BDT$_\\text{iso}<0.10$",  "b0_ISOLATION_BDT < 0.10",0,0, "1"),
+        TableRow("BDT$_\\text{iso}<0.15$",  "b0_ISOLATION_BDT < 0.15",0,0, "1"),
+        TableRow("BDT$_\\text{iso}<0.20$",  "b0_ISOLATION_BDT < 0.20",0,1, "1"),
+        TableRow("$m_\\text{miss}^2 > 3\\text{ GeV}^2$, BDT$_\\text{iso}<0.10$",
+                 "FitVar_Mmiss2/1000000 > 3 && b0_ISOLATION_BDT < 0.10",0,0, "1"),
+        TableRow("$m_\\text{miss}^2 > 3\\text{ GeV}^2$, BDT$_\\text{iso}<0.15$",
+                 "FitVar_Mmiss2/1000000 > 3 && b0_ISOLATION_BDT < 0.15",0,0, "1"),
+        TableRow("$m_\\text{miss}^2 > 3\\text{ GeV}^2$, BDT$_\\text{iso}<0.20$",
+                 "FitVar_Mmiss2/1000000 > 3 && b0_ISOLATION_BDT < 0.20",0,0, "1"),
+        }, procs_mm, true, true).TotColumn("None");//do_fom, do_unc
+```
+
+![Optimization table](various/images/table_optimization.png)
+
+The constructor of `Table` is
+
+```c++
+  Table(const std::string &name, const std::vector<TableRow> &rows,	const std::vector<std::shared_ptr<Process> > &processes,
+        bool do_unc=false, bool do_fom=false, bool do_eff=false, bool print_table=true, bool print_pie=false, bool print_titlepie=true);
+```
+
+- **`name`**: Used to describe the table and added to the file name
+- **`rows`**: A vector of `TableRow` whose arguments are
+  - **Row title**: String describing the cuts for each row printed in the first column. By convention, the titles for cutflows start with `+ `.
+  - **Cuts**: A `NamedFunc`.
+  - **Lines before** and **lines after** row: it adds this number of `\hline` before and after the row.
+  - **Weight**: A `NamedFunc`.
+- **`processes`**: List of `Process` to calculate yields on. It will print one column per process, plus some other calculations
+- **`do_unc`**: Include the uncertainty in the total MC yield.
+- **`do_fom`**: Add a column with the figure of merit. Currently, `S/sqrt(S+B)`, where the signals are defined in the `Process` vector.
+- **`do_eff`**: Add a column with the efficiency with respect to the previous row.
+- **`print_table`**: Produce the `.tex` file. When only interested in the pie charts typically set to `false`.
+- **`print_pie`**: Produce pie charts, one per row.
+- **`print_pie_title`**: Add a title with cuts and yields to pie charts.
+
+Two additional member functions of `Table` are useful:
+- **`Precision`**: Sets the number of decimal to print on the MC yields.
+- **`TotColum`**: Set the title of the `SM Tot.` column with the total MC yield.
+  - If set to `None`, this column is not printed
+  - If set to `Ratio`, this column prints the ratio of the first two MC processes, scaled by an optional argument `factor`.
+
+
+An example of a cutflow table that prints the pie charts is
+
+```c++
+  ///////// Automatically appending cutflow cuts
+  vector<NamedFunc> cuts = {"1", trigger, "FitVar_Mmiss2/1000000 > 3", "FitVar_q2/1000000 > 7", "b0_ISOLATION_BDT < 0.15"};
+  vector<string> rownames = {"All events", "Trigger", "$m_\\text{miss}^2 > 3\\text{ GeV}^2$", "$q^2 > 7\\text{ GeV}^2$",
+                             "BDT$_\\text{iso}<0.15$"};
+  vector<TableRow> table_rows;
+  NamedFunc fullcut = "1";
+  for(size_t ind = 0; ind < cuts.size(); ind++) {
+    string title = (ind==0 ? rownames[ind] : "+ " + rownames[ind]);
+    int lines = (ind==0 ? 1 : 0);
+    fullcut = fullcut && cuts[ind];
+    table_rows.push_back(TableRow(title,fullcut, 0,lines, "1"));
+  }
+  pm_mm.Push<Table>("pie", table_rows, procs_mm, true, true, true, true, true, true); //do_fom, do_unc, do_eff, print_table,print_pie,print_titlepie
+```
+
+![Cutflow table](various/images/table_cutflow_mc.png)
+
+![Pie charts](various/images/pie_charts.png)
+
+
 ## 2D plots
 
 Many of the options used to build a `Hist2D` are the same as those described above for the `Hist1D`, except that `Hist2D` takes two `Axis` and that you should define the marker properties on the processes. Here is an example
-
-![Scatter plot](various/images/hist2d_scatter.png)
 
 ```c++
   pm_mu.Push<Hist2D>(Axis(55, -0.6, 0.5, "mu_TRUEP_X/mu_TRUEP_Z", "p_{x}^{true}/p_{z}^{true}(#mu)", {-0.38, 0.38}),
                   Axis(38, -0.38, 0.38, "mu_TRUEP_Y/mu_TRUEP_Z", "p_{y}^{true}/p_{z}^{true}(#mu)", {-0.28, 0.28}),
                   "1", procs_mu, scattertype).TopRight("");
 ```
+
+![Scatter plot](various/images/hist2d_scatter.png)
 
 The optional underlying histogram is typically used to show how the background is expected to be distributed. The markers on the top are often the actual data. **BEWARE**, the plot is saved by default as `.pdf` file, so the location of each marker is kept in the file. If you plot many events in the scatter plot, the file can be huge and unmanageable. This is not an issue for the underlying histogram.
 

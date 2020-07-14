@@ -105,8 +105,8 @@ void Table::TableColumn::RecordEvent(const Baby &baby){
 Table::Table(const string &name,
              const vector<TableRow> &rows,
              const vector<shared_ptr<Process> > &processes,
-	     bool do_fom,
              bool do_unc,
+	     bool do_fom,
              bool do_eff,
 	     bool print_table,
 	     bool print_pie,
@@ -114,12 +114,14 @@ Table::Table(const string &name,
   Figure(),
   name_(name),
   rows_(rows),
-  do_fom_(do_fom),
   do_unc_(do_unc),
+  do_fom_(do_fom),
   do_eff_(do_eff),
   print_table_(print_table),
   print_pie_(print_pie),
   print_titlepie_(print_titlepie),
+  tot_title_("SM Tot."),
+  tot_factor_(1.),
   precision_(0),
   plot_options_({PlotOpt("txt/plot_styles.txt", "Pie")}),
   backgrounds_(),
@@ -153,7 +155,7 @@ void Table::Print(double luminosity,
     ? "tables/"+subdir+"/"+name_+"_lumi_"+fmt_lumi+".tex"
     : "tables/"+name_+"_lumi_"+fmt_lumi+".tex";
   std::ofstream file(file_name);
-  file << fixed << setprecision(precision_);
+  file  << fixed << setprecision(precision_);
   PrintHeader(file, luminosity);
   for(size_t i = 0; i < rows_.size(); ++i){
     PrintRow(file, i, luminosity);
@@ -161,7 +163,7 @@ void Table::Print(double luminosity,
   PrintFooter(file, luminosity);
   file << flush;
   file.close();
-  cout << " pdflatex " << file_name << " &> /dev/null; #./python/texify.py tables" << endl;
+  cout << " pdflatex " << file_name << " &> /dev/null;" << endl;
 }
 
 vector<GammaParams> Table::Yield(const Process *process, double luminosity) const{
@@ -260,7 +262,7 @@ void Table::PrintHeader(ofstream &file, double luminosity) const{
   if(nSM > 0) file << " | ";
   for(size_t i = 0; i < backgrounds_.size(); ++i) file << 'r';
   for(size_t i = 0; i < signals_.size(); ++i) file << 'r';
-  if(nSM > 1) file << " | r";
+  if(nSM > 1 && tot_title_ != "None") file << " | r";
 
   // Figure of merit
   if(do_fom_ && signals_.size() >= 1) {
@@ -294,11 +296,14 @@ void Table::PrintHeaderFooter(ofstream &file, double luminosity) const{
 
   size_t nSM = backgrounds_.size() + signals_.size();
   file <<" \\multicolumn{1}{c|}{${\\cal L} = "<<setprecision(1)<<luminosity<<"$ fb$^{-1}$} "
-       << fixed << setprecision(precision_);
+        << setprecision(precision_);
 
   for(size_t i = 0; i < backgrounds_.size(); ++i) file << " & " << ToLatex(backgrounds_.at(i)->process_->name_);
   for(size_t i = 0; i < signals_.size(); ++i) file << " & " << ToLatex(signals_.at(i)->process_->name_);
-  if(nSM > 1) file << " & SM Tot. ";
+  if(nSM > 1 && tot_title_ != "None") {
+    file << " & " << tot_title_;
+    if(tot_title_ == "Ratio" && tot_factor_ != 1) file << " $\\times$ "<<RoundNumber(tot_factor_,2);
+  }
   if(do_fom_ && signals_.size() >= 1)
     for(size_t i = 0; i < signals_.size(); ++i) file<<" & $\\frac{S}{\\sqrt{S+B}}$ ";
   if(do_eff_ && nSM > 0) file<<" & $\\epsilon_\\text{prev}$ [\\%] ";
@@ -324,38 +329,41 @@ void Table::PrintRow(ofstream &file, size_t irow, double luminosity) const{
   size_t nSM = backgrounds_.size() + signals_.size();
   if(row.is_data_row_){
     file << "    " << row.label_;
-    if(nSM >= 1){
-      for(size_t i = 0; i < backgrounds_.size(); ++i)
-        file << " & " << fixed << AddCommas(luminosity*backgrounds_.at(i)->sumw_.at(irow));
-      for(size_t i = 0; i < signals_.size(); ++i)
-        file << " & " << fixed << luminosity*signals_.at(i)->sumw_.at(irow);
 
-      if(nSM > 1){
-        file << " & " << Nbkg + Nsig;
-        if(do_unc_) file << "$\\pm$" << fixed << luminosity*GetError(backgrounds_, irow);
-      }
+    // Adding MC bkg and signal yields
+    for(size_t i = 0; i < backgrounds_.size(); ++i)
+      file << " & "  << AddCommas(luminosity*backgrounds_.at(i)->sumw_.at(irow), precision_);
+    for(size_t i = 0; i < signals_.size(); ++i)
+      file << " & "  << AddCommas(luminosity*signals_.at(i)->sumw_.at(irow), precision_);
+    if(nSM > 1 && tot_title_ != "None"){
+      file << " & ";
+      if(tot_title_ == "Ratio")
+        file << AddCommas(backgrounds_.at(1)->sumw_.at(irow)/backgrounds_.at(0)->sumw_.at(irow)*tot_factor_, 2);
+      else
+        file << AddCommas(Nbkg + Nsig, precision_);
+      if(do_unc_) file << "$\\pm$"  << AddCommas(luminosity*GetError(backgrounds_, irow), precision_);
     }
     
+    // Adding FOM (figure of merit)
     if(do_fom_  && signals_.size() >= 1)
       for(size_t i = 0; i < signals_.size(); ++i)
         file << " & "  << setprecision(1) << luminosity*signals_.at(i)->sumw_.at(irow)/
-          sqrt(luminosity*signals_.at(i)->sumw_.at(irow)+Nbkg) << fixed << setprecision(precision_);
+          sqrt(luminosity*signals_.at(i)->sumw_.at(irow)+Nbkg)  << setprecision(precision_);
 
+    // Adding row efficiency
     if(do_eff_ && nSM > 0) {
       if(irow==0) file<<" & --";
       else file << " & " <<  setprecision(1) << 100*(Nbkg + Nsig)/
              (luminosity*(GetYield(backgrounds_, irow-1) + luminosity*GetYield(signals_, irow-1)))
-                << fixed << setprecision(precision_);
+                 << setprecision(precision_);
     }
     
-    if(datas_.size() > 1){
-      for(size_t i = 0; i < datas_.size(); ++i){
-        file << " & " << fixed << datas_.at(i)->sumw_.at(irow);
-      }
-      file << " & " << fixed << GetYield(datas_, irow);
-    }else if(datas_.size() == 1){
-      file << " & " << fixed << GetYield(datas_, irow);
+    // Adding data yields
+    for(size_t i = 0; i < datas_.size(); ++i){
+      file << " & "  << AddCommas(datas_.at(i)->sumw_.at(irow), 0);
     }
+    if(datas_.size() > 1)  file << " & "  << AddCommas(GetYield(datas_, irow),0);
+    
   }else{
     file << "    \\multicolumn{" << NumColumns() << "}{c}{" << row.label_ << "}";
   }
@@ -418,10 +426,8 @@ void Table::PrintPie(std::size_t irow, double luminosity) const{
   TPie pie("", "", nSM, &counts.at(0), &colors.at(0), &labels.at(0));
   pie.SetCircle(0.5, 0.48, 0.35);
   if(print_titlepie_){
-    int digits = 1;
-    if(Yield_tot >= 1000) digits = 0;
-    TString title = CodeToRootTex(rows_.at(irow).cut_.Name())+" (N="+RoundNumber(Yield_tot,digits);
-    title += ")";
+    TString title = CodeToRootTex(rows_.at(irow).cut_.Name())
+      +" (N="+AddCommas(Yield_tot,precision_)+ ")";
     pie.SetTitle(title);
   }
 
@@ -430,7 +436,8 @@ void Table::PrintPie(std::size_t irow, double luminosity) const{
   pie.Draw();
   TLatex total(0.68,0.5,RoundNumber(Yield_tot,1));
   //if(print_titlepie_) total.Draw();
-  plot_name = "plots/pie_"+name_+"_"+CodeToPlainText(rows_.at(irow).cut_.Name())+"_perc_lumi"+RoundNumber(luminosity,0).Data()+".pdf";
+  plot_name = "plots/pie_"+name_+"_"+CodeToPlainText(rows_.at(irow).cut_.Name())
+    +"_perc_lumi"+RoundNumber(luminosity,0).Data()+".pdf";
   can.SaveAs(plot_name.c_str());
   cout<<" open "<<plot_name<<endl;
 
@@ -440,7 +447,7 @@ void Table::PrintPie(std::size_t irow, double luminosity) const{
 size_t Table::NumColumns() const{
   size_t nSM = backgrounds_.size() + signals_.size();
   return 1
-    + (nSM <= 1 ? nSM : nSM+1)
+    + (nSM <= 1 || tot_title_ == "None" ? nSM : nSM+1)
     + (datas_.size() <= 1 ? datas_.size() : datas_.size()+1)
     + (do_fom_ ? 1 : 0)*signals_.size()
     + (do_eff_ ? 1 : 0);
@@ -462,6 +469,14 @@ double Table::GetError(const vector<unique_ptr<TableColumn> > &columns,
     error += column->sumw2_.at(irow);
   }
   return sqrt(error);
+}
+
+Table & Table::TotColumn(const string &title, const double &factor){
+  if(title == "Ratio" && backgrounds_.size()<=1)
+    ERROR(" Need at least two backgrounds to do ratio");
+  tot_title_ = title;
+  tot_factor_ = factor;
+  return *this;
 }
 
 Table & Table::Precision(const double &precision){

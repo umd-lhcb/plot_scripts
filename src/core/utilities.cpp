@@ -135,8 +135,11 @@ string CodeToPlainText(string code){
 }
 
 string CodeToRootTex(string code){
-  if(code=="1") code = "";
   ReplaceAll(code, " ", "");
+  ReplaceAll(code, "&&(1)", "");
+  ReplaceAll(code, "(1)&&", "");
+  if(code=="1" || code=="(1)") code = "";
+
   ReplaceAll(code, "spi_", "#pixx_{slow} ");
   ReplaceAll(code, "pi_", "#pi ");
   ReplaceAll(code, "pixx_", "pi_"); // Needed because pi_ inside spi_
@@ -158,6 +161,7 @@ string CodeToRootTex(string code){
   ReplaceAll(code, "==", " = ");
   ReplaceAll(code, "(", "");
   ReplaceAll(code, ")", "");
+  if(code.substr(0,3) == "1, ") code = code.substr(3);
 
   return code;
 }
@@ -402,12 +406,13 @@ TString HoursMinSec(float fseconds){
   return hhmmss;
 }
 
-TString AddCommas(double num){
-  TString result(""); result += num;
+TString AddCommas(double num, int decimals){
+  TString result = RoundNumber(num, decimals);
   int posdot(result.First('.'));
   if(posdot==-1) posdot = result.Length();
   for(int ind(posdot-3); ind > 0; ind -= 3)
     result.Insert(ind, ",");
+
   return result;
 }
 

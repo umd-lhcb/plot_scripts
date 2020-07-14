@@ -725,16 +725,7 @@ void WriteBaseSource(const set<Variable> &vars){
 
   file << "int Baby::SetSampleType(const TString &filename){\n";
   file << "  int samp_type = 0;\n";
-  file << "  if(filename.Contains(\"SMS\"))     samp_type = 10;\n";
-  file << "  if(filename.Contains(\"_TTJets\")) samp_type = 20;\n";
-  file << "  if(filename.Contains(\"_WJets\"))  samp_type = 30;\n";
-  file << "  if(filename.Contains(\"DYJets\"))  samp_type = 40;\n";
-  file << "  if(filename.Contains(\"_ZJets\"))  samp_type = 41;\n";
-  file << "  if(filename.Contains(\"_ST_\"))    samp_type = 50;\n";
-  file << "  if(filename.Contains(\"_QCD\"))    samp_type = 60;\n";
-  file << "  if(filename.Contains(\"_TTWJets\"))samp_type = 70;\n";
-  file << "  if(filename.Contains(\"_TTZ\"))    samp_type = 71;\n";
-  file << "  if(filename.Contains(\"_TTG\"))    samp_type = 72;\n";
+  file << "  if(filename.Contains(\"mc\"))     samp_type = 10;\n";
   file << "  return samp_type;\n";
   file << "}\n\n";
 
