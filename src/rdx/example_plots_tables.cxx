@@ -73,7 +73,7 @@ int main(){
   vector<shared_ptr<Process> > procs_mm;
   procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("Data (actually MC)",Process::Type::data, colors("data"),
                                                       set<string>({repofolder+run2bare}), "1"));
-  procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D*^{+} #tau #nu", Process::Type::background, colors("green"),
+  procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D*^{+} #tau #nu", Process::Type::signal, colors("green"),
                                                       set<string>({repofolder+run2bare}), is_dsptau));
   procs_mm.push_back(Process::MakeShared<Baby_run2_bare>("B #rightarrow D*^{+} #mu #nu", Process::Type::background, colors("blue"),
                                                       set<string>({repofolder+run2bare}), is_dspmu));
@@ -90,7 +90,7 @@ int main(){
       TableRow("All events","1", 0,1, "1"),
         TableRow("$m_\\text{miss}^2 > 3\\text{ GeV}^2$",  "FitVar_Mmiss2/1000000 > 3",0,0, "1"),
         TableRow("BDT$_\\text{iso}<0.15$",  "FitVar_Mmiss2/1000000 > 3 && b0_ISOLATION_BDT < 0.15",0,0, "1"),
-        },procs_mm,false, true, true, true); // Pushing table and pie charts
+        },procs_mm, true, true, true, true, true, true).Precision(1); // Pushing table and pie charts
   pm_mm.Push<EventScan>("eventscan", !is_dsptau && !is_dspmu && !is_dss && "FitVar_Mmiss2/1000000 > 8", 
                         vector<NamedFunc>{"runNumber", "eventNumber", "mu_MC_MOTHER_ID", "d0_MC_MOTHER_ID",
                                             "d0_MC_GD_MOTHER_ID", "d0_MC_GD_GD_MOTHER_ID"}, procs_mm).Precision(10);

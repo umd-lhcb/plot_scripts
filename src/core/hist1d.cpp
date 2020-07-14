@@ -304,7 +304,9 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   for(const auto &process: processes){
     unique_ptr<SingleHist1D> hist(new SingleHist1D(*this, process, empty));
     hist->raw_hist_.SetFillColor(process->GetFillColor());
-    hist->raw_hist_.SetFillStyle(process->GetFillStyle());
+    if(this_opt_.Stack() == StackType::signal_on_top && process->type_ == Process::Type::signal)
+      hist->raw_hist_.SetFillStyle(1001);
+    else hist->raw_hist_.SetFillStyle(process->GetFillStyle());
     hist->raw_hist_.SetLineColor(process->GetLineColor());
     hist->raw_hist_.SetLineStyle(process->GetLineStyle());
     hist->raw_hist_.SetLineWidth(process->GetLineWidth()/2);
@@ -409,9 +411,14 @@ void Hist1D::Print(double luminosity,
     else top->SetLogy(false);
 
     string draw_opt = "hist";
-    DrawAll(backgrounds_, draw_opt);
+    if(this_opt_.Stack() == StackType::signal_on_top){
+      DrawAll(signals_, draw_opt, true);
+      DrawAll(backgrounds_, draw_opt);
+    } else {
+      DrawAll(backgrounds_, draw_opt);
+    }
     if(this_opt_.ShowBackgroundError() && backgrounds_.size()) bkg_error.Draw("2 same");
-    DrawAll(signals_, draw_opt, true);
+    if(this_opt_.Stack() != StackType::signal_on_top) DrawAll(signals_, draw_opt, true);
     ReplaceAll(draw_opt, "hist", "e0p");
     DrawAll(datas_, draw_opt, true);
     for(auto &cut: cut_vals) cut.Draw();
@@ -490,7 +497,7 @@ void Hist1D::Print(double luminosity,
     for(const auto &ext: this_opt_.FileExtensions()){
       string full_name = base_name+"__"+this_opt_.TypeString()+'.'+ext;
       full->Print(full_name.c_str());
-      cout << "open " << full_name << endl;
+      cout << " open " << full_name << endl;
     }
   }
 }
@@ -1049,7 +1056,10 @@ TGraphAsymmErrors Hist1D::GetBackgroundError() const{
     TH1D h("", "", xaxis_.Nbins(), &xaxis_.Bins().at(0));
     g = TGraphAsymmErrors(&h);
   }else{
-    g = TGraphAsymmErrors(&(backgrounds_.front()->scaled_hist_));
+    if(this_opt_.Stack() == StackType::signal_on_top && signals_.size() != 0)
+      g = TGraphAsymmErrors(&(signals_.front()->scaled_hist_));
+    else
+      g = TGraphAsymmErrors(&(backgrounds_.front()->scaled_hist_));
   // set the color of the error band to the line color, accomodating data-to-data plots
     g.SetFillColorAlpha(backgrounds_.front()->scaled_hist_.GetLineColor(),0.3);
   }
@@ -1107,6 +1117,8 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
   vector<TH1D> out;
   if(backgrounds_.size() != 0){
     denom = backgrounds_.front()->scaled_hist_;
+    if(signals_.size() != 0 && this_opt_.Stack()==StackType::signal_on_top)
+      denom = signals_.front()->scaled_hist_;
     if(datas_.size() == 0) ERROR("Need to have at least one data histo to make Ratio plot");
   }else if(datas_.size() != 0){
     denom = datas_.front()->scaled_hist_;
@@ -1128,7 +1140,10 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
     ERROR("Bad stack type: "+to_string(static_cast<int>(this_opt_.Stack())));
     break;
   }
-  if(stacked && backgrounds_.size()){
+  if(signals_.size() != 0 && this_opt_.Stack()==StackType::signal_on_top){
+    out.push_back(signals_.front()->scaled_hist_);
+    out.back().SetName(("bot_plot_bkg_"+signals_.front()->process_->name_+"_"+counter()).c_str());
+  }else if(stacked && backgrounds_.size()){
     out.push_back(backgrounds_.front()->scaled_hist_);
     out.back().SetName(("bot_plot_bkg_"+backgrounds_.front()->process_->name_+"_"+counter()).c_str());
   }else{
@@ -1383,7 +1398,7 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
   size_t entries_added = 0;
   AddEntries(legends, datas_, "lep", n_entries, entries_added);
   AddEntries(legends, backgrounds_, this_opt_.BackgroundsStacked() ? "f" : "l", n_entries, entries_added);
-  AddEntries(legends, signals_, "l", n_entries, entries_added);
+  AddEntries(legends, signals_, this_opt_.Stack()==StackType::signal_on_top ? "f" : "l", n_entries, entries_added);
   //  AddEntries(legends, backgrounds_, this_opt_.BackgroundsStacked() ? "f" : "l", n_entries, entries_added);
 
   //Add a dummy legend entry to display MC normalization

@@ -38,7 +38,9 @@ public:
   Table(const std::string &name,
 	const std::vector<TableRow> &rows,
 	const std::vector<std::shared_ptr<Process> > &processes,
-	bool do_zbi=true,
+	bool do_fom=true,
+	bool do_unc=true,
+	bool do_eff=true,
 	bool print_table=true,
 	bool print_pie=false,
 	bool print_titlepie=true);
@@ -59,12 +61,17 @@ public:
   
   std::string name_;
   std::vector<TableRow> rows_;
-  bool do_zbi_;
+  bool do_fom_;
+  bool do_unc_;
+  bool do_eff_;
   bool print_table_;
   bool print_pie_;
   bool print_titlepie_;
+  double precision_;
   std::vector<PlotOpt> plot_options_;//!<Styles with which to draw pie chart
 
+  Table & Precision(const double &precision);
+  
 private:
   std::vector<std::unique_ptr<TableColumn> > backgrounds_;//!<Background components of the figure
   std::vector<std::unique_ptr<TableColumn> > signals_;//!<Signal components of the figure
@@ -77,9 +84,10 @@ private:
   const std::vector<std::unique_ptr<TableColumn> >& GetComponentList(const Process *process) const;
 
   void PrintHeader(std::ofstream &file, double luminosity) const;
+  void PrintFooter(std::ofstream &file, double luminosity) const;
+  void PrintHeaderFooter(std::ofstream &file, double luminosity) const;
   void PrintRow(std::ofstream &file, std::size_t irow, double luminosity) const;
   void PrintPie(std::size_t irow, double luminosity) const;
-  void PrintFooter(std::ofstream &file) const;
 
   std::size_t NumColumns() const;
 

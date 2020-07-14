@@ -100,7 +100,7 @@ EventScan::EventScan(const string &name,
 void EventScan::Print(double /*luminosity*/,
                       const std::string & /*subdir*/){
   for(const auto &scan: scans_){
-    cout << "less " << (CodeToPlainText(name_+"_SCAN_"+scan->process_->name_)+".txt") << endl;
+    cout << " less " << (CodeToPlainText(name_+"_SCAN_"+scan->process_->name_)+".txt") << endl;
   }
 }
 

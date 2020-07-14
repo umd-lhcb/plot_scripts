@@ -56,7 +56,7 @@ Let us look at the code in
 The main components are
 - **`PlotOpt`**: defines the overall plot style. We store the basic format for various plots in 
 [txt/plot_styles.txt](https://github.com/umd-lhcb/plot_scripts/blob/master/txt/plot_styles.txt)
-and it can be further tweaked in the code as shown. Some of the options are
+and it can be further tweaked in the code as shown. 
 - **`Process`**: the various components in the plots as defined by the label in the legend, color, ntuples, and cuts
 - **`PlotMaker`**: the class that contains all the plots to be made. Plots, tables, and pie charts are pushed into one of this
 - **`Hist1D`**: 1D histograms, one of the types of objects that can be pushed into `Plotmaker`
@@ -114,7 +114,7 @@ Each `Process` object is pushed into a vector to define a plot component. They a
   - `Process::Type::background`: plotted with solid histograms and stacked with other `background` and `signal` components.
   - `Process::Type::signal`: same as `background` except in `StackType::signal_overlay` and in tables.
 - **Color**: an integer, a ROOT defined color like `kBlack`, or a user RGB-defined color in [txt/colors.txt](https://github.com/umd-lhcb/plot_scripts/blob/master/txt/colors.txt) like `colors("data")`.
-- **Ntuple file names**: list of files to load trees from. It accepts wildcards on the file names but not on the folders. Repeated files are suppressed thanks to `std::set`.
+- **Ntuple file paths**: list of files to load trees from. It accepts wildcards on the file names but not on the folders. Repeated files are suppressed thanks to `std::set`.
 - **Selection cuts**: selects a subset of the events in the loaded files. These cuts do not get printed anywhere (plot file name or title with `TitleType::info`, so beware.
 
 For instance, here we use the same ntuple to define three components: muons at high `p`, muons at high `pT`, and all muons:
@@ -162,10 +162,10 @@ Some of these options are illustrated below
 Some of the key options that can be changed as it is being pushed to `PlotMaker` are:
 - **`Weight`**: the weight to be used for the `backgroung` and `signal` components as a string or `NamedFunc`, eg, `weight_pid/1000`.
 - **`Tag`**: additional string added to the plot filename to label it or to make it different from other plots being created at the same time. The latter is an issue when you are making plots with the same X-axis variable and cuts, but different binnings or processes, because the latter are not registered in the file name.
-- **`TopRight`**: text to be added to the top right of the plot when not in `TitleType::info`. By default it is set to luminosity (energy), eg `1 ifb (13 TeV)`.
-- **`LeftLabel`** and **`LeftLabel`**: Labels added below the legend. Input is a vector of `string` that are placed on top of each other.
+- **`TopRight`** (**Fig. 2a**): text to be added to the top right of the plot when not in `TitleType::info`. By default it is set to luminosity (energy), eg `1 ifb (13 TeV)`.
+- **`LeftLabel`** (**Fig. 2b**) and **`RightLabel`** (**Fig. 2c**): Labels added below the legend. Input is a vector of `string` that are placed on top of each other.
 - **`YAxisZoom`**: changes the Y-axis scale. It is set by default to include all distributions without clipping
-- **`RatioTitle(num, den)`**: title to be used in the bottom plot containing the ratio.
+- **`RatioTitle(num, den)`** (**Fig. 2a**): title to be used in the bottom plot containing the ratio.
 
 
 ## 2D plots

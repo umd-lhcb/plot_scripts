@@ -135,6 +135,7 @@ string CodeToPlainText(string code){
 }
 
 string CodeToRootTex(string code){
+  if(code=="1") code = "";
   ReplaceAll(code, " ", "");
   ReplaceAll(code, "spi_", "#pixx_{slow} ");
   ReplaceAll(code, "pi_", "#pi ");
