@@ -12,7 +12,7 @@ using namespace std;
 EventScan::SingleScan::SingleScan(const EventScan &event_scan,
                                   const shared_ptr<Process> &process):
   FigureComponent(event_scan, process),
-  out_((CodeToPlainText(event_scan.name_+"_SCAN_"+process->name_)+".txt").c_str()),
+  out_(("tables/"+CodeToPlainText(event_scan.name_+"_SCAN_"+process->name_)+".txt").c_str()),
   full_cut_(event_scan.cut_ && process->cut_),
   cut_vector_(),
   val_vectors_(event_scan.columns_.size()),
@@ -31,7 +31,7 @@ void EventScan::SingleScan::RecordEvent(const Baby &baby){
     cut_vector_ = full_cut_.GetVector(baby);
   }
   
-  size_t max_size = 0;
+  size_t max_size = 0; 
   for(size_t icol = 0; icol < scan.columns_.size(); ++icol){
     const NamedFunc& col = scan.columns_.at(icol);
     if(col.IsScalar()){
@@ -100,7 +100,7 @@ EventScan::EventScan(const string &name,
 void EventScan::Print(double /*luminosity*/,
                       const std::string & /*subdir*/){
   for(const auto &scan: scans_){
-    cout << " less " << (CodeToPlainText(name_+"_SCAN_"+scan->process_->name_)+".txt") << endl;
+    cout << " less " << ("tables/"+CodeToPlainText(name_+"_SCAN_"+scan->process_->name_)+".txt") << endl;
   }
 }
 

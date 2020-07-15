@@ -27,14 +27,21 @@ Compilation requires `c++11` and `ROOT 6`. To compile it and run a minimal examp
     
 The `&&` simply concatenates commands if the
 first was successful. You will obtain a cute little plot `plots/FitVar_Mmiss2d1000000__sigontop_lin.pdf`
-based on a small ntuple committed with the project. In general, the scripts in this repo rely on the ntuples
+based on a small ntuple committed with the project.
+
+In general, the scripts in this repo rely on the ntuples
 that are in the [lhcb-ntuples-gen](https://github.com/umd-lhcb/lhcb-ntuples-gen) project, downloaded
 with `git annex`. See the [RD(*) wiki](https://umd-lhcb.github.io/lhcb-ntuples-gen/ntupling/installation/)
 for installation instructions. The figures included in this README were generated with
 [src/rdx/example_plots_tables.cxx](https://github.com/umd-lhcb/plot_scripts/blob/master/src/rdx/example_plots_tables.cxx)
 which uses this [576 MB ntuple](https://github.com/umd-lhcb/plot_scripts/blob/1345c0fba43e3ab4a0a7f78053bdb5181cfc8e92/src/rdx/example_plots_tables.cxx#L82-L83).
+To run this and all the scripts that depend on the RD(*) ntuples you will need to set up a soft link named `ntuples` pointing at wherever
+you placed yoru `lhcb-ntuples-gen/ntuples` folder. For instance, if `lhcb-ntuples-gen` is in the same folder as `plot_scripts`
 
-Let us look at the code in 
+    ln -s ../lhcb-ntuples-gen/ntuples
+    ./compile.py && ./run/rdx/example_plots_tables.exe
+
+Let us look at the code in
 [src/core/minimal_example.cxx](https://github.com/umd-lhcb/plot_scripts/blob/master/src/core/minimal_example.cxx)
 
 ```c++
@@ -177,7 +184,7 @@ Some of the key options that can be changed as it is being pushed to `PlotMaker`
 
 ## Inner workings and `NamedFunc`
 
-When this project is compile, [src/core/generate_baby.cxx](https://github.com/umd-lhcb/plot_scripts/blob/master/src/core/generate_baby.cxx) is compiled and executed first. This script reads all the tree structures from [txt/variables](https://github.com/umd-lhcb/plot_scripts/tree/master/txt/variables) and produces `c++` classes named `Baby_<filename>` with functions calling each branch of each tree. This is done in an efficient way so that **only branches needed for that event are loaded from disk**. Even if a branch is used multiple times it is only read from disk once.
+When this project is compiled, [src/core/generate_baby.cxx](https://github.com/umd-lhcb/plot_scripts/blob/master/src/core/generate_baby.cxx) is compiled and executed first. This script reads all the tree structures from [txt/variables](https://github.com/umd-lhcb/plot_scripts/tree/master/txt/variables) and produces `c++` classes named `Baby_<filename>` with functions calling each branch of each tree. This is done in an efficient way so that **only branches needed for that event are loaded from disk**. Even if a branch is used multiple times it is only read from disk once.
 
 **`PlotMaker` loops over each ntuple file just once**, even if that file is used in multiple processes and multiple plots, so it is reasonable efficient. However, something may be wrong with the implemenation because time does increase with the number of plots faster than one would expect from CPU limitations. Perhaps `NamedFunc` are memory inefficient.
 

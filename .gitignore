@@ -18,6 +18,12 @@
 # Fortran module files
 *.mod
 
+# Event scans
+tables/*txt
+
+# soft link
+ntuples
+
 # Compiled Static libraries
 *.lai
 *.la

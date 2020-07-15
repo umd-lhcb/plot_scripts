@@ -294,7 +294,6 @@ set<Variable> GetVariables(const vector<string> &files, vector<string> &tree_nam
       //DBG("Reading line: "+line);
       size_t fcolon = line.find(":"), fspace = line.find(" ");
       if(fcolon!=std::string::npos &&  fspace==std::string::npos){
-        //string treename("TupleB0/DecayTree");
         string treename = line;
         treename.erase(fcolon);
         tree_names.push_back(treename);
@@ -782,9 +781,10 @@ void WriteBaseSource(const set<Variable> &vars){
   file << "void Baby::ActivateChain(){\n";
   file << "  if(chain_) ERROR(\"Chain has already been initialized\");\n";
   file << "  lock_guard<mutex> lock(Multithreading::root_mutex);\n";
-  file << "  chain_ = unique_ptr<TChain>(new TChain(\"TupleB0/DecayTree\"));\n";
+  file << "  chain_ = unique_ptr<TChain>(new TChain(\"name_set_in_txt_variables\"));\n";
   file << "  for(const auto &file: file_names_){\n";
-  file << "    chain_->Add(file.c_str());\n";
+  file << "    int nfiles = chain_->Add(file.c_str());\n";
+  file << "    if(nfiles == 0) ERROR(\"File \"+file.c_str()+\" does not contain tree funny. Check ntuple exists\");\n";
   file << "  }\n";
   file << "  Initialize();\n";
   file << "}\n\n";
@@ -947,7 +947,8 @@ void WriteSpecializedSource(const set<Variable> &vars, const string &type, const
   file << "  lock_guard<mutex> lock(Multithreading::root_mutex);\n";
   file << "  chain_ = unique_ptr<TChain>(new TChain(\""<<treename<<"\"));\n";
   file << "  for(const auto &file: file_names_){\n";
-  file << "    chain_->Add(file.c_str());\n";
+  file << "    int nfiles = chain_->Add(file.c_str());\n";
+  file << "    if(nfiles == 0) ERROR(\"File \"+file.c_str()+\" does not contain tree "<<treename<<". Check ntuple exists\");\n";
   file << "  }\n";
   file << "  Initialize();\n";
   file << "}\n\n";

@@ -831,8 +831,8 @@ void Hist1D::StyleHisto(TH1D &h) const{
   double bin_width = xaxis_.AvgBinWidth();
 
   bool have_vec_ = false; // To be properly filled from the SingleHist1D...
-  string Yunit = (have_vec_?"Entries":"Events");
-  string yunit = (have_vec_?"entries":"events");
+  string Yunit = (have_vec_?"Entries":"Candidates");
+  string yunit = (have_vec_?"entries":"candidates");
   
   ostringstream title;
   switch(this_opt_.Stack()){
@@ -1197,7 +1197,9 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
       for(int bin = 1; bin <= h.GetNbinsX(); ++bin){
         double hval = h.GetBinContent(bin), herr = h.GetBinErrorUp(bin);
         double dval = denom.GetBinContent(bin), derr = denom.GetBinErrorUp(bin);
-        h.SetBinContent(bin, (hval-dval)/sqrt(herr*herr + derr*derr));
+        double den = sqrt(herr*herr + derr*derr);
+        if(den==0) h.SetBinContent(bin, 0);
+        else h.SetBinContent(bin, (hval-dval)/den);
         h.SetBinError(bin, 0);
       }
     }
