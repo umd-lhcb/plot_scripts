@@ -31,7 +31,8 @@ public:
   bool ImplementInBase() const;
   bool VirtualInBase() const;
   bool ImplementIn(const std::string &baby_type) const;
-  bool NotInBase() const;
+  std::string VarIndex(const std::string &baby_type) const;
+  bool MultipleTypes() const;
   bool EverythingIn(const std::string &baby_type) const;
 
   bool operator<(const Variable& other) const;
@@ -40,7 +41,7 @@ private:
   std::set<std::string> GetTypeSet() const;
 
   std::string name_;//!<Name of variable (e.g., ht, met, etc.)
-  std::map<std::string, std::string> type_map_;//!<Map from Baby type (basic, full, etc.) to variabl type (int, float, etc.)
+  std::map<std::string, std::string> type_map_;//!<Map from Baby type (basic, full, etc.) to variable type (int, float, etc.)
 };
 
 std::set<Variable> GetVariables(const std::vector<std::string> &files, std::vector<std::string> &tree_names);
@@ -54,13 +55,16 @@ void RemoveExtraSpaces(std::string &line);
 void WriteBaseHeader(const std::set<Variable> &vars,
                      const std::vector<std::string> &types);
 
-void WriteBaseSource(const std::set<Variable> &vars);
+void WriteBaseSource(const std::set<Variable> &vars,
+                     const std::vector<std::string> &types);
 
 void WriteSpecializedHeader(const std::set<Variable> &vars,
-                            const std::string &type);
+                            const std::string &type,
+                            const std::vector<std::string> &baby_types);
 
 void WriteSpecializedSource(const std::set<Variable> &vars,
-                            const std::string &type, const std::string &treename);
+                            const std::string &type, const std::string &treename,
+                            const std::vector<std::string> &baby_types);
 
 void WriteMergedHeader(const std::set<Variable> &vars,
                        const std::vector<std::string> &types);

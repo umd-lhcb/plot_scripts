@@ -1115,6 +1115,8 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
 
   TH1D denom;
   vector<TH1D> out;
+  int nProcs = backgrounds_.size() + datas_.size() + signals_.size();
+  if(nProcs <=1) ERROR("You need more than one component to draw bottom plot. Use Bottom(BottomType::off)");
   if(backgrounds_.size() != 0){
     denom = backgrounds_.front()->scaled_hist_;
     if(signals_.size() != 0 && this_opt_.Stack()==StackType::signal_on_top)

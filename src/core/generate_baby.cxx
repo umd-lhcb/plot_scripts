@@ -40,11 +40,11 @@ int main(int argc, char *argv[]){
   vector<string> tree_names;
   set<Variable> vars = GetVariables(files, tree_names);
   WriteBaseHeader(vars, files);
-  WriteBaseSource(vars);
+  WriteBaseSource(vars, files);
   for(unsigned ifile=0; ifile<files.size(); ifile++){
     string file = files[ifile], treename = tree_names[ifile];
-    WriteSpecializedHeader(vars, file);
-    WriteSpecializedSource(vars, file, treename);
+    WriteSpecializedHeader(vars, file, files);
+    WriteSpecializedSource(vars, file, treename, files);
   }
 }
 
@@ -187,23 +187,26 @@ bool Variable::ImplementInBase() const{
 /*!\brief Check if variable should have pure virtual method in Baby
 
   Pure virtual accessor is needed if and only if the variable has exactly one
-  type across all derived Baby classes, but does is only present in a subset of
+  type across all derived Baby classes, but is only present in a subset of
   the classes.
 
   \return True if variable should have virtual accessor in Baby
 */
 bool Variable::VirtualInBase() const{
-  set<string> type_set = GetTypeSet();
+  return !ImplementInBase(); // The program seems to rely on all functions being defined in Baby
+  
+  // if(MultipleTypes()) return true;
+  // set<string> type_set = GetTypeSet();
 
-  //type_set should contain one real type and an empty type indicating absence
-  //from some Baby classes
-  if(type_set.size() != 2) return false;
-  auto iter = type_set.cbegin();
-  string first_type = *iter;
-  ++iter;
-  string second_type = *iter;
-  return (first_type != "" && second_type == "")
-    || (first_type == "" && second_type != "");
+  // //type_set should contain one real type and an empty type indicating absence
+  // //from some Baby classes
+  // if(type_set.size() != 2) return false;
+  // auto iter = type_set.cbegin();
+  // string first_type = *iter;
+  // ++iter;
+  // string second_type = *iter;
+  // return (first_type != "" && second_type == "")
+  //   || (first_type == "" && second_type != "");
 }
 
 /*!\brief Check if variable needs accessor implemented in a derived Baby class
@@ -217,6 +220,31 @@ bool Variable::ImplementIn(const std::string &baby_type) const{
   return VirtualInBase() && Type(baby_type)!="";
 }
 
+/*!\brief Return index of variable when there are several babies with different types for that variable
+   for a given baby time
+
+  \param[in] baby_type Type of derived Baby to check
+
+  \return Return index of variable for which there are several babies with different types
+*/
+string Variable::VarIndex(const std::string &baby_type) const{
+  if(Type(baby_type)=="") return ""; // This function should only be use on
+
+  int index=0;
+  for(const auto &var: type_map_){
+    if(var.second== "") continue;
+    if(var.second == Type(baby_type)) {
+      if(index==0) return "";
+      else {
+        string suffix = "_"; suffix += to_string(index);
+        return suffix;
+      }
+    }
+    index++;
+  } // for var in type_map_
+  return "bad";
+}
+
 /*!\brief Check if variable is completely absent in base Baby
 
   This occus if the variable has different types in different derived Baby
@@ -225,7 +253,7 @@ bool Variable::ImplementIn(const std::string &baby_type) const{
   \return True if variable is only present in derived Baby classes and not in
   Baby
 */
-bool Variable::NotInBase() const{
+bool Variable::MultipleTypes() const{
   set<string> type_set = GetTypeSet();
   if(type_set.size() == 2){
     auto iter = type_set.cbegin();
@@ -248,7 +276,7 @@ bool Variable::NotInBase() const{
   virtual function in base Baby
 */
 bool Variable::EverythingIn(const string &baby_type) const{
-  return NotInBase() && Type(baby_type)!="";
+  return MultipleTypes() && Type(baby_type)!="";
 }
 
 /*!\brief Comparison operator allows storing Variable in set
@@ -298,7 +326,7 @@ set<Variable> GetVariables(const vector<string> &files, vector<string> &tree_nam
         treename.erase(fcolon);
         tree_names.push_back(treename);
         size_t ftree = line.find(treename);
-        DBG("\n\n\nFound tree "+treename);
+        DBG("\n\n\nFound tree "+treename+" in file "+ "txt/variables/"+file);
         if(ftree==std::string::npos) {ERROR("TTree not named "+treename+" in "+line);}
         else continue;
       }
@@ -478,10 +506,21 @@ void WriteBaseHeader(const set<Variable> &vars,
       file << "  "
            << var.DecoratedType() << " const & "
            << var.Name() << "() const;\n";
-    }else if(var.VirtualInBase()){
-      file << "  virtual "
-           << var.DecoratedType() << " const & "
-           << var.Name() << "() const = 0;\n";
+    }else {
+      if(var.MultipleTypes()){
+        for(const auto &baby_type: types){
+          if(var.Type(baby_type) =="") continue;
+          file << "  virtual "
+               << var.DecoratedType(baby_type) << " const & "
+               << var.Name() << var.VarIndex(baby_type)<<"() const = 0;\n";
+          cout<<"\n  Added MultipleTypes variable "<< var.Name() << var.VarIndex(baby_type)
+              <<", type "<<var.Type(baby_type)<<" and baby_type "<<baby_type<<endl;
+        } // for types
+      } else {
+        file << "  virtual "
+             << var.DecoratedType() << " const & "
+             << var.Name() << "() const = 0;\n";
+      }
     }
   }
   file << "\n";
@@ -539,7 +578,7 @@ void WriteBaseHeader(const set<Variable> &vars,
 
   \param[in] vars All variables for all Baby classes, with type information
 */
-void WriteBaseSource(const set<Variable> &vars){
+void WriteBaseSource(const set<Variable> &vars, const vector<string> &types){
   ofstream file("src/core/baby.cpp");
   file << "/*! \\class Baby\n\n";
 
@@ -745,8 +784,17 @@ void WriteBaseSource(const set<Variable> &vars){
     file << "  if(var_name == \"" << vars.cbegin()->Name() << "\"){\n";
     file << "    return ::GetFunction(&Baby::" << vars.cbegin()->Name() << ", \"" << vars.cbegin()->Name() << "\");\n";
     for(auto var = ++vars.cbegin(); var != vars.cend(); ++var){
-      file << "  }else if(var_name == \"" << var->Name() << "\"){\n";
-      file << "    return ::GetFunction(&Baby::" << var->Name() << ", \"" << var->Name() << "\");\n";
+      if(var->MultipleTypes()) {
+        for(const auto &baby_type: types){
+          if(var->Type(baby_type) =="") continue;
+          string varname = var->Name() + var->VarIndex(baby_type);
+          file << "  }else if(var_name == \"" << varname << "\"){\n";
+          file << "    return ::GetFunction(&Baby::" << varname << ", \"" << varname << "\");\n";
+        } // for types
+      } else {
+        file << "  }else if(var_name == \"" << var->Name() << "\"){\n";
+        file << "    return ::GetFunction(&Baby::" << var->Name() << ", \"" << var->Name() << "\");\n";
+      }
     }
     file << "  }else{\n";
     file << "    DBG(\"Function lookup failed for \\\"\" << var_name << \"\\\"\");\n";
@@ -818,7 +866,7 @@ void WriteBaseSource(const set<Variable> &vars){
 
   \param[in] type Name of derived Baby class (basic, full, etc.)
 */
-void WriteSpecializedHeader(const set<Variable> &vars, const string &type){
+void WriteSpecializedHeader(const set<Variable> &vars, const string &type, const vector<string> &baby_types){
   ofstream file("inc/core/baby_"+type+".hpp");
   file << "#ifndef H_BABY_" << ToUpper(type) << "\n";
   file << "#define H_BABY_" << ToUpper(type) << "\n\n";
@@ -835,13 +883,26 @@ void WriteSpecializedHeader(const set<Variable> &vars, const string &type){
 
   for(const auto &var: vars){
     if(var.VirtualInBase()){
-      if(var.ImplementIn(type)){
-        file << "  virtual " << var.DecoratedType() << " const & " << var.Name() << "() const;\n";
-      }else{
-        file << "  __attribute__((noreturn)) virtual " << var.DecoratedType()
-             << " const & " << var.Name() << "() const;\n";
-      }
-    }else if(var.EverythingIn(type)){
+      if(var.MultipleTypes()) {
+        for(const auto &baby_type: baby_types){
+          if(var.Type(baby_type) =="") continue;
+          string varname = var.Name() +  var.VarIndex(baby_type);          
+          if(baby_type == type){
+            file << "  virtual " << var.DecoratedType(baby_type) << " const & " << varname << "() const;\n";
+          } else {
+            file << "  __attribute__((noreturn)) virtual " << var.DecoratedType(baby_type)
+              << " const & " << varname << "() const;\n";
+          }
+        } // for baby_types        
+      } else {
+        if(var.ImplementIn(type)){
+          file << "  virtual " << var.DecoratedType() << " const & " << var.Name() << "() const;\n";
+        }else{
+         file << "  __attribute__((noreturn)) virtual " << var.DecoratedType()
+              << " const & " << var.Name() << "() const;\n";
+       }
+      } // if not MultipleTypes
+    }else{
       file << "  " << var.DecoratedType(type) << " const & " << var.Name() << "() const;\n";
     }
   }
@@ -857,14 +918,22 @@ void WriteSpecializedHeader(const set<Variable> &vars, const string &type){
   file << "  virtual void Initialize();\n\n";
 
   for(const auto &var: vars){
-    if(var.ImplementIn(type) || var.EverythingIn(type)){
-      file << "  " << var.DecoratedType(type) << " "
-           << var.Name() << "_;//!<Cached value of " << var.Name() << '\n';
-      file << "  TBranch *b_" << var.Name() << "_;\n//!<Branch from which "
-           << var.Name() << " is read\n";
-      file << "  mutable bool c_" << var.Name() << "_;//!<Flag if cached "
-           << var.Name() << " up to date\n";
+    if(!var.ImplementIn(type)) continue;
+    string varname = var.Name();
+    if(var.MultipleTypes()) {
+      for(const auto &baby_type: baby_types){
+        if(baby_type == type) {
+          varname += var.VarIndex(baby_type);
+          break;
+        }
+      }
     }
+    file << "  " << var.DecoratedType(type) << " "
+         << varname << "_;//!<Cached value of " << varname << '\n';
+    file << "  TBranch *b_" << varname << "_;\n//!<Branch from which "
+         << varname << " is read\n";
+    file << "  mutable bool c_" << varname << "_;//!<Flag if cached "
+         << varname << " up to date\n";
   }
   file << "};\n\n";
 
@@ -879,7 +948,8 @@ void WriteSpecializedHeader(const set<Variable> &vars, const string &type){
   \param[in] type Name of derived Baby class (basic, full, etc.)
 */
 
-void WriteSpecializedSource(const set<Variable> &vars, const string &type, const string &treename){
+void WriteSpecializedSource(const set<Variable> &vars, const string &type,
+                            const string &treename, const vector<string> &baby_types){
   ofstream file("src/core/baby_"+type+".cpp");
   file << "/*! \\class Baby_" << type << "\n\n";
 
@@ -904,7 +974,7 @@ void WriteSpecializedSource(const set<Variable> &vars, const string &type, const
   file << "Baby_" << type << "::Baby_" << type << "(const set<string> &file_names, const set<const Process*> &processes):\n";
   int implemented_here = 0;
   for(const auto & var: vars){
-    if(var.ImplementIn(type) || var.EverythingIn(type)) ++implemented_here;
+    if(var.ImplementIn(type)) ++implemented_here;
   }
   if(implemented_here == 0){
     file << "  Baby(file_names, processes){\n";
@@ -912,21 +982,29 @@ void WriteSpecializedSource(const set<Variable> &vars, const string &type, const
     file << "  Baby(file_names, processes),\n";
     set<Variable>::const_iterator last = vars.cend();
     for(auto var = vars.cbegin(); var != vars.cend(); ++var){
-      if(var->ImplementIn(type) || var->EverythingIn(type)){
+      if(var->ImplementIn(type)){
         last = var;
       }
     }
     for(auto var = vars.cbegin(); var != vars.cend(); ++var){
-      if(var->ImplementIn(type) || var->EverythingIn(type)){
-        file << "  " << var->Name() << "_{},\n";
-        file << "  b_" << var->Name() << "_(nullptr),\n";
-        if(var != last){
-          file << "  c_" << var->Name() << "_(false),\n";
-        }else{
-          file << "  c_" << var->Name() << "_(false){\n";
+      if(!var->ImplementIn(type)) continue;
+      string varname = var->Name();
+      if(var->MultipleTypes()) {
+        for(const auto &baby_type: baby_types){
+          if(baby_type == type) {
+            varname += var->VarIndex(baby_type);
+            break;
+          }
         }
       }
-    }
+      file << "  " << varname << "_{},\n";
+      file << "  b_" << varname << "_(nullptr),\n";
+      if(var != last){
+        file << "  c_" << varname << "_(false),\n";
+      }else{
+        file << "  c_" << varname << "_(false){\n";
+      }
+    } // for vars
   }
   file << "}\n\n";
 
@@ -935,9 +1013,17 @@ void WriteSpecializedSource(const set<Variable> &vars, const string &type, const
   file << "*/\n";
   file << "void Baby_" << type << "::GetEntry(long entry){\n";
   for(const auto &var: vars){
-    if(var.ImplementIn(type) || var.EverythingIn(type)){
-      file << "  c_" << var.Name() << "_ = false;\n";
+    if(!var.ImplementIn(type)) continue;
+    string varname = var.Name();
+    if(var.MultipleTypes()) {
+      for(const auto &baby_type: baby_types){
+        if(baby_type == type) {
+          varname += var.VarIndex(baby_type);
+          break;
+        }
+      }
     }
+    file << "  c_" << varname << "_ = false;\n";
   }
   file << "  Baby::GetEntry(entry);\n";
   file << "}\n\n";
@@ -960,36 +1046,73 @@ void WriteSpecializedSource(const set<Variable> &vars, const string &type, const
   file << "void Baby_" << type << "::Initialize(){\n";
   file << "  Baby::Initialize();\n";
   for(const auto &var: vars){
-    if(var.ImplementIn(type) || var.EverythingIn(type)){
-      file << "  chain_->SetBranchAddress(\"" << var.Name() << "\", &"
-           << var.Name() << "_, &b_" << var.Name() << "_);\n";
+    if(!var.ImplementIn(type)) continue;
+    string varname = var.Name();
+    if(var.MultipleTypes()) {
+      for(const auto &baby_type: baby_types){
+        if(baby_type == type) {
+          varname += var.VarIndex(baby_type);
+          break;
+        }
+      }
     }
+    file << "  chain_->SetBranchAddress(\"" << var.Name() << "\", &"
+         << varname << "_, &b_" << varname << "_);\n";
   }
   file << "}\n";
 
   for(const auto &var: vars){
-    if(var.ImplementIn(type) || var.EverythingIn(type)){
-      file << "/*!\\brief Get " << var.Name() << " for current event and cache it\n\n";
+    if(var.MultipleTypes()) {
+      for(const auto &baby_type: baby_types){
+        if(var.Type(baby_type) =="") continue;
+        string varname = var.Name() +  var.VarIndex(baby_type);          
+        if(baby_type == type){
+          file << "/*!\\brief Get " << varname << " for current event and cache it\n\n";
 
-      file << "  \\return " << var.Name() << " for current event\n";
-      file << "*/\n";
-      file << var.DecoratedType(type) << " const & Baby_" << type << "::" << var.Name() << "() const{\n";
-      file << "  if(!c_" << var.Name() << "_ && b_" << var.Name() << "_){\n";
-      file << "    b_" << var.Name() << "_->GetEntry(entry_);\n";
-      file << "    c_" << var.Name() << "_ = true;\n";
-      file << "  }\n";
-      file << "  return " << var.Name() << "_;\n";
-      file << "}\n\n";
-    }else if(var.VirtualInBase()){
-      file << "/*!\\brief Dummy getter for " << var.Name() << ". Throws error\n\n";
+          file << "  \\return " << varname << " for current event\n";
+          file << "*/\n";
+          file << var.DecoratedType(type) << " const & Baby_" << type << "::" << varname << "() const{\n";
+          file << "  if(!c_" << varname << "_ && b_" << varname << "_){\n";
+          file << "    b_" << varname << "_->GetEntry(entry_);\n";
+          file << "    c_" << varname << "_ = true;\n";
+          file << "  }\n";
+          file << "  return " << varname << "_;\n";
+          file << "}\n\n";
+        } else {
+          file << "/*!\\brief Dummy getter for " << varname << ". Throws error\n\n";
 
-      file << "  \\return Never returns. Throws error.\n";
-      file << "*/\n";
-      file << var.DecoratedType() << " const & Baby_" << type << "::" << var.Name() << "()  const{\n";
-      file << "  ERROR(\"" << var.DecoratedType() << ' ' << var.Name()
-           << " not available in babies of type " << type << ".\");\n";
-      file << "}\n\n";
-    }
+          file << "  \\return Never returns. Throws error.\n";
+          file << "*/\n";
+          file << var.DecoratedType(baby_type) << " const & Baby_" << type << "::" << varname << "()  const{\n";
+          file << "  ERROR(\"" << var.DecoratedType(baby_type) << ' ' << varname
+               << " not available in babies of type " << type << ".\");\n";
+          file << "}\n\n";
+        }
+      }
+    } else {
+      if(var.ImplementIn(type)){
+        file << "/*!\\brief Get " << var.Name() << " for current event and cache it\n\n";
+
+        file << "  \\return " << var.Name() << " for current event\n";
+        file << "*/\n";
+        file << var.DecoratedType(type) << " const & Baby_" << type << "::" << var.Name() << "() const{\n";
+        file << "  if(!c_" << var.Name() << "_ && b_" << var.Name() << "_){\n";
+        file << "    b_" << var.Name() << "_->GetEntry(entry_);\n";
+        file << "    c_" << var.Name() << "_ = true;\n";
+        file << "  }\n";
+        file << "  return " << var.Name() << "_;\n";
+        file << "}\n\n";
+      }else{
+        file << "/*!\\brief Dummy getter for " << var.Name() << ". Throws error\n\n";
+
+        file << "  \\return Never returns. Throws error.\n";
+        file << "*/\n";
+        file << var.DecoratedType() << " const & Baby_" << type << "::" << var.Name() << "()  const{\n";
+        file << "  ERROR(\"" << var.DecoratedType() << ' ' << var.Name()
+             << " not available in babies of type " << type << ".\");\n";
+        file << "}\n\n";
+      }
+    } // not MultipleTypes
   }
 
   file << flush;
