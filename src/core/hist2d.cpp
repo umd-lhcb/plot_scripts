@@ -334,9 +334,11 @@ TH2D Hist2D::GetBkgHist(bool bkg_is_hist) const{
 
 vector<TGraph> Hist2D::GetGraphs(const vector<unique_ptr<SingleHist2D> > &components,
 				 bool lumi_weighted) const{
+  bool overflow = true;
+  if(this_opt_.Overflow() == OverflowType::none) overflow = false;
   vector<TGraph> graphs(components.size());
   for(size_t i = 0; i < components.size(); ++i){
-    graphs.at(i) = components.at(i)->clusterizer_.GetGraph(lumi_weighted ? luminosity_ : 1.);
+    graphs.at(i) = components.at(i)->clusterizer_.GetGraph(lumi_weighted ? luminosity_ : 1., overflow);
     graphs.at(i).SetName(components.at(i)->process_->name_.c_str());
   }
   return graphs;

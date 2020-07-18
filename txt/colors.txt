@@ -1,5 +1,9 @@
 [default]
- data         0   0   0
+ data        0   0   0
+ dsptau      9 186   1
+ dspmu        1 148 218
+ dss        200   0  26
+ dd         255 200   0
  run1         1 148 218
  run2        200 15   1
  red        200   0  26

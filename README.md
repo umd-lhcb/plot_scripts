@@ -108,7 +108,7 @@ The full list of options is in [inc/core/plot_opt.hpp](https://github.com/umd-lh
     their own.
   - `StackType::lumi_shapes` (**Fig. 1b**):  compares the unstacked distributions.
   - `StackType::shapes` (**Fig. 1c**):  compares the unstacked distributions all normalized to 1.
-  - `StackType::data_norm`:  stacks the `background` components and normalizes the stack to the number of events in data. Useful when the overall shape of the background is expected to be correct but the normalization may be off due to not knowing the luminosity, trigger efficiency, or others.
+  - `StackType::data_norm`:  stacks the `background` and `signal` components and normalizes the stack to the number of events in data. Useful when the overall shape of the MC is expected to be correct but the normalization may be off due to not knowing the luminosity, trigger efficiency, or others.
   - `StackType::signal_overlay`:  stacks the `background` components and compares this that stack to the data on their own. The signal is overlaid on its own in an unfilled histogram. This option was useful in the searches for SUSY where the signal is not expected to exist, but not so much for LHCb.
 - **`Bottom`**: Adds a bottom plot with the ratio, difference, or pull of the histograms above. Types are `BottomType{off, ratio, diff, pull}`.
 - **`Title`**: Determines how much information is printed on the plot. Types are `TitleType{data, info, preliminary, simulation, simulation_preliminary, simulation_supplementary, supplementary}`

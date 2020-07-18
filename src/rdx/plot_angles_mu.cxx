@@ -112,7 +112,7 @@ int main(int argc, char *argv[]){
   ////////////////////////////////////// 2D scatter plot mu angles ////////////////////////////////////////
 
   PlotOpt style("txt/plot_styles.txt", "Scatter");
-  vector<PlotOpt> scattertype = {style().Stack(StackType::signal_on_top).Title(TitleType::data)};
+  vector<PlotOpt> scattertype = {style().Stack(StackType::signal_on_top).Title(TitleType::data).Overflow(OverflowType::none)};
   //////// Processes for scatter plot
   auto mup_high = Process::MakeShared<Baby_run2_bare>("p^{reco}(#mu) > 100 GeV", Process::Type::data, kBlack,
                                                       set<string>({repofolder+run2bare}), "mu_P>100000");
@@ -120,8 +120,8 @@ int main(int argc, char *argv[]){
                                                        set<string>({repofolder+run2bare}), "mu_PT>8000");
   auto all_mu = Process::MakeShared<Baby_run2_bare>("MC", Process::Type::background, kBlack,
                                                     set<string>({repofolder+run2bare}), "1");
-  mup_high->SetMarkerStyle(20); mup_high->SetMarkerSize(0.4);
-  mupt_high->SetMarkerStyle(21);mupt_high->SetMarkerSize(0.4);
+  mup_high->SetMarkerStyle(20); mup_high->SetMarkerSize(0.8);
+  mupt_high->SetMarkerStyle(21);mupt_high->SetMarkerSize(0.8);
   
   vector<shared_ptr<Process> > procs_mu = {mup_high, mupt_high, all_mu};
   pm.Push<Hist2D>(Axis(55, -0.6, 0.5, "mu_TRUEP_X/mu_TRUEP_Z", "p_{x}^{true}/p_{z}^{true}(#mu)", {-0.38, 0.38}),

@@ -304,7 +304,7 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   for(const auto &process: processes){
     unique_ptr<SingleHist1D> hist(new SingleHist1D(*this, process, empty));
     hist->raw_hist_.SetFillColor(process->GetFillColor());
-    if(this_opt_.Stack() == StackType::signal_on_top && process->type_ == Process::Type::signal)
+    if((this_opt_.Stack() == StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm) && process->type_ == Process::Type::signal)
       hist->raw_hist_.SetFillStyle(1001);
     else hist->raw_hist_.SetFillStyle(process->GetFillStyle());
     hist->raw_hist_.SetLineColor(process->GetLineColor());
@@ -411,14 +411,14 @@ void Hist1D::Print(double luminosity,
     else top->SetLogy(false);
 
     string draw_opt = "hist";
-    if(this_opt_.Stack() == StackType::signal_on_top){
+    if(this_opt_.Stack() == StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm){
       DrawAll(signals_, draw_opt, true);
       DrawAll(backgrounds_, draw_opt);
     } else {
       DrawAll(backgrounds_, draw_opt);
     }
     if(this_opt_.ShowBackgroundError() && backgrounds_.size()) bkg_error.Draw("2 same");
-    if(this_opt_.Stack() != StackType::signal_on_top) DrawAll(signals_, draw_opt, true);
+    if(this_opt_.Stack() != StackType::signal_on_top &&  this_opt_.Stack() != StackType::data_norm) DrawAll(signals_, draw_opt, true);
     ReplaceAll(draw_opt, "hist", "e0p");
     DrawAll(datas_, draw_opt, true);
     for(auto &cut: cut_vals) cut.Draw();
@@ -543,7 +543,7 @@ string Hist1D::Name() const{
 
 string Hist1D::Title() const{
   bool cut = (cut_.Name() != "" && cut_.Name() != "1");
-  bool weight = weight_.Name() != "1";
+  bool weight = weight_.Name() != "1" && weight_.Name() != "weight";
   if(cut && weight){
     return CodeToRootTex(cut_.Name())+" (weight="+CodeToRootTex(weight_.Name())+")";
   }else if(cut){
@@ -686,7 +686,7 @@ void Hist1D::StackHistos() const{
     for(size_t ibkg = backgrounds_.size() - 2; ibkg < backgrounds_.size(); --ibkg){
       backgrounds_.at(ibkg)->scaled_hist_ = backgrounds_.at(ibkg)->scaled_hist_ + backgrounds_.at(ibkg+1)->scaled_hist_;
     }
-    if(backgrounds_.size() && this_opt_.Stack() == StackType::signal_on_top){
+    if(backgrounds_.size() && (this_opt_.Stack() == StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm)){
       for(auto &hist: signals_){
         hist->scaled_hist_ = hist->scaled_hist_ + backgrounds_.front()->scaled_hist_;
       }
@@ -701,14 +701,17 @@ void Hist1D::NormalizeHistos() const{
   mc_scale_ = 1.;
   mc_scale_error_ = 1.;
   if(this_opt_.Stack() == StackType::data_norm){
-    if(datas_.size() == 0 || backgrounds_.size() == 0) return;
+    if(datas_.size() == 0 || (backgrounds_.size() +signals_.size())== 0) return;
     int nbins = xaxis_.Nbins();
     double data_error, mc_error;
     double data_norm = datas_.front()->scaled_hist_.IntegralAndError(0, nbins+1, data_error, "width");
-    double mc_norm = backgrounds_.front()->scaled_hist_.IntegralAndError(0, nbins+1, mc_error, "width");
+    double mc_norm = signals_.front()->scaled_hist_.IntegralAndError(0, nbins+1, mc_error, "width");
     mc_scale_ = data_norm/mc_norm;
     mc_scale_error_ = hypot(data_norm*mc_error, mc_norm*data_error)/(mc_norm*mc_norm);
     for(auto &hist: backgrounds_){
+      hist->scaled_hist_.Scale(mc_scale_);
+    }
+    for(auto &hist: signals_){
       hist->scaled_hist_.Scale(mc_scale_);
     }
     for(auto h = datas_.begin(); h != datas_.end(); ++h){
@@ -1056,7 +1059,7 @@ TGraphAsymmErrors Hist1D::GetBackgroundError() const{
     TH1D h("", "", xaxis_.Nbins(), &xaxis_.Bins().at(0));
     g = TGraphAsymmErrors(&h);
   }else{
-    if(this_opt_.Stack() == StackType::signal_on_top && signals_.size() != 0)
+    if((this_opt_.Stack() == StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm) && signals_.size() != 0)
       g = TGraphAsymmErrors(&(signals_.front()->scaled_hist_));
     else
       g = TGraphAsymmErrors(&(backgrounds_.front()->scaled_hist_));
@@ -1119,7 +1122,7 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
   if(nProcs <=1) ERROR("You need more than one component to draw bottom plot. Use Bottom(BottomType::off)");
   if(backgrounds_.size() != 0){
     denom = backgrounds_.front()->scaled_hist_;
-    if(signals_.size() != 0 && this_opt_.Stack()==StackType::signal_on_top)
+    if(signals_.size() != 0 && (this_opt_.Stack()==StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm))
       denom = signals_.front()->scaled_hist_;
     if(datas_.size() == 0) ERROR("Need to have at least one data histo to make Ratio plot");
   }else if(datas_.size() != 0){
@@ -1142,7 +1145,7 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
     ERROR("Bad stack type: "+to_string(static_cast<int>(this_opt_.Stack())));
     break;
   }
-  if(signals_.size() != 0 && this_opt_.Stack()==StackType::signal_on_top){
+  if(signals_.size() != 0 && (this_opt_.Stack()==StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm)){
     out.push_back(signals_.front()->scaled_hist_);
     out.back().SetName(("bot_plot_bkg_"+signals_.front()->process_->name_+"_"+counter()).c_str());
   }else if(stacked && backgrounds_.size()){
@@ -1400,9 +1403,11 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
   }
 
   size_t entries_added = 0;
+  string sigleg = "l";
+  if(this_opt_.Stack()==StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm) sigleg = "f";
   AddEntries(legends, datas_, "lep", n_entries, entries_added);
   AddEntries(legends, backgrounds_, this_opt_.BackgroundsStacked() ? "f" : "l", n_entries, entries_added);
-  AddEntries(legends, signals_, this_opt_.Stack()==StackType::signal_on_top ? "f" : "l", n_entries, entries_added);
+  AddEntries(legends, signals_, sigleg, n_entries, entries_added);
   //  AddEntries(legends, backgrounds_, this_opt_.BackgroundsStacked() ? "f" : "l", n_entries, entries_added);
 
   //Add a dummy legend entry to display MC normalization
