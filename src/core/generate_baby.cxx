@@ -831,8 +831,7 @@ void WriteBaseSource(const set<Variable> &vars, const vector<string> &types){
   file << "  lock_guard<mutex> lock(Multithreading::root_mutex);\n";
   file << "  chain_ = unique_ptr<TChain>(new TChain(\"name_set_in_txt_variables\"));\n";
   file << "  for(const auto &file: file_names_){\n";
-  file << "    int nfiles = chain_->Add(file.c_str());\n";
-  file << "    if(nfiles == 0) ERROR(\"File \"+file.c_str()+\" does not contain tree funny. Check ntuple exists\");\n";
+  file << "    chain_->Add(file.c_str());\n";
   file << "  }\n";
   file << "  Initialize();\n";
   file << "}\n\n";
@@ -1033,8 +1032,7 @@ void WriteSpecializedSource(const set<Variable> &vars, const string &type,
   file << "  lock_guard<mutex> lock(Multithreading::root_mutex);\n";
   file << "  chain_ = unique_ptr<TChain>(new TChain(\""<<treename<<"\"));\n";
   file << "  for(const auto &file: file_names_){\n";
-  file << "    int nfiles = chain_->Add(file.c_str());\n";
-  file << "    if(nfiles == 0) ERROR(\"File \"+file.c_str()+\" does not contain tree "<<treename<<". Check ntuple exists\");\n";
+  file << "    chain_->Add(file.c_str());\n";
   file << "  }\n";
   file << "  Initialize();\n";
   file << "}\n\n";
