@@ -137,11 +137,13 @@ TH1D Hist1D::blank_ = TH1D();
 */
 Hist1D::SingleHist1D::SingleHist1D(const Hist1D &figure,
                                    const std::shared_ptr<Process> &process,
-                                   const TH1D &hist):
+                                   const TH1D &hist, const NamedFunc &xvar, const NamedFunc &weight):
   FigureComponent(figure, process),
   raw_hist_(hist),
   scaled_hist_(),
   proc_and_hist_cut_(figure.cut_ && process->cut_),
+  xvar_(xvar),
+  weight_(weight),
   cut_vector_(),
   wgt_vector_(),
   val_vector_(){
@@ -152,7 +154,6 @@ Hist1D::SingleHist1D::SingleHist1D(const Hist1D &figure,
 }
 
 void Hist1D::SingleHist1D::RecordEvent(const Baby &baby){
-  const Hist1D& stack = static_cast<const Hist1D&>(figure_);
   size_t min_vec_size=0;
   bool have_vec = false;
 
@@ -165,7 +166,7 @@ void Hist1D::SingleHist1D::RecordEvent(const Baby &baby){
     have_vec = true;
     min_vec_size = cut_vector_.size();
   }
-  const NamedFunc &wgt = stack.weight_;
+  const NamedFunc &wgt = weight_;
   NamedFunc::ScalarType wgt_scalar = 0.;
   if(wgt.IsScalar()){
     wgt_scalar = wgt.GetScalar(baby);
@@ -177,7 +178,7 @@ void Hist1D::SingleHist1D::RecordEvent(const Baby &baby){
     }
   }
 
-  const NamedFunc &val = stack.xaxis_.var_;
+  const NamedFunc &val = xvar_;
   NamedFunc::ScalarType val_scalar = 0.;
   if(val.IsScalar()){
     val_scalar = val.GetScalar(baby);
@@ -273,11 +274,13 @@ double Hist1D::SingleHist1D::GetMin(double min_bound,
 */
 Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
                const std::vector<std::shared_ptr<Process> > &processes,
-               const std::vector<PlotOpt> &plot_options):
+               const std::vector<PlotOpt> &plot_options,
+               const std::vector<NamedFunc> &weights):
   Figure(),
   xaxis_(xaxis),
   cut_(cut),
-  weight_("1"),
+  weights_(weights),
+  weight_(weights[0]),
   tag_(""),
   top_right_("unset"),
   left_label_({}),
@@ -289,11 +292,15 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   backgrounds_(),
   signals_(),
   datas_(),
+  xvars_(xaxis_.vars_),
   this_opt_(PlotOpt()),
   luminosity_(),
   mc_scale_(),
   mc_scale_error_(){
+  
   if(plot_options_.size() > 0) this_opt_ = plot_options_.front();
+
+  
 
   string x_title = xaxis_.title_;
   if(xaxis_.units_ != "") x_title += " ["+xaxis_.units_+"]";
@@ -301,8 +308,13 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   TH1D empty("", (";"+x_title+";").c_str(), xaxis_.Nbins(), &xaxis_.Bins().at(0));
   empty.SetStats(false);
   empty.Sumw2(true);
+  int iproc = 0;
   for(const auto &process: processes){
-    unique_ptr<SingleHist1D> hist(new SingleHist1D(*this, process, empty));
+    // Adding xvars_[0] if not enough xvars_ were provided
+    if(xvars_.size() < processes.size()) xvars_.push_back(xvars_[0]);
+    if(weights_.size() < processes.size()) weights_.push_back(weights_[0]);
+    
+    unique_ptr<SingleHist1D> hist(new SingleHist1D(*this, process, empty, xvars_[iproc], weights_[iproc]));
     hist->raw_hist_.SetFillColor(process->GetFillColor());
     if((this_opt_.Stack() == StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm) && process->type_ == Process::Type::signal)
       hist->raw_hist_.SetFillStyle(1001);
@@ -327,6 +339,7 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
     default:
       break;
     }
+    iproc++;
   }
 
   blank_.SetFillStyle(0);
@@ -553,11 +566,6 @@ string Hist1D::Title() const{
   }else{
     return "";
   }
-}
-
-Hist1D & Hist1D::Weight(const NamedFunc &weight){
-  weight_ = weight;
-  return *this;
 }
 
 Hist1D & Hist1D::Tag(const string &tag){

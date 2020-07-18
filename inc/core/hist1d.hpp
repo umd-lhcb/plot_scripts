@@ -25,8 +25,8 @@ public:
   class SingleHist1D final: public Figure::FigureComponent{
   public:
     SingleHist1D(const Hist1D &stack,
-               const std::shared_ptr<Process> &process,
-               const TH1D &hist);
+                 const std::shared_ptr<Process> &process,
+                 const TH1D &hist, const NamedFunc &xvar, const NamedFunc &weight);
     ~SingleHist1D() = default;
 
     TH1D raw_hist_;//!<Histogram storing distribution before stacking and luminosity weighting
@@ -41,6 +41,7 @@ public:
                   bool include_error_bar = false,
                   bool include_overflow = false) const;
 
+
   private:
     SingleHist1D() = delete;
     SingleHist1D(const SingleHist1D &) = delete;
@@ -49,12 +50,14 @@ public:
     SingleHist1D& operator=(SingleHist1D &&) = delete;
 
     NamedFunc proc_and_hist_cut_;
+    NamedFunc xvar_, weight_;
     NamedFunc::VectorType cut_vector_, wgt_vector_, val_vector_;
   };
 
   Hist1D(const Axis &xaxis, const NamedFunc &cut,
-             const std::vector<std::shared_ptr<Process> > &processes,
-             const std::vector<PlotOpt> &plot_options = {PlotOpt()});
+         const std::vector<std::shared_ptr<Process> > &processes,
+         const std::vector<PlotOpt> &plot_options = {PlotOpt()},
+         const std::vector<NamedFunc> &weights = {"1"});
   Hist1D(Hist1D &&) = default;
   Hist1D& operator=(Hist1D &&) = default;
   ~Hist1D() = default;
@@ -69,7 +72,6 @@ public:
   std::string Name() const;
   std::string Title() const;
 
-  Hist1D & Weight(const NamedFunc &weight);
   Hist1D & Tag(const std::string &tag);
   Hist1D & TopRight(const std::string &label);
   Hist1D & LeftLabel(const std::vector<std::string> &label);
@@ -80,6 +82,7 @@ public:
 
   Axis xaxis_;//!<Specification of content: plotted variable, binning, etc.
   NamedFunc cut_;//!<Event selection
+  std::vector<NamedFunc> weights_;//!<Event weights, one for each process
   NamedFunc weight_;//!<Event weight
   std::string tag_;//!<Filename tag to identify plot
   std::string top_right_;//!<Label to plot on the right over the plot, typically TeV
@@ -94,7 +97,8 @@ private:
   std::vector<std::unique_ptr<SingleHist1D> > backgrounds_;//!<Background components of the figure
   std::vector<std::unique_ptr<SingleHist1D> > signals_;//!<Signal components of the figure
   std::vector<std::unique_ptr<SingleHist1D> > datas_;//!<Data components of the figure
-
+  std::vector<NamedFunc> xvars_;//!<Variables to be plotted on the x axis, one for each process
+  
   mutable PlotOpt this_opt_;//!<Plot style currently being drawn
   mutable double luminosity_;//!<Luminosity currently being drawn
   mutable double mc_scale_;//!<data/MC normalization

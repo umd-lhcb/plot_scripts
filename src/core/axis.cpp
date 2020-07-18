@@ -9,13 +9,14 @@ Axis::Axis(const vector<double> &bins,
            const string &title,
            const set<double> &cut_vals):
   var_(var),
+  vars_({var}),
   title_(title),
   units_(""),
   cut_vals_(cut_vals),
   bins_(bins){
   sort(bins_.begin(), bins_.end());
   ParseUnits();
-  }
+}
 
 Axis::Axis(size_t nbins,
            double xmin, double xmax,
@@ -23,12 +24,41 @@ Axis::Axis(size_t nbins,
            const string &title,
            const set<double> &cut_vals):
   var_(var),
+  vars_({var}),
   title_(title),
   units_(""),
   cut_vals_(cut_vals),
   bins_(GetEdges(nbins, xmin, xmax)){
   ParseUnits();
-  }
+}
+
+Axis::Axis(const vector<double> &bins,
+           const vector<NamedFunc> &vars,
+           const string &title,
+           const set<double> &cut_vals):
+  var_(vars[0]),
+  vars_(vars),
+  title_(title),
+  units_(""),
+  cut_vals_(cut_vals),
+  bins_(bins){
+  sort(bins_.begin(), bins_.end());
+  ParseUnits();
+}
+
+Axis::Axis(size_t nbins,
+           double xmin, double xmax,
+           const vector<NamedFunc> &vars,
+           const string &title,
+           const set<double> &cut_vals):
+  var_(vars[0]),
+  vars_(vars),
+  title_(title),
+  units_(""),
+  cut_vals_(cut_vals),
+  bins_(GetEdges(nbins, xmin, xmax)){
+  ParseUnits();
+}
 
 size_t Axis::Nbins() const{
   return bins_.size()-1;

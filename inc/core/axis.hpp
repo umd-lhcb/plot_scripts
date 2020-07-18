@@ -20,6 +20,15 @@ public:
        const NamedFunc &var,
        const std::string &title = "",
        const std::set<double> &cut_vals = {});
+  Axis(const std::vector<double> &bins,
+       const std::vector<NamedFunc> &vars,
+       const std::string &title = "",
+       const std::set<double> &cut_vals = {});
+  Axis(std::size_t nbins,
+       double xmin, double xmax,
+       const std::vector<NamedFunc> &vars,
+       const std::string &title = "",
+       const std::set<double> &cut_vals = {});
 
   Axis(const Axis &) = default;
   Axis& operator=(const Axis &) = default;
@@ -35,7 +44,8 @@ public:
 
   std::string Title() const;
 
-  NamedFunc var_;//!< Variable to be plotted
+  NamedFunc var_;
+  std::vector<NamedFunc> vars_;//!< Variables to be plotted
   std::string title_;//!< Axis title without units
   std::string units_;//!< Units of Axis::var_
   std::set<double> cut_vals_;//!< Values of HistoDef::var_ for which to plot a line

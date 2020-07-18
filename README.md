@@ -151,12 +151,19 @@ For instance, here we use the same ntuple to define three components: muons at h
 ### Main `Hist1D` options
 
 The `Hist1D` objects are pushed into a `PlotMaker` and generate one plot per plot style defined by the vector of `PlotOpt`. Input arguments for the standard constructor are:
-- **X axis**: An `Axis` object with the constructor `Axis(std::size_t nbins, double xmin, double xmax, const NamedFunc &var, const std::string &title = "", const std::set<double> &cut_vals = {})`
-  - `var` is the variable to plot.
+
+```c++
+Hist1D(const Axis &xaxis, const NamedFunc &cut, const std::vector<std::shared_ptr<Process> > &processes,
+       const std::vector<PlotOpt> &plot_options = {PlotOpt()}, const std::vector<NamedFunc> &weights = {"1"});
+```
+
+- **X axis**: An `Axis` object with the constructor `Axis(std::size_t nbins, double xmin, double xmax, const NamedFunc &var, const std::string &title = "", const std::set<double> &cut_vals = {}, const std::vector<NamedFunc> &weights = {"1"})`
+  - `var` is the variable to plot. It also accepts a `vector<NamedFunc>`, in which case it plots a different variable for each component in the order they are pushed to `processes`. If provided fewer variables than components, the first variable is used on the remaining components.
   - `cut_vals` is an optional argument with the positions of dashed vertical lines to be drawn on plot, typically indicated some sort of possible cut.
 - **Selection cuts**: cuts applied to all components in plot, shown in the title when `TitleType::info` is selected and used to form the name of the plot file. 
 - **List of `Process`**: plot components to be included.
 - **List of `PlotOpt`**: plot styles to be used. Produces one file per style.
+- **List of weights**: the weight to be used for each of the components in the order they are pushed to `processes`. Given as a string or `NamedFunc`, eg, `weight_pid/1000`. If provided fewer weights than components, the first weight is used on the remaining components.
 
 The full list of options is in [inc/core/hist1d.hpp](https://github.com/umd-lhcb/plot_scripts/blob/master/inc/core/hist1d.hpp).
 Some of these options are illustrated below

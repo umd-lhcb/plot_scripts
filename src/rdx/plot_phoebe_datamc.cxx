@@ -87,9 +87,10 @@ int main(){
   procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D*^{+} #mu #nu",Process::Type::background, colors("dspmu"),
                                                        set<string>({repofolder+ntuplefile}),
                                                        event_type == static_cast<double>(eventType::dspmu)));
-  
+
   PlotMaker pm;
-  pm.Push<Hist1D>(Axis(260, -3, 10,"m_nu1", "m_{miss}^{2} [GeV^{2}]"), "1", procs, plottypes).Weight(weight);
+  pm.Push<Hist1D>(Axis(260, -3, 10,"m_nu1", "m_{miss}^{2} [GeV^{2}]"), "1", procs, plottypes,
+                  vector<NamedFunc>({"1", weight, weight}));
   pm.MakePlots(0.5); // The "1" is the luminosity to rescale the bkg to  
 
 
