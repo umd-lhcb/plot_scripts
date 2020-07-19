@@ -53,7 +53,7 @@ int main(){
 
   PlotOpt lin_lumi("txt/plot_styles.txt", "LHCbPaper");
   lin_lumi.Title(TitleType::info)
-    .Bottom(BottomType::off)
+    .Bottom(BottomType::ratio)
     .YAxis(YAxisType::linear)
     .Stack(StackType::data_norm)
     .Overflow(OverflowType::none);
@@ -90,7 +90,7 @@ int main(){
 
   NamedFunc isocuts = "1"; // Add here cuts for ISO sample, for instance
   PlotMaker pm;
-  pm.Push<Hist1D>(Axis(260, -3, 10,"m_nu1", "m_{miss}^{2} [GeV^{2}]"), isocuts, procs, plottypes,
+  pm.Push<Hist1D>(Axis(40, -2, 10,"m_nu1", "m_{miss}^{2} [GeV^{2}]"), isocuts, procs, plottypes,
                   vector<NamedFunc>({weight}));
   pm.MakePlots(1); // The "1" is the luminosity to rescale the bkg to  
 
