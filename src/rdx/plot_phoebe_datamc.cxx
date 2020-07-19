@@ -62,7 +62,7 @@ int main(){
 
   //////// Signal, normalization, D** processes for mmiss2 plot
   string repofolder = "ntuples/";
-  repofolder = "/Volumes/manuelf_t5/lhcb-ntuples-gen/ntuples/";
+  //repofolder = "/Volumes/manuelf_t5/lhcb-ntuples-gen/ntuples/";
   string ntuplefile = "ref-rdx-run1/Dst-mix/Dst--20_07_02--mix--all--2011-2012--md-mu--phoebe.root";
   
   NamedFunc event_type("event_type",[&](const Baby &b){
@@ -88,10 +88,11 @@ int main(){
                                                        set<string>({repofolder+ntuplefile}),
                                                        event_type == static_cast<double>(eventType::dspmu)));
 
+  NamedFunc isocuts = "1"; // Add here cuts for ISO sample, for instance
   PlotMaker pm;
-  pm.Push<Hist1D>(Axis(260, -3, 10,"m_nu1", "m_{miss}^{2} [GeV^{2}]"), "1", procs, plottypes,
-                  vector<NamedFunc>({"1", weight, weight}));
-  pm.MakePlots(0.5); // The "1" is the luminosity to rescale the bkg to  
+  pm.Push<Hist1D>(Axis(260, -3, 10,"m_nu1", "m_{miss}^{2} [GeV^{2}]"), isocuts, procs, plottypes,
+                  vector<NamedFunc>({weight}));
+  pm.MakePlots(1); // The "1" is the luminosity to rescale the bkg to  
 
 
   time(&endtime);

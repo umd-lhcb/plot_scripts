@@ -27,7 +27,7 @@ Compilation requires `c++11` and `ROOT 6`. To compile it and run a minimal examp
     
 The `&&` simply concatenates commands if the
 first was successful. You will obtain a cute little plot `plots/FitVar_Mmiss2d1000000__sigontop_lin.pdf`
-based on a small ntuple committed with the project.
+based on a small ntuple committed with the project. Some times when the files in the `src/core` and `inc/core` folders are changed, and `./compile.py clean` is needed.
 
 In general, the scripts in this repo rely on the ntuples
 that are in the [lhcb-ntuples-gen](https://github.com/umd-lhcb/lhcb-ntuples-gen) project, downloaded
@@ -163,7 +163,7 @@ Hist1D(const Axis &xaxis, const NamedFunc &cut, const std::vector<std::shared_pt
 - **Selection cuts**: cuts applied to all components in plot, shown in the title when `TitleType::info` is selected and used to form the name of the plot file. 
 - **List of `Process`**: plot components to be included.
 - **List of `PlotOpt`**: plot styles to be used. Produces one file per style.
-- **List of weights**: the weight to be used for each of the components in the order they are pushed to `processes`. Given as a string or `NamedFunc`, eg, `weight_pid/1000`. If provided fewer weights than components, the first weight is used on the remaining components.
+- **List of weights**: the weight to be used for each of the components in the order they are pushed to `processes`. Given as a vector of `NamedFunc`, eg, `vector<NamedFunc>({"1", weight, 2*weight})`. If provided fewer weights than components, the first weight is used on the remaining components.
 
 The full list of options is in [inc/core/hist1d.hpp](https://github.com/umd-lhcb/plot_scripts/blob/master/inc/core/hist1d.hpp).
 Some of these options are illustrated below

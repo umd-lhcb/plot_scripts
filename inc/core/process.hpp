@@ -73,8 +73,8 @@ Process::Process(BabyType * /*dummy_baby*/,
   color_(color){
   std::lock_guard<std::mutex> lock(mutex_);
   for(const auto &file: files){
-    if(Glob(file).size() == 0) ERROR("\n\nNo file found for "+file+"\nCheck that the file exists\n");
     const auto &full_files = Glob(file);
+    if(full_files.size() == 0) ERROR("\n\nNo file found for "+file+"\nCheck that the file exists\n");
     for(const auto &full_file: full_files){
       bool found = false;
       for(auto &baby_p: baby_pool_){
