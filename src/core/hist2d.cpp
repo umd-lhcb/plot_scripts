@@ -280,20 +280,21 @@ void Hist2D::MakeOnePlot(const string &subdir){
       ileg++;
     }
   }
-for(size_t i = 0; i < n_columns; ++i)
-  legends[i]->Draw("same");
+  for(size_t i = 0; i < n_columns; ++i){
+    legends[i]->Draw("same");
  
-  //  legend.Draw("same");
-  bkg_hist.Draw("axis same");
+    //  legend.Draw("same");
+    bkg_hist.Draw("axis same");
 
-  if(subdir != "") mkdir(("plots/"+subdir).c_str(), 0777);
-  string base_name = subdir != ""
-    ? "plots/"+subdir+"/"+Name()
-    : "plots/"+Name();
-  for(const auto &ext: this_opt_.FileExtensions()){
-    string full_name = base_name+"__"+this_opt_.TypeString()+'.'+ext;
-    c.Print(full_name.c_str());
-    cout << "open " << full_name << endl;
+    if(subdir != "") mkdir(("plots/"+subdir).c_str(), 0777);
+    string base_name = subdir != ""
+      ? "plots/"+subdir+"/"+Name()
+      : "plots/"+Name();
+    for(const auto &ext: this_opt_.FileExtensions()){
+      string full_name = base_name+"__"+this_opt_.TypeString()+'.'+ext;
+      c.Print(full_name.c_str());
+      cout << "open " << full_name << endl;
+    }
   }
 }
 
