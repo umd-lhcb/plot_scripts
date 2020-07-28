@@ -9,11 +9,11 @@ vpath %.exe $(EXEDIR)
 vpath %.d $(MAKEDIR)
 
 CXX := $(shell root-config --cxx)
-EXTRA_WARNINGS := -Wcast-align -Wcast-qual -Wformat=2 -Wformat-nonliteral -Wformat-security -Wformat-y2k -Winit-self -Winvalid-pch -Wlong-long -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn -Wpacked -Wpointer-arith -Wredundant-decls -Wstack-protector -Wswitch-default -Wswitch-enum -Wundef -Wunused -Wvariadic-macros -Wwrite-strings -Wctor-dtor-privacy -Wnon-virtual-dtor -Wsign-promo -Wsign-compare #-Wunsafe-loop-optimizations -Wfloat-equal -Wsign-conversion -Wunreachable-code
+EXTRA_WARNINGS := -Wcast-align -Wcast-qual -Wformat=2 -Wformat-nonliteral -Wformat-security -Wformat-y2k -Winit-self -Winvalid-pch -Wlong-long -Wmissing-format-attribute -Wmissing-include-dirs -Wpacked -Wpointer-arith -Wredundant-decls -Wstack-protector -Wswitch-default -Wswitch-enum -Wundef -Wunused -Wvariadic-macros -Wwrite-strings -Wctor-dtor-privacy -Wnon-virtual-dtor -Wsign-promo -Wsign-compare #-Wmissing-noreturn -Wunsafe-loop-optimizations -Wfloat-equal -Wsign-conversion -Wunreachable-code
 CXXFLAGS := -isystem $(shell root-config --incdir) -Wall -Wextra -pedantic -Werror -Wshadow -Woverloaded-virtual -Wold-style-cast $(EXTRA_WARNINGS) $(shell root-config --cflags) -O2 -I $(INCDIR)
 LD := $(shell root-config --ld)
 LDFLAGS := $(shell root-config --ldflags)
-LDLIBS := $(shell root-config --libs) -lMinuit -lRooStats -lRooFitCore -lRooFit -lTreePlayer 
+LDLIBS := $(shell root-config --libs) -lMinuit -lRooStats -lRooFitCore -lRooFit -lTreePlayer
 
 GET_DEPS = $(CXX) $(CXXFLAGS) -MM -MP -MT "$(subst $(SRCDIR),$(OBJDIR),$(subst .cxx,.o,$(subst .cpp,.o,$<))) $@" -MF $@ $<
 COMPILE = $(CXX) $(CXXFLAGS) -o $@ -c $<

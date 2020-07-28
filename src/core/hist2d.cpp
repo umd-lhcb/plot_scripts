@@ -115,7 +115,7 @@ Hist2D::Hist2D(const Axis &xaxis, const Axis &yaxis, const NamedFunc &cut,
   if(xaxis.units_ != "") xtitle += " ["+xaxis.units_+"]";
   string ytitle = yaxis_.title_;
   if(yaxis.units_ != "") ytitle += " ["+yaxis.units_+"]";
-    
+
   TH2D empty("", (";"+xtitle+";"+ytitle).c_str(),
              xaxis_.Nbins(), &xaxis_.Bins().at(0),
              yaxis_.Nbins(), &yaxis_.Bins().at(0));
@@ -132,7 +132,7 @@ Hist2D::Hist2D(const Axis &xaxis, const Axis &yaxis, const NamedFunc &cut,
     hist_template.SetMarkerStyle(process->GetMarkerStyle());
     hist_template.SetMarkerSize(process->GetMarkerSize());
     unique_ptr<SingleHist2D> hist(new SingleHist2D(*this, process, hist_template));
-      
+
     switch(process->type_){
     case Process::Type::data:
       datas_.push_back(move(hist));
@@ -206,7 +206,7 @@ void Hist2D::MakeOnePlot(const string &subdir){
   double top = 1;
   double bottom = 1.-this_opt_.TopMargin() + 0.01;
   double delta_x = this_opt_.TrueLegendWidth(n_columns);
-  
+
   vector<shared_ptr<TLegend> > legends(n_columns);
   for(size_t i = 0; i < n_columns; ++i){
     double x = left+i*delta_x;
@@ -217,13 +217,13 @@ void Hist2D::MakeOnePlot(const string &subdir){
     legends.at(i)->SetTextFont(this_opt_.Font());
   }
 
-  
+
   // TLegend legend(this_opt_.LeftMargin(), 1.-this_opt_.TopMargin(),
   //                bkg_is_hist ? 1.-this_opt_.RightMargin() : 1.-0.05, 1.);
   // legend.SetNColumns(datas_.size() + signals_.size() + (bkg_is_hist ? 0 : backgrounds_.size()));
   // legend.SetBorderSize(0);
   // legend.SetFillStyle(4000);
-  
+
   TH2D bkg_hist = GetBkgHist(bkg_is_hist);
   vector<TGraph> bkg_graphs;
   if(bkg_is_hist) bkg_graphs.clear();
@@ -264,7 +264,7 @@ void Hist2D::MakeOnePlot(const string &subdir){
   for(auto &l: labels){
     l->Draw("same");
   }
-  
+
   int ileg=0;
   for(size_t i = 0; i < datas_.size(); ++i){
     AddEntry(*legends[ileg], *datas_.at(i), data_graphs.at(i));
@@ -280,20 +280,21 @@ void Hist2D::MakeOnePlot(const string &subdir){
       ileg++;
     }
   }
-for(size_t i = 0; i < n_columns; ++i)
-  legends[i]->Draw("same");
- 
-  //  legend.Draw("same");
-  bkg_hist.Draw("axis same");
+  for(size_t i = 0; i < n_columns; ++i){
+    legends[i]->Draw("same");
 
-  if(subdir != "") mkdir(("plots/"+subdir).c_str(), 0777);
-  string base_name = subdir != ""
-    ? "plots/"+subdir+"/"+Name()
-    : "plots/"+Name();
-  for(const auto &ext: this_opt_.FileExtensions()){
-    string full_name = base_name+"__"+this_opt_.TypeString()+'.'+ext;
-    c.Print(full_name.c_str());
-    cout << "open " << full_name << endl;
+    //  legend.Draw("same");
+    bkg_hist.Draw("axis same");
+
+    if(subdir != "") mkdir(("plots/"+subdir).c_str(), 0777);
+    string base_name = subdir != ""
+      ? "plots/"+subdir+"/"+Name()
+      : "plots/"+Name();
+    for(const auto &ext: this_opt_.FileExtensions()){
+      string full_name = base_name+"__"+this_opt_.TypeString()+'.'+ext;
+      c.Print(full_name.c_str());
+      cout << "open " << full_name << endl;
+    }
   }
 }
 
@@ -385,14 +386,14 @@ vector<shared_ptr<TLatex> > Hist2D::GetLabels(bool bkg_is_hist) const{
   if(extra.find("splitline")!=std::string::npos)
     labels.push_back(make_shared<TLatex>(left-0.022, top-0.052,
 					 ("#scale[0.69]{#font[52]{ "+extra+"}}").c_str()));
-  
+
   else labels.push_back(make_shared<TLatex>(left-0.023, top-0.05,
 					    ("#scale[0.67]{#font[52]{ "+extra+"}}").c_str()));
   labels.back()->SetNDC();
   labels.back()->SetTextAlign(13);
   labels.back()->SetTextFont(this_opt_.Font());
 
-  if(this_opt_.Title() == TitleType::simulation_supplementary || this_opt_.Title() == TitleType::supplementary ){  
+  if(this_opt_.Title() == TitleType::simulation_supplementary || this_opt_.Title() == TitleType::supplementary ){
     labels.push_back(make_shared<TLatex>(right, top-0.062,
 					 "#scale[0.73]{#font[82]{arXiv:xxxx.xxxxx}}"));
     labels.back()->SetNDC();
@@ -409,7 +410,7 @@ vector<shared_ptr<TLatex> > Hist2D::GetLabels(bool bkg_is_hist) const{
   labels.back()->SetNDC();
   labels.back()->SetTextAlign(33);
   labels.back()->SetTextFont(this_opt_.Font());
-  
+
   return labels;
 }
 
@@ -419,7 +420,7 @@ string Hist2D::Name() const{
 
   string weight = "";
   if(weight_.Name() != "weight") weight = "__"+weight_.Name();
-  
+
   if(tag_ == ""){
     return CodeToPlainText(yaxis_.var_.Name()+"__"+xaxis_.var_.Name()+cut+weight);
   }else{
@@ -470,7 +471,7 @@ void Hist2D::AddEntry(TLegend &l, const SingleHist2D &h, const TGraph &g) const{
   if(h.process_->type_ == Process::Type::signal){
     print_rho = false;
   }
-  
+
   if(print_rho){
     double rho = h.clusterizer_.GetHistogram(1.).GetCorrelationFactor();
     oss.precision(1);
