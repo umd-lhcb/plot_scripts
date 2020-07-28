@@ -282,7 +282,11 @@ void Hist2D::MakeOnePlot(const string &subdir){
   }
   for(size_t i = 0; i < n_columns; ++i){
     legends[i]->Draw("same");
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> 55ae42afd4eca510fd4c7ba5f170540e2f7eeccc
     //  legend.Draw("same");
     bkg_hist.Draw("axis same");
 
