@@ -122,6 +122,7 @@ private:
   void FixAsymmErrors() const;
   void FixAsymmErrors(const std::unique_ptr<SingleHist1D> &sh1d) const;
 
+  void GetOverflows(bool &underflow, bool &overflow) const;
   void SetRanges() const;
 
   void ApplyStyles() const;

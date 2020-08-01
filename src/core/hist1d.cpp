@@ -649,10 +649,9 @@ void Hist1D::InitializeHistos() const{
   }
 }
 
-/*!\brief Moves overflow (underflow) contents into last (first) visible bin
+/*!\brief Returns whether the underflow and overflow are plotted
  */
-void Hist1D::MergeOverflow() const{
-  bool underflow = false, overflow = false;
+void Hist1D::GetOverflows(bool &underflow, bool &overflow) const{
   switch(this_opt_.Overflow()){
   default:
   case OverflowType::none:
@@ -673,6 +672,14 @@ void Hist1D::MergeOverflow() const{
     break;
   }
 
+}
+
+/*!\brief Moves overflow (underflow) contents into last (first) visible bin
+ */
+void Hist1D::MergeOverflow() const{
+  bool underflow, overflow;
+  GetOverflows(underflow, overflow);
+  
   for(auto &hist: backgrounds_){
     ::MergeOverflow(hist->scaled_hist_, underflow, overflow);
   }
@@ -726,11 +733,15 @@ void Hist1D::NormalizeHistos() const{
   if(this_opt_.Stack() == StackType::data_norm){
     if(datas_.size() == 0 || (backgrounds_.size() +signals_.size())== 0) return;
     int nbins = xaxis_.Nbins();
+    bool underflow, overflow;
+    GetOverflows(underflow, overflow);
+    int inibin = (underflow ? 0 : 1), endbin = (overflow ? nbins+1 : nbins);
+
     double data_error, mc_error;
-    double data_norm = datas_.front()->scaled_hist_.IntegralAndError(0, nbins+1, data_error, "width");
+    double data_norm = datas_.front()->scaled_hist_.IntegralAndError(inibin, endbin, data_error, "width");
     double mc_norm;
-    if(backgrounds_.size() > 0) mc_norm = backgrounds_.front()->scaled_hist_.IntegralAndError(0, nbins+1, mc_error, "width");
-    if(signals_.size() > 0) mc_norm = signals_.front()->scaled_hist_.IntegralAndError(0, nbins+1, mc_error, "width");
+    if(backgrounds_.size() > 0) mc_norm = backgrounds_.front()->scaled_hist_.IntegralAndError(inibin, endbin, mc_error, "width");
+    if(signals_.size() > 0) mc_norm = signals_.front()->scaled_hist_.IntegralAndError(inibin, endbin, mc_error, "width");
     mc_scale_ = data_norm/mc_norm;
     mc_scale_error_ = hypot(data_norm*mc_error, mc_norm*data_error)/(mc_norm*mc_norm);
     for(auto &hist: backgrounds_){
@@ -742,7 +753,7 @@ void Hist1D::NormalizeHistos() const{
     for(auto h = datas_.begin(); h != datas_.end(); ++h){
       auto &hist = *h;
       double dumb;
-      double this_integral = hist->scaled_hist_.IntegralAndError(0, nbins+1, dumb, "width");
+      double this_integral = hist->scaled_hist_.IntegralAndError(inibin, endbin, dumb, "width");
       hist->scaled_hist_.Scale(this_integral == 0. ? 1. : data_norm/this_integral);
     }
   }else if(this_opt_.Stack() == StackType::shapes){
@@ -1450,7 +1461,8 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
     if(show_lumi_) label << fixed  << "L=" << setprecision(1) << luminosity_ << " fb^{-1}";
     if(this_opt_.Stack() == StackType::data_norm && datas_.size() > 0){
       if(show_lumi_) label << ", ";
-      label <<fixed<< setprecision(1)<< "(" << 100.*mc_scale_ << "# pm " << 100.*mc_scale_error_ << ")%";
+      else label << "MC scaled by ";
+      label <<fixed<< setprecision(1)<< "(" << 100.*mc_scale_ << " #pm " << 100.*mc_scale_error_ << ")%";
     }
     auto entry = leg->AddEntry(&blank_, label.str().c_str(), "f");
     entry->SetFillStyle(0);
@@ -1575,6 +1587,14 @@ double Hist1D::GetYield(std::vector<std::unique_ptr<SingleHist1D> >::const_itera
      && this_opt_.BackgroundsStacked()){
     hist = hist - (*(++h))->scaled_hist_;
   }
+  if((*h)->process_->type_ == Process::Type::signal
+     && this_opt_.BackgroundsStacked()){
+    if(h != (--signals_.cend()))
+      hist = hist - (*(++h))->scaled_hist_;
+    else if(backgrounds_.size() > 0)
+      hist = hist - backgrounds_.front()->scaled_hist_;
+  }
+
 
   //Want yield, not area, so divide out average bin width
   //N.B.: Can't just use hist.Integral() in case of varying bin width
