@@ -289,6 +289,8 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   ratio_numerator_(""),
   ratio_denominator_(""),
   plot_options_(plot_options),
+  show_lumi_(false),
+  add_legend_line_(),
   backgrounds_(),
   signals_(),
   datas_(),
@@ -300,8 +302,7 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   
   if(plot_options_.size() > 0) this_opt_ = plot_options_.front();
 
-  
-
+    
   string x_title = xaxis_.title_;
   if(xaxis_.units_ != "") x_title += " ["+xaxis_.units_+"]";
 
@@ -341,6 +342,11 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
     }
     iproc++;
   }
+
+  // Determining whether an additional line is to be added to the legend
+  if(this_opt_.DisplayLumiEntry() && ((this_opt_.Stack() == StackType::data_norm && datas_.size() > 0) || show_lumi_))
+    add_legend_line_ = true;
+  else add_legend_line_ = false;
 
   blank_.SetFillStyle(0);
   blank_.SetFillColor(kWhite);
@@ -431,7 +437,8 @@ void Hist1D::Print(double luminosity,
       DrawAll(backgrounds_, draw_opt);
     }
     if(this_opt_.ShowBackgroundError() && backgrounds_.size()) bkg_error.Draw("2 same");
-    if(this_opt_.Stack() != StackType::signal_on_top &&  this_opt_.Stack() != StackType::data_norm) DrawAll(signals_, draw_opt, true);
+    if(this_opt_.Stack() != StackType::signal_on_top &&  this_opt_.Stack() != StackType::data_norm)
+      DrawAll(signals_, draw_opt, true);
     ReplaceAll(draw_opt, "hist", "e0p");
     DrawAll(datas_, draw_opt, true);
     for(auto &cut: cut_vals) cut.Draw();
@@ -450,7 +457,7 @@ void Hist1D::Print(double luminosity,
         label.SetTextFont(this_opt_.Font()+10);label.SetTextSize(this_opt_.ExtraLabelSize());
         label.SetTextAlign(13);
         size_t num_plots = backgrounds_.size() + signals_.size() + datas_.size();
-        if(this_opt_.DisplayLumiEntry()) ++num_plots;
+        if(add_legend_line_) ++num_plots;
         double legend_height = this_opt_.TrueLegendHeight(num_plots);
         double left_bound = this_opt_.LeftMargin()+0.05;
         double bottom_bound = 1-legend_height-0.02-this_opt_.LegendPad()*2-(ilabel+1)*this_opt_.ExtraLabelSize();
@@ -464,7 +471,7 @@ void Hist1D::Print(double luminosity,
         label.SetTextFont(this_opt_.Font()+10);label.SetTextSize(this_opt_.ExtraLabelSize());
         label.SetTextAlign(33);
         size_t num_plots = backgrounds_.size() + signals_.size() + datas_.size();
-        if(this_opt_.DisplayLumiEntry()) ++num_plots;
+        if(add_legend_line_) ++num_plots;
         double legend_height = this_opt_.TrueLegendHeight(num_plots);
         double right_bound = 1-this_opt_.RightMargin()-0.03;
         double bottom_bound = 1-legend_height-0.02-this_opt_.LegendPad()*2-(ilabel+1)*this_opt_.ExtraLabelSize();
@@ -600,6 +607,14 @@ Hist1D & Hist1D::RatioTitle(const string &numerator,
   return *this;
 }
 
+Hist1D & Hist1D::ShowLumi(const bool &show_lumi){
+  show_lumi_ = show_lumi;
+  if(this_opt_.DisplayLumiEntry() && ((this_opt_.Stack() == StackType::data_norm && datas_.size() > 0) || show_lumi_))
+    add_legend_line_ = true;
+  else add_legend_line_ = false;
+  return *this;
+}
+
 /*!\brief Generates stacked and scaled histograms from unstacked and unscaled
   ones
 
@@ -713,7 +728,9 @@ void Hist1D::NormalizeHistos() const{
     int nbins = xaxis_.Nbins();
     double data_error, mc_error;
     double data_norm = datas_.front()->scaled_hist_.IntegralAndError(0, nbins+1, data_error, "width");
-    double mc_norm = signals_.front()->scaled_hist_.IntegralAndError(0, nbins+1, mc_error, "width");
+    double mc_norm;
+    if(backgrounds_.size() > 0) mc_norm = backgrounds_.front()->scaled_hist_.IntegralAndError(0, nbins+1, mc_error, "width");
+    if(signals_.size() > 0) mc_norm = signals_.front()->scaled_hist_.IntegralAndError(0, nbins+1, mc_error, "width");
     mc_scale_ = data_norm/mc_norm;
     mc_scale_error_ = hypot(data_norm*mc_error, mc_norm*data_error)/(mc_norm*mc_norm);
     for(auto &hist: backgrounds_){
@@ -1045,7 +1062,8 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
 
     ostringstream oss;
     if(top_right_ == "unset") {
-      oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
+      if(show_lumi_) oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
+      else oss << "13 TeV" << flush;
     } else oss << top_right_ << flush;
     out.push_back(make_shared<TLatex>(right, bottom+0.2*(top-bottom),
                                       oss.str().c_str()));
@@ -1133,13 +1151,14 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
     if(signals_.size() != 0 && (this_opt_.Stack()==StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm))
       denom = signals_.front()->scaled_hist_;
     if(datas_.size() == 0) ERROR("Need to have at least one data histo to make Ratio plot");
-  }else if(datas_.size() != 0){
-    denom = datas_.front()->scaled_hist_;
   }else if(signals_.size() != 0){
     denom = signals_.front()->scaled_hist_;
+  }else if(datas_.size() != 0){
+    denom = datas_.front()->scaled_hist_;
   }else{
     ERROR("No histograms available to make bottom plot");
   }
+
   bool stacked;
   switch(this_opt_.Stack()){
   case StackType::signal_overlay:
@@ -1182,7 +1201,7 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
   }
   out.back() = band;
   out.back().SetFillStyle(1001);
-  out.back().SetFillColorAlpha(backgrounds_.front()->scaled_hist_.GetLineColor(),0.2);
+  out.back().SetFillColorAlpha(out.front().GetLineColor(),0.2);
   out.back().SetLineWidth(0);
   out.back().SetMarkerStyle(0);
   out.back().SetMarkerSize(0);
@@ -1246,8 +1265,14 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
         if(den == "") den = "MC";
       }else{
         if(num == "") num = "MC";
-        if(backgrounds_.size() == 0) num = backgrounds_.back()->process_->name_;
-        if(den == "") den = backgrounds_.front()->process_->name_;
+        if(backgrounds_.size() == 0) {
+          DBG("When is this used??"<<endl);
+          num = signals_.back()->process_->name_;
+        }
+        if(den == "") {
+          if(backgrounds_.size() == 0) den = signals_.front()->process_->name_;
+          else den = backgrounds_.front()->process_->name_;
+        }
       }
       h.GetYaxis()->CenterTitle();
       h.GetYaxis()->SetTitle(("#frac{"+num+"}{"+den+"}").c_str());
@@ -1392,7 +1417,7 @@ double Hist1D::GetMinDraw(double min_bound) const{
 */
 vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
   size_t n_entries = datas_.size() + signals_.size() + backgrounds_.size();
-  if(this_opt_.DisplayLumiEntry()) ++n_entries;
+  if(add_legend_line_) ++n_entries;
   size_t n_columns = min(n_entries, static_cast<size_t>(this_opt_.LegendColumns()));
   
   double left = this_opt_.LeftMargin()+this_opt_.LegendPad();
@@ -1419,12 +1444,13 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
   //  AddEntries(legends, backgrounds_, this_opt_.BackgroundsStacked() ? "f" : "l", n_entries, entries_added);
 
   //Add a dummy legend entry to display MC normalization
-  if(this_opt_.DisplayLumiEntry()){
+  if(add_legend_line_){
     auto &leg = legends.at(GetLegendIndex(entries_added, n_entries, legends.size()));
     ostringstream label;
-    label << fixed  << "L=" << setprecision(1) << luminosity_ << " fb^{-1}";
+    if(show_lumi_) label << fixed  << "L=" << setprecision(1) << luminosity_ << " fb^{-1}";
     if(this_opt_.Stack() == StackType::data_norm && datas_.size() > 0){
-      label << ", (" << 100.*mc_scale_ << "#pm" << 100.*mc_scale_error_ << ")%";
+      if(show_lumi_) label << ", ";
+      label <<fixed<< setprecision(1)<< "(" << 100.*mc_scale_ << "# pm " << 100.*mc_scale_error_ << ")%";
     }
     auto entry = leg->AddEntry(&blank_, label.str().c_str(), "f");
     entry->SetFillStyle(0);
@@ -1521,7 +1547,7 @@ void Hist1D::AddEntries(vector<shared_ptr<TLegend> > &legends,
 */
 double Hist1D::GetLegendRatio() const{
   size_t num_plots = backgrounds_.size() + signals_.size() + datas_.size();
-  if(this_opt_.DisplayLumiEntry()) ++num_plots;
+  if(add_legend_line_) ++num_plots;
   double legend_height = this_opt_.TrueLegendHeight(num_plots);
   double top_plot_height;
   if(this_opt_.Bottom() == BottomType::off){

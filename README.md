@@ -181,7 +181,6 @@ Some of these options are illustrated below
 ```
 
 Some of the key options that can be changed as it is being pushed to `PlotMaker` are:
-- **`Weight`**: the weight to be used for the `backgroung` and `signal` components as a string or `NamedFunc`, eg, `weight_pid/1000`.
 - **`Tag`**: additional string added to the plot filename to label it or to make it different from other plots being created at the same time. The latter is an issue when you are making plots with the same X-axis variable and cuts, but different binnings or processes, because the latter are not registered in the file name.
 - **`TopRight`** (**Fig. 2a**): text to be added to the top right of the plot when not in `TitleType::info`. By default it is set to luminosity (energy), eg `1 ifb (13 TeV)`.
 - **`LeftLabel`** (**Fig. 2b**) and **`RightLabel`** (**Fig. 2c**): Labels added below the legend. Input is a vector of `string` that are placed on top of each other.
