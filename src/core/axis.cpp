@@ -110,6 +110,7 @@ vector<double> Axis::GetEdges(size_t nbins, double xmin, double xmax){
 }
 
 void Axis::ParseUnits(){
+  if(title_ == "unset") title_ = var_.Name();
   auto p1 = title_.rfind('[');
   auto p2 = title_.rfind(']');
   if(p1 >= p2 || p2 == string::npos) return;

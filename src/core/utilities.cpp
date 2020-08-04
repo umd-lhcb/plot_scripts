@@ -145,11 +145,22 @@ string CodeToRootTex(string code){
   ReplaceAll(code, "pixx_", "pi_"); // Needed because pi_ inside spi_
   ReplaceAll(code, "k_", "K ");
   ReplaceAll(code, "mu_", "#mu ");
+
+  ReplaceAll(code, "piminus_", "#pi_{slow} ");
+  ReplaceAll(code, "piminus0_", "#pi ");
+  ReplaceAll(code, "Kplus_", "K ");
+  ReplaceAll(code, "muplus_", "#mu ");
+  ReplaceAll(code, "D0_", "D^{0} ");
+  ReplaceAll(code, "Dst_2010_minus_", "D*^{+} ");
+
+  
   ReplaceAll(code, " PT", " p^{reco}");
   ReplaceAll(code, " TRUEPT", " p^{true}");
   ReplaceAll(code, "FitVar_q2/1000000", " q^{2}");
   ReplaceAll(code, "FitVar_Mmiss2/1000000", " m^{2}_{miss}");
   ReplaceAll(code, "b0_ISOLATION_BDT", " BDT_{iso}");
+  ReplaceAll(code, "Y_ISOLATION_BDT", " BDT_{iso}");
+  ReplaceAll(code, "eta", "#eta");
 
   ReplaceAll(code, "mom_is_dsp", "mom D^{*+} ");
   
@@ -158,6 +169,7 @@ string CodeToRootTex(string code){
   ReplaceAll(code, "<=", " #leq ");
   ReplaceAll(code, "<", " < ");
   ReplaceAll(code, "&&", ", ");
+  ReplaceAll(code, "||", " || ");
   ReplaceAll(code, "==", " = ");
   ReplaceAll(code, "(", "");
   ReplaceAll(code, ")", "");

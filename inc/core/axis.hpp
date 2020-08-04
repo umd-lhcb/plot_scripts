@@ -13,21 +13,21 @@ class Axis{
 public:
   Axis(const std::vector<double> &bins,
        const NamedFunc &var,
-       const std::string &title = "",
+       const std::string &title = "unset",
        const std::set<double> &cut_vals = {});
   Axis(std::size_t nbins,
        double xmin, double xmax,
        const NamedFunc &var,
-       const std::string &title = "",
+       const std::string &title = "unset",
        const std::set<double> &cut_vals = {});
   Axis(const std::vector<double> &bins,
        const std::vector<NamedFunc> &vars,
-       const std::string &title = "",
+       const std::string &title = "unset",
        const std::set<double> &cut_vals = {});
   Axis(std::size_t nbins,
        double xmin, double xmax,
        const std::vector<NamedFunc> &vars,
-       const std::string &title = "",
+       const std::string &title = "unset",
        const std::set<double> &cut_vals = {});
 
   Axis(const Axis &) = default;

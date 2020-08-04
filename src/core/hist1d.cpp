@@ -516,6 +516,17 @@ void Hist1D::Print(double luminosity,
       : "plots/"+Name();
     for(const auto &ext: this_opt_.FileExtensions()){
       string full_name = base_name+"__"+this_opt_.TypeString()+'.'+ext;
+      if(full_name.size() > 200){
+        ReplaceAll(full_name, "Kplus", "k");
+        ReplaceAll(full_name, "piminus0", "pi");
+        ReplaceAll(full_name, "piminus", "spi");
+        ReplaceAll(full_name, "muplus", "mu");
+        ReplaceAll(full_name, "Dst_2010_minus", "dst");
+      }       
+      if(full_name.size() > 200){
+        string siz = to_string(full_name.size());
+        full_name = full_name.substr(0,180)+"_orisize"+siz+'.'+ext;
+      }
       full->Print(full_name.c_str());
       cout << " open " << full_name << endl;
     }
@@ -885,7 +896,7 @@ void Hist1D::StyleHisto(TH1D &h) const{
   case StackType::data_norm:
     /* FALLTHRU */
   case StackType::lumi_shapes:
-    if(xaxis_.units_ == "" && bin_width == 1){
+    if(xaxis_.units_ == "" && bin_width == 1 && false){ // Added the false for now, typically here you're plotting ints
       title << Yunit;    
       break;
     }
@@ -1131,6 +1142,9 @@ vector<TLine> Hist1D::GetCutLines(double y_min, double y_max, bool adjust_bottom
   }
   vector<TLine> out(xaxis_.cut_vals_.size());
   for(double cut: xaxis_.cut_vals_){
+    double left = xaxis_.Bins().front();
+    double right = xaxis_.Bins().back();
+    if(cut <= left || cut >= right) continue;
     out.emplace_back(cut, bottom, cut, y_max);
     out.back().SetNDC(false);
     out.back().SetLineStyle(2);
