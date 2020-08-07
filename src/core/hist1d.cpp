@@ -299,10 +299,10 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   luminosity_(),
   mc_scale_(),
   mc_scale_error_(){
-  
+
   if(plot_options_.size() > 0) this_opt_ = plot_options_.front();
 
-    
+
   string x_title = xaxis_.title_;
   if(xaxis_.units_ != "") x_title += " ["+xaxis_.units_+"]";
 
@@ -314,7 +314,7 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
     // Adding xvars_[0] if not enough xvars_ were provided
     if(xvars_.size() < processes.size()) xvars_.push_back(xvars_[0]);
     if(weights_.size() < processes.size()) weights_.push_back(weights_[0]);
-    
+
     unique_ptr<SingleHist1D> hist(new SingleHist1D(*this, process, empty, xvars_[iproc], weights_[iproc]));
     hist->raw_hist_.SetFillColor(process->GetFillColor());
     if((this_opt_.Stack() == StackType::signal_on_top || this_opt_.Stack() == StackType::data_norm) && process->type_ == Process::Type::signal)
@@ -453,7 +453,7 @@ void Hist1D::Print(double luminosity,
 
     if(left_label_.size()>0){
       for (unsigned ilabel(0); ilabel<left_label_.size(); ilabel++) {
-        TLatex label; 
+        TLatex label;
         label.SetTextFont(this_opt_.Font()+10);label.SetTextSize(this_opt_.ExtraLabelSize());
         label.SetTextAlign(13);
         size_t num_plots = backgrounds_.size() + signals_.size() + datas_.size();
@@ -467,7 +467,7 @@ void Hist1D::Print(double luminosity,
 
     if(right_label_.size()>0){
       for (unsigned ilabel(0); ilabel<right_label_.size(); ilabel++) {
-        TLatex label; 
+        TLatex label;
         label.SetTextFont(this_opt_.Font()+10);label.SetTextSize(this_opt_.ExtraLabelSize());
         label.SetTextAlign(33);
         size_t num_plots = backgrounds_.size() + signals_.size() + datas_.size();
@@ -491,7 +491,7 @@ void Hist1D::Print(double luminosity,
       TH1D *hbot = (bot_plots.size() ? &(bot_plots[0]) : 0);
       if(hdata==0 || hmc==0 || hbot==0 || hdata->Integral()==0|| hbot->Integral()==0) cout<<"Printing values failed: no histogram or no entries in histogram"<<endl;
       else {
-	int digits = floor(log10(max(hdata->GetBinContent(hdata->GetMaximumBin()), 
+	int digits = floor(log10(max(hdata->GetBinContent(hdata->GetMaximumBin()),
 				     hmc->GetBinContent(hmc->GetMaximumBin())))+1.);
 	//// Digits for error are calculated with the sqrt, and added 2 to print with one decimal
 	int edigits = floor(log10(sqrt(max(hdata->GetMaximum(), hmc->GetMaximum())))+1.)+2;
@@ -522,7 +522,7 @@ void Hist1D::Print(double luminosity,
         ReplaceAll(full_name, "piminus", "spi");
         ReplaceAll(full_name, "muplus", "mu");
         ReplaceAll(full_name, "Dst_2010_minus", "dst");
-      }       
+      }
       if(full_name.size() > 200){
         string siz = to_string(full_name.size());
         full_name = full_name.substr(0,180)+"_orisize"+siz+'.'+ext;
@@ -564,7 +564,7 @@ string Hist1D::Name() const{
 
   string weight = "";
   if(weight_.Name() != "1") weight = "__"+weight_.Name();
-  
+
   if(tag_ == ""){
     return CodeToPlainText(xaxis_.var_.Name()+cut+weight);
   }else{
@@ -690,7 +690,7 @@ void Hist1D::GetOverflows(bool &underflow, bool &overflow) const{
 void Hist1D::MergeOverflow() const{
   bool underflow, overflow;
   GetOverflows(underflow, overflow);
-  
+
   for(auto &hist: backgrounds_){
     ::MergeOverflow(hist->scaled_hist_, underflow, overflow);
   }
@@ -750,7 +750,7 @@ void Hist1D::NormalizeHistos() const{
 
     double data_error, mc_error;
     double data_norm = datas_.front()->scaled_hist_.IntegralAndError(inibin, endbin, data_error, "width");
-    double mc_norm;
+    double mc_norm = 0.0;
     if(backgrounds_.size() > 0) mc_norm = backgrounds_.front()->scaled_hist_.IntegralAndError(inibin, endbin, mc_error, "width");
     if(signals_.size() > 0) mc_norm = signals_.front()->scaled_hist_.IntegralAndError(inibin, endbin, mc_error, "width");
     mc_scale_ = data_norm/mc_norm;
@@ -877,13 +877,13 @@ void Hist1D::StyleHisto(TH1D &h) const{
   h.SetTitleSize(this_opt_.TitleSize(), "xyz");
   h.SetLabelFont(this_opt_.Font(), "xyz");
   h.SetTitleFont(this_opt_.Font(), "xyz");
-  
+
   double bin_width = xaxis_.AvgBinWidth();
 
   bool have_vec_ = false; // To be properly filled from the SingleHist1D...
   string Yunit = (have_vec_?"Entries":"Candidates");
   string yunit = (have_vec_?"entries":"candidates");
-  
+
   ostringstream title;
   switch(this_opt_.Stack()){
   default:
@@ -897,7 +897,7 @@ void Hist1D::StyleHisto(TH1D &h) const{
     /* FALLTHRU */
   case StackType::lumi_shapes:
     if(xaxis_.units_ == "" && bin_width == 1 && false){ // Added the false for now, typically here you're plotting ints
-      title << Yunit;    
+      title << Yunit;
       break;
     }
     else{
@@ -917,7 +917,7 @@ void Hist1D::StyleHisto(TH1D &h) const{
 	break;
       }
     }
-    else{  
+    else{
       if(xaxis_.units_ == "" && bin_width == 1){
 	title << "% of "<<yunit;
 	break;
@@ -929,7 +929,7 @@ void Hist1D::StyleHisto(TH1D &h) const{
       }
     }
   }
-  
+
   h.GetYaxis()->SetTitle(title.str().c_str());
 }
 
@@ -1008,7 +1008,7 @@ void Hist1D::FixYAxis(vector<TH1D> &bottom_plots) const{
 
     //Scale offset by good empirical numbers
     offset = 0.6+0.25*digits;
-  
+
   }
   for(auto &hist: backgrounds_){
     hist->scaled_hist_.SetTitleOffset(offset, "y");
@@ -1073,10 +1073,10 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
     default:
       ERROR("Did not understand title type "+to_string(static_cast<int>(this_opt_.Title())));
     }
-   
+
     out.push_back(make_shared<TLatex>(left, bottom+0.2*(top-bottom),
 				      ("#font[62]{LHCb}#scale[0.74]{#font[52]{ "+extra+"}}").c_str()));
-   
+
     out.back()->SetNDC();
     out.back()->SetTextAlign(11);
     out.back()->SetTextFont(this_opt_.Font());
@@ -1237,7 +1237,7 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
       denom.SetBinError(bin, 0.);
     }
   }
-  
+
   switch(this_opt_.Bottom()){
   case BottomType::ratio:
     for(auto &h: out){
@@ -1444,7 +1444,7 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
   size_t n_entries = datas_.size() + signals_.size() + backgrounds_.size();
   if(add_legend_line_) ++n_entries;
   size_t n_columns = min(n_entries, static_cast<size_t>(this_opt_.LegendColumns()));
-  
+
   double left = this_opt_.LeftMargin()+this_opt_.LegendPad();
   double top = 1.-this_opt_.TopMargin()-this_opt_.LegendPad();
   double bottom = top-this_opt_.TrueLegendHeight(n_entries);
@@ -1541,7 +1541,7 @@ void Hist1D::AddEntries(vector<shared_ptr<TLegend> > &legends,
     double fudge_offset = -0.18;
     for(auto &leg: legends)
       leg->SetEntrySeparation(fudge_offset);
-    
+
     //Shrink text size if label is long
     double fudge_factor = 0.25;//Not sure how TLegend width affects marker width, but this seems to work
     double max_width = (this_opt_.TrueLegendWidth(n_entries)-this_opt_.LegendMarkerWidth()*fudge_factor) * this_opt_.CanvasWidth();
