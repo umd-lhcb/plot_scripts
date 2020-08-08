@@ -1,3 +1,10 @@
+// Overall, the goal of this script is to translate Phoebe's code RDRDsrRun1AnalaysisPreservation to
+// work using the plotscripts packages. The plan (for now) is to essentially copy her code and run
+// over a run 1 ntuple (with data and MC). I'll try to mark the places where it's unclear to me if
+// Phoebe's code actually matches up with the ANA note (with an "edit?" and hopefully some description),
+// or anywhere where I think work needs to be done for correctness' sake.
+
+
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -24,7 +31,7 @@ using namespace std;
 using namespace PlotOptTypes;
 
 
-// Somewhat arbitrary groupings (may want to separate strange decays from other dss...)
+// Somewhat arbitrary groupings (also, may want to separate strange decays from other dss...)
 enum class eventType {data, dsptau, dspmu, dss, dd, misID_plus_comb, unknown}; // add any other event types here
 
 
@@ -37,6 +44,18 @@ eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t 
   // data
   if(DstIDprod > 0 && IDprod > 0 && muPID > 0. && flagDstSB==0. && isData > 0.)
     return eventType::data;
+  // combinatorial background (part of data, but taken as background MC)    TODO
+  /*else if
+    return eventType::misID_plus_comb;
+  // Combinatorial D* (part of data, but taken as background MC)      TODO
+  else if
+    return eventType::misID_plus_comb;
+  // Misidentified PID (part of data, but taken as background MC)     TODO
+  else if
+    return eventType::misID_plus_comb;*/
+
+  // edit? LIKELY HAVE TO EDIT MANY OF THESE CONDITIONALS BELOW TO FULLY COPY PHOEBE'S CODE
+
   // signal B0 -> D* tau nu
   else if(isData == 0. &&  flagtaumu > 0. && JustDst > 0. && DstOk > 0. && muPID == 1. && Btype==511)
     return eventType::dsptau;
@@ -76,10 +95,10 @@ eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t 
      && muPID == 1. && !ishigher && mm_mom < 250. && Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
   // B0 -> D1 tau nu ***NOTE*** no more !ishigher? No mm_mom cut? Also, more critically, if these tau D** processes
-  // are included, the histograms really get thrown off (weights off other processes dramatically effected, and
-  // many of these tauonic D** processes get counted, and only in a single bin... I'm going to comment them out
-  // for now, but you should do some experimenting/investigating
-  /*else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 10413
+  // are included, the histograms really get thrown off (way too many of these events, and most in a single bin)...
+  // I'm going to comment them out for now, but you should do some experimenting/investigating
+  // begin questionable plots...
+  else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 10413
      && muPID == 1. && !ishigher && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
   // B0 -> D2* tau nu
@@ -101,7 +120,8 @@ eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t 
   // B- -> D1' tau nu
   else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 20423
      && muPID == 1. && !ishigher && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
-    return eventType::dss;*/
+    return eventType::dss;
+  // end questionable plots...
   // B0s -> Ds1' mu nu ***NOTE*** Manuel said these aren't dss... they seem to be in Phoebe's code, and from
   // what I can tell this is how they're categorized in the ANA note, too. Are Ds1' and Ds2* not D**?
   else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==531 && Dststtype == 435
@@ -133,6 +153,7 @@ eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t 
 
 
 
+
 int main(){
   gErrorIgnoreLevel=6000; // Turns off ROOT errors due to missing branches
 
@@ -140,10 +161,12 @@ int main(){
   time_t begtime, endtime;
   time(&begtime);
 
+
+
+  ///////////////////////// BEGIN PHOEBE PLOTS //////////////////////////////
+
   //// User defined colors
   Palette colors("txt/colors.txt", "default");
-
-  ////////////////////////////////////// Phoebe's plots ///////////////////////////////////////
 
   PlotOpt lin_lumi("txt/plot_styles.txt", "LHCbPaper");
   lin_lumi.Title(TitleType::info)
@@ -156,29 +179,121 @@ int main(){
                                           // provided as argument for histograms, all plot types should be created
                                           // as a separate pdf
 
-  //////// Signal, normalization, D** and DD processes for plots
+  // ntuple contains signal, normalization, D** and DD processes for plots
   string repofolder = "ntuples/";
   string ntuplefile = "ref-rdx-run1/Dst-mix/Dst--20_07_02--mix--all--2011-2012--md-mu--phoebe.root";
 
 
+
+
+  /////////////////// Event type and weights for processes/plots /////////////////////////
+
   NamedFunc event_type("event_type",[&](const Baby &b){
-                                      return static_cast<Double_t>(getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(), b.flagDstSB(),
-                                                                         b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
-                                                                         b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(),
-                                                                         b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom()));
-                                    });
+    return static_cast<Double_t>(getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(), b.flagDstSB(),
+                                       b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
+                                       b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(),
+                                       b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom()));
+  });
 
-  NamedFunc weight("weight",[&](const Baby &b){
-                              eventType type = getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(), b.flagDstSB(),
-                                                       b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
-                                                       b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(),
-                                                       b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom());
-                              if(type == eventType::data) return 1.;
-                              else return b.FFweight()*b.mcWeight(); // this should be modified to account for weights
-                                                                     // changing in Phoebe's code... probably better to
-                                                                     // define individual weight functions, actually
-                            });
 
+  // Weights used depends on the sample we're looking at, so make a weight func for each sample
+  // Where phoebe writes "return kTrue", I'll return 0.0 for an equivalent effect (not count the event)
+  // I'm going to ignore her code lines 1260-1284. For this first func, I'll write down the code (not
+  // all correctly converted) but comment it out...
+  // TODO definitely, all these weight funcs have to be edited...
+  NamedFunc isoweight("isoweight",[&](const Baby &b){
+    //Double_t x = b.nSPDhits();
+    //Double_t w,a,b,c,d,C,dweight;
+    //if(!MUTIS) return kTRUE;   // from Phoebe's code, commented out there
+    //if(!(MUTIS && muTOS)) return kTRUE;
+    //if(!muTOS) return kTRUE;
+    //if((muTOS)) return kTRUE;
+    //if(!(!MUTIS && YTIS)) return kTRUE;
+    //if(YTIS) return kTRUE;
+    //if (b.isData() > 0 && b.muVeto()) return 0.0;
+    //if (pislow_ismu) return kTRUE;
+    //if (b.dxy() > 7) return 0.0;
+    //if (!(b.Hlt1() && b.Hlt2())) return 0.0;
+    //if (!b.YTOS() && !b.YTIS()) return 0.0;
+    //if(!YTIS) return kTRUE;
+    //if(!((Hlt1TAL0K && K_PT > 1700) || (Hlt1TAL0pi && pi_PT > 1700))) return kTRUE;
+    //if(mu_P < 15.6e3) return kTRUE;
+    //if(mu_P < 15e3) return kTRUE;
+    //if(!(YTOS && !YTIS)) return kTRUE;
+    //bool cutpass=true;
+    //if(use_uBDT && isData > 0 && muPID > 0 && BDTmu < 0.25) return kTRUE;
+    //if(use_notuBDT && isData > 0 && muPID > 0 && BDTmu > 0.25) return kTRUE;
+    //bool singleCand=(ISOnum==0);
+    //singleCand=true;
+    //bool thecut=(iso_BDT < 0.15) || (ishigher && keepme && isData==0.);
+
+    eventType type = getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(), b.flagDstSB(),
+                             b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
+                             b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(),
+                             b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom());
+    if(type == eventType::data) return 1.;
+    else {  // is MC, so follow Phoebe's code to adjust weights
+      Double_t w_mc=b.mcWeight();
+      Double_t w_ff=b.FFweight();
+
+      return w_mc*w_ff;
+    }
+  });
+
+
+  NamedFunc ddweight("ddweight",[&](const Baby &b){
+    eventType type = getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(), b.flagDstSB(),
+                             b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
+                             b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(),
+                             b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom());
+    if(type == eventType::data) return 1.;
+    else {  // is MC, so follow Phoebe's code to adjust weights; translated lines 1294-1325
+      Double_t w_mc=b.mcWeight();
+      Double_t w_ff=b.FFweight();
+
+      Double_t iso_BDT = b.iso_BDT();
+      Double_t iso_NNkw = b.iso_NNkw();
+      if (iso_NNkw > -1 && iso_BDT > 0.15) {
+        iso_NNkw = iso_NNkw*(b.iso_Type()==3);
+        Double_t iso_NNkw2 = b.iso_NNkw2()*(b.iso_Type2()==3);
+        Double_t kidweight = iso_NNkw;
+        Double_t iso_BDT2 = b.iso_BDT2();
+        if(iso_NNkw2 > -1 && iso_BDT2 > -2) {
+          Double_t iso_NNkw3 = b.iso_NNkw3()*(b.iso_Type3()==3);
+          Double_t iso_BDT3 = b.iso_BDT3();
+          if(iso_NNkw3 > -1 && iso_BDT3 > -2) {
+            kidweight=iso_NNkw+iso_NNkw2+iso_NNkw3-iso_NNkw*iso_NNkw2-iso_NNkw*iso_NNkw3-iso_NNkw2*iso_NNkw3+iso_NNkw*iso_NNkw2*iso_NNkw3;
+          }
+          else {
+            kidweight=iso_NNkw+iso_NNkw2-iso_NNkw*iso_NNkw2;
+          }
+        }
+        w_mc*=kidweight;
+      }
+
+      return w_mc*w_ff;
+    }
+  });
+
+  NamedFunc dssweight("dssweight",[&](const Baby &b){
+    eventType type = getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(), b.flagDstSB(),
+                             b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
+                             b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(),
+                             b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom());
+    if(type == eventType::data) return 1.;
+    else {  // is MC, so follow Phoebe's code to adjust weights
+      Double_t w_mc=b.mcWeight();
+      Double_t w_ff=b.FFweight();
+
+      return w_mc*w_ff;
+    }
+  });
+
+  // NamedFunc twoosweight()  TODO
+  // NamedFunc oneosweight()  TODO
+
+
+  ////////////////////////// Processes //////////////////////////////////
 
   vector<shared_ptr<Process> > procs;
   procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("Data",Process::Type::data, colors("data"),
@@ -190,35 +305,133 @@ int main(){
   procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D* #mu #nu",Process::Type::background, colors("dspmu"),
                                                        set<string>({repofolder+ntuplefile}),
                                                        event_type == static_cast<Double_t>(eventType::dspmu)));
-  // Don't include unknown processes? They are concentrated heavily at large values (of mmiss2, El, q2), and they affect
-  // the weights of the other (Monte Carlo) processes
-  /*procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("Unknown process",Process::Type::background, colors("purple"),
-                                                       set<string>({repofolder+ntuplefile}),
-                                                       event_type == static_cast<Double_t>(eventType::unknown)));*/
   procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D** (#mu/#tau) #nu",Process::Type::background, colors("dss"),
                                                        set<string>({repofolder+ntuplefile}),
                                                        event_type == static_cast<Double_t>(eventType::dss)));
-  procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D* D X",
-                                                       Process::Type::background, colors("dd"),
+  procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D* D X",                                                       Process::Type::background, colors("dd"),
                                                        set<string>({repofolder+ntuplefile}),
                                                        event_type == static_cast<Double_t>(eventType::dd)));
+  // Don't include unknown processes? They are concentrated heavily at large values (of mmiss2, El, q2), and there
+  // are a lot of them...
+  /*procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("Unknown process",Process::Type::background, colors("purple"),
+                                                       set<string>({repofolder+ntuplefile}),
+                                                       event_type == static_cast<Double_t>(eventType::unknown)));*/
 
 
 
-  NamedFunc isocuts = "1"; // ADD HERE CUTS FOR ISO SAMPLE, FOR EXAMPLE. (does this have to be modified?)
-  // CREATE NAMEDFUNCS FOR OTHER TYPES OF CUTS
 
 
+  ///////////////////////// Selection cuts ////////////////////////
+  // ISO cuts not explicitly mentioned in Phoebe's code
+  NamedFunc isocuts("ISO", [&](const Baby &b){ // edit?
+    return b.iso_BDT() < 0.15;
+  });
+
+  // DD cuts starts at line 1294
+  NamedFunc ddcuts("DD", [&](const Baby &b){ // edit? this differs (more complicated) from table 15 of ANA note (July 9)
+    if (b.iso_NNkw() > -1) return (b.iso_BDT() > 0.15);
+
+    Double_t iso_NNk = b.iso_NNk();
+    Double_t iso_NNk2 = b.iso_NNk2();
+    Double_t iso_NNk3 = b.iso_NNk3();
+    Float_t iso_P = b.iso_P();
+    Float_t iso_PT = b.iso_PT();
+    Float_t iso_P2 = b.iso_P2();
+    Float_t iso_PT2 = b.iso_PT2();
+    Float_t iso_P3 = b.iso_P3();
+    Float_t iso_PT3 = b.iso_PT3();
+    Double_t iso_BDT = b.iso_BDT();
+    Double_t iso_BDT2 = b.iso_BDT2();
+    Double_t iso_BDT3 = b.iso_BDT3();
+    if (iso_BDT <= -1.1) iso_NNk = 0.;
+    if (iso_BDT2 <= -1.1) iso_NNk2 = 0.;
+    if (iso_BDT3 <= -1.1) iso_NNk3 = 0.;
+
+
+    return (b.iso_BDT() > 0.15 && (iso_NNk > 0.2 || iso_NNk2 > 0.2 || iso_NNk3 > 0.2)
+            && TMath::Max(iso_P*(iso_PT > 150),TMath::Max(iso_P2*(iso_PT2 > 150)*(iso_BDT2 > -1.1),
+            iso_P3*(iso_PT3 > 150)*(iso_BDT3 > -1.1))) > 5e3);
+  });
+
+  // 2OS cuts starts at line 1326
+  NamedFunc twooscuts("2OS", [&](const Baby &b){ // edit? this differs (more complicated) from table 15 of ANA note (July 9)
+                                                 // Actually, I think Phoebe's code is logically incorrect, too. Lines 1342
+                                                 // and 1343 shouldn't be inside the "else" (as then they'll only be applied
+                                                 // if "thecut" is already false)
+     Double_t iso_NNk = b.iso_NNk();
+     Double_t iso_NNk2 = b.iso_NNk2();
+     //Double_t iso_NNk3 = b.iso_NNk3();
+     Float_t iso_P = b.iso_P();
+     Float_t iso_PT = b.iso_PT();
+     Float_t iso_P2 = b.iso_P2();
+     Float_t iso_PT2 = b.iso_PT2();
+     //Float_t iso_P3 = b.iso_P3();
+     //Float_t iso_PT3 = b.iso_PT3();
+     Double_t iso_BDT = b.iso_BDT();
+     Double_t iso_BDT2 = b.iso_BDT2();
+     Double_t iso_BDT3 = b.iso_BDT3();
+     Float_t iso_CHARGE = b.iso_CHARGE();
+     Float_t iso_CHARGE2 = b.iso_CHARGE2();
+
+     return (iso_BDT > 0.15 && iso_BDT2 > 0.15 && iso_BDT3 < 0.15 && iso_CHARGE != iso_CHARGE2
+       && iso_CHARGE != 0 && iso_CHARGE2 != 0 && iso_CHARGE < 100
+       && TMath::Max(iso_P*(iso_PT > 150),iso_P2*(iso_PT2 > 150)) > 5e3
+       && iso_NNk < 0.2 && iso_NNk2 < 0.2);
+  });
+
+  // 1OS cuts starts at line 1346
+  NamedFunc oneoscuts("1OS", [&](const Baby &b){ // edit? this differs (more complicated) from table 15 of ANA note (July 9)
+                                                 // Actually, I think Phoebe's code is logically incorrect, too. Line 1363
+                                                 // shouldn't be inside the "else" (as then it'll only be applied
+                                                 // if "thecut" is already false)
+     Double_t iso_NNk = b.iso_NNk();
+     //Double_t iso_NNk2 = b.iso_NNk2();
+     //Double_t iso_NNk3 = b.iso_NNk3();
+     Float_t iso_P = b.iso_P();
+     Float_t iso_PT = b.iso_PT();
+     //Float_t iso_P2 = b.iso_P2();
+     //Float_t iso_PT2 = b.iso_PT2();
+     //Float_t iso_P3 = b.iso_P3();
+     //Float_t iso_PT3 = b.iso_PT3();
+     Double_t iso_BDT = b.iso_BDT();
+     Double_t iso_BDT2 = b.iso_BDT2();
+     //Double_t iso_BDT3 = b.iso_BDT3();
+     Float_t iso_CHARGE = b.iso_CHARGE();
+     //Float_t iso_CHARGE2 = b.iso_CHARGE2();
+     Int_t Dst_ID = b.Dst_ID();
+     Double_t iso_DeltaM = b.iso_DeltaM();
+
+     return (iso_BDT > 0.15 && iso_BDT2 < 0.15 && iso_CHARGE*Dst_ID < 0 && (iso_DeltaM > 360
+       && iso_DeltaM < 600) && iso_P > 5e3 && iso_PT > 150 && iso_NNk < 0.2);
+  });
+
+  // D** cuts not mentioned in Phoebe's code; I'll just try to copy from table 15, but how do I calculate M_D*+pi1?
+  NamedFunc dsscuts("DSS", [&](const Baby &b) { // edit?
+    Double_t iso_BDT = b.iso_BDT();
+    Double_t iso_BDT2 = b.iso_BDT2();
+    Double_t iso_NNk = b.iso_NNk();
+    Float_t iso_P = b.iso_P();
+    Float_t iso_PT = b.iso_PT();
+
+    return (iso_BDT > 0.15 && iso_BDT2 < 0.15 && iso_NNk< 0.2 && iso_P > 5e3 && iso_PT > 150);
+  });
+
+
+  /////////////////////////// Plots /////////////////////////////
   PlotMaker pm;
+  // ignore line 1137 in Phoebe's code and just plot m_nu1, El, and q2 that can be found in baby
+  // create one histo per selection cut (for now I'm just using random cuts while plotting)
   pm.Push<Hist1D>(Axis(40, -2, 10, "m_nu1", "m_{miss}^{2} [GeV^{2}]"), isocuts, procs, plottypes,
-                  vector<NamedFunc>({weight}));
-  pm.Push<Hist1D>(Axis(40, -3, 13, "q2/1e6", "q^{2} [GeV^{2}]"), isocuts, procs, plottypes,
-                  vector<NamedFunc>({weight})); // might have to be modified...
+                  vector<NamedFunc>({isoweight}));
+  pm.Push<Hist1D>(Axis(40, -3, 13, "q2/1e6", "q^{2} [GeV^{2}]"), ddcuts, procs, plottypes,
+                  vector<NamedFunc>({ddweight}));
   pm.Push<Hist1D>(Axis(40, -0.2, 3.8, "El/1e3", "E_{l} [GeV]"), isocuts, procs, plottypes,
-                  vector<NamedFunc>({weight})); // might have to be modified...
-  // PUSH OTHER HISTOGRAMS TO PLOTMAKER HERE, WITH APPROPRIATE SELECTION CUTS
+                  vector<NamedFunc>({isoweight}));
   pm.MakePlots(1); // The "1" is the luminosity to rescale the bkg to
 
+
+
+  //////////////////////// END PHOEBE PLOTS ///////////////////////////
 
   time(&endtime);
   cout<<endl<<"Making plots took "<<difftime(endtime, begtime)<<" seconds"<<endl<<endl;
