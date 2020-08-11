@@ -190,13 +190,6 @@ eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t 
 
 
 
-Double_t test(const Baby &b) { // DELETEME, just an example test func that you can use below to access baby variables
-  return b.mcWeight();
-}
-
-
-
-
 int main(){
   gErrorIgnoreLevel=6000; // Turns off ROOT errors due to missing branches
 
@@ -222,7 +215,7 @@ int main(){
                                           // provided as argument for histograms, all plot types should be created
                                           // as a separate pdf
 
-  // ntuple contains signal, normalization, D** and DD processes for plots
+  // ntuple contains run 1 data, MC signal, MC normalization, MC D** and MC DD processes for plots
   string repofolder = "ntuples/";
   string ntuplefile = "ref-rdx-run1/Dst-mix/Dst--20_07_02--mix--all--2011-2012--md-mu--phoebe.root";
 
