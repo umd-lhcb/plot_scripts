@@ -46,15 +46,22 @@ int main(){
   vector<PlotOpt> plottypes = {lin_lumi};
   vector<PlotOpt> plotboth = {log_lumi,lin_lumi};
 
-  string repofolder = "ntuples/";
-  string yipeng = "pre-0.9.0/Dst-std/Dst--19_09_05--std--data--2012--md.root";
-  string phoebe = "ref-rdx-run1/Dst-std/Dst--19_09_05--std--data--2012--md--phoebe.root";
+  //string repofolder = "ntuples/";
+  //string yipeng = "pre-0.9.0/Dst-std/Dst--19_09_05--std--data--2012--md.root";
+  //string phoebe = "ref-rdx-run1/Dst-std/Dst--19_09_05--std--data--2012--md--phoebe.root";
 
+  //vector<shared_ptr<Process> > procs;
+  //procs.push_back(Process::MakeShared<Baby_run1_old>("Yipeng 2012 MD",Process::Type::data, colors("data"),
+                                                              //set<string>({repofolder+yipeng}), "1"));
+  //procs.push_back(Process::MakeShared<Baby_phoebe_step1_dst>("Phoebe 2012 MD",Process::Type::signal, colors("blue"),
+                                                             //set<string>({repofolder+phoebe}), "piminus_TRACK_Type==3"));
+
+  string repofolder = "ntuples/../run1-b2D0MuXB2DMuNuForTauMuLine/samples/";
   vector<shared_ptr<Process> > procs;
-  procs.push_back(Process::MakeShared<Baby_run1_old>("Yipeng 2012 MD",Process::Type::data, colors("data"),
-                                                              set<string>({repofolder+yipeng}), "1"));
-  procs.push_back(Process::MakeShared<Baby_phoebe_step1_dst>("Phoebe 2012 MD",Process::Type::signal, colors("blue"),
-                                                             set<string>({repofolder+phoebe}), "piminus_TRACK_Type==3"));
+  procs.push_back(Process::MakeShared<Baby_run1>("DV45 2012 MD Yipeng",Process::Type::data, colors("data"),
+                                                       set<string>({repofolder+"Dst--20_08_10--std--data--2012--md--dv45-subset-yipeng.root"}), "1"));
+  procs.push_back(Process::MakeShared<Baby_run1_old_phoebe>("DV36 2012 MD Phoebe",Process::Type::signal, colors("blue"),
+                                                       set<string>({repofolder+"Dst--20_08_07--std--data--2012--md--dv36-subset-phoebe.root"}), "1"));
 
   string repofolderDV = "ntuples/../run1-b2D0MuXB2DMuNuForTauMuLine/samples/";
   vector<shared_ptr<Process> > procsDV;
