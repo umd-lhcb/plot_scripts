@@ -56,19 +56,19 @@ int main(){
   //procs.push_back(Process::MakeShared<Baby_phoebe_step1_dst>("Phoebe 2012 MD",Process::Type::signal, colors("blue"),
                                                              //set<string>({repofolder+phoebe}), "piminus_TRACK_Type==3"));
 
-  string repofolder = "ntuples/../run1-b2D0MuXB2DMuNuForTauMuLine/samples/";
-  vector<shared_ptr<Process> > procs;
-  procs.push_back(Process::MakeShared<Baby_run1>("DV45 2012 MD Yipeng",Process::Type::data, colors("data"),
-                                                       set<string>({repofolder+"Dst--20_08_10--std--data--2012--md--dv45-subset-yipeng.root"}), "1"));
-  procs.push_back(Process::MakeShared<Baby_run1_old_phoebe>("DV36 2012 MD Phoebe",Process::Type::signal, colors("blue"),
-                                                       set<string>({repofolder+"Dst--20_08_07--std--data--2012--md--dv36-subset-phoebe.root"}), "1"));
+  //string repofolder = "ntuples/../run1-b2D0MuXB2DMuNuForTauMuLine/samples/";
+  //vector<shared_ptr<Process> > procs;
+  //procs.push_back(Process::MakeShared<Baby_run1>("DV45 2012 MD Yipeng",Process::Type::data, colors("data"),
+                                                       //set<string>({repofolder+"Dst--20_08_10--std--data--2012--md--dv45-subset-yipeng.root"}), "1"));
+  //procs.push_back(Process::MakeShared<Baby_run1_old_phoebe>("DV36 2012 MD Phoebe",Process::Type::signal, colors("blue"),
+                                                       //set<string>({repofolder+"Dst--20_08_07--std--data--2012--md--dv36-subset-phoebe.root"}), "piminus_TRACK_Type==3"));
 
   string repofolderDV = "ntuples/../run1-b2D0MuXB2DMuNuForTauMuLine/samples/";
   vector<shared_ptr<Process> > procsDV;
-  procsDV.push_back(Process::MakeShared<Baby_run1>("DV45 2012 MD Yipeng",Process::Type::data, colors("data"),
-                                                       set<string>({repofolderDV+"Dst--20_08_10--std--data--2012--md--dv45-subset-yipeng.root"}), "1"));
+  procsDV.push_back(Process::MakeShared<Baby_run1>("DV36 2012 MD Yipeng",Process::Type::data, colors("data"),
+                                                       set<string>({repofolderDV+"Dst--20_08_07--std--data--2012--md--dv36-subset-yipeng.root"}), "1"));
   procsDV.push_back(Process::MakeShared<Baby_run1_old_phoebe>("DV36 2012 MD Phoebe",Process::Type::signal, colors("blue"),
-                                                       set<string>({repofolderDV+"Dst--20_08_07--std--data--2012--md--dv36-subset-phoebe.root"}), "1"));
+                                                       set<string>({repofolderDV+"Dst--20_08_07--std--data--2012--md--dv36-subset-phoebe.root"}), "piminus_TRACK_Type==3"));
 
 
   // Custom NamedFunc
@@ -111,94 +111,94 @@ int main(){
   pm.Push<Hist1D>(Axis(35,-25,10, "Dst_2010_minus_ENDVERTEX_X"), "1", procsDV, plotboth).RatioTitle("Yipeng","Phoebe").Tag("dv36");
   pm.Push<Hist1D>(Axis(25,0,6,"Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF","D*^{+} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{100}), "1", procsDV, plottypes).RatioTitle("Yipeng","Phoebe").Tag("dv36");
 
-  pm.Push<Hist1D>(Axis(48,140,152, "Dst_2010_minus_M - D0_M","unset",{160}), "1", procs, plottypes).RatioTitle("DV42","DV36").Tag("coarse");
-  pm.Push<Hist1D>(Axis(48,140,152, "Dst_2010_minus_MM - D0_MM","unset",{160}), "1", procs, plottypes).RatioTitle("DV42","DV36").Tag("coarse");
-  pm.Push<Hist1D>(Axis(35,-25,10, "Dst_2010_minus_ENDVERTEX_X"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe").Tag("coarse");
-  pm.Push<Hist1D>(Axis(25,0,6,"Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF","D*^{+} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{100}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe").Tag("coarse");
+  //pm.Push<Hist1D>(Axis(48,140,152, "Dst_2010_minus_M - D0_M","unset",{160}), "1", procs, plottypes).RatioTitle("DV42","DV36").Tag("coarse");
+  //pm.Push<Hist1D>(Axis(48,140,152, "Dst_2010_minus_MM - D0_MM","unset",{160}), "1", procs, plottypes).RatioTitle("DV42","DV36").Tag("coarse");
+  //pm.Push<Hist1D>(Axis(35,-25,10, "Dst_2010_minus_ENDVERTEX_X"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe").Tag("coarse");
+  //pm.Push<Hist1D>(Axis(25,0,6,"Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF","D*^{+} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{100}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe").Tag("coarse");
 
-  // Stripping variables
-  pm.Push<Hist1D>(Axis(100,0,100, "Kplus_PIDK","unset",{4}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,6000, "Kplus_IPCHI2_OWNPV","unset",{45}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,0.2, "Kplus_TRACK_GhostProb","unset",{0.5}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(105,-100,5, "piminus0_PIDK","unset",{2}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,6000, "piminus0_IPCHI2_OWNPV","unset",{45}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,0.2, "piminus0_TRACK_GhostProb","unset",{0.5}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //// Stripping variables
+  //pm.Push<Hist1D>(Axis(100,0,100, "Kplus_PIDK","unset",{4}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,6000, "Kplus_IPCHI2_OWNPV","unset",{45}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,0.2, "Kplus_TRACK_GhostProb","unset",{0.5}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(105,-100,5, "piminus0_PIDK","unset",{2}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,6000, "piminus0_IPCHI2_OWNPV","unset",{45}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,0.2, "piminus0_TRACK_GhostProb","unset",{0.5}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
 
-  pm.Push<Hist1D>(Axis(160,1780,1940, "D0_M","unset",{1784.83, 1944.83}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(160,1780,1940, "D0_MM","unset",{1784.83, 1944.83}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(84,0,4.2, "D0_ENDVERTEX_CHI2/D0_ENDVERTEX_NDOF","D^{0} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{4}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,30000, "D0_FDCHI2_OWNPV","unset",{250}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(80,0.99978,1.00001, "D0_DIRA_OWNPV","unset",{0.9998}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(160,1780,1940, "D0_M","unset",{1784.83, 1944.83}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(160,1780,1940, "D0_MM","unset",{1784.83, 1944.83}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(84,0,4.2, "D0_ENDVERTEX_CHI2/D0_ENDVERTEX_NDOF","D^{0} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{4}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,30000, "D0_FDCHI2_OWNPV","unset",{250}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(80,0.99978,1.00001, "D0_DIRA_OWNPV","unset",{0.9998}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
 
-  pm.Push<Hist1D>(Axis(100,0,3, "piminus_TRACK_CHI2NDOF","unset",{3}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,200, "piminus_IPCHI2_OWNPV","unset",{45}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,0.25, "piminus_TRACK_GhostProb","unset",{0.5}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,3, "piminus_TRACK_CHI2NDOF","unset",{3}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,200, "piminus_IPCHI2_OWNPV","unset",{45}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,0.25, "piminus_TRACK_GhostProb","unset",{0.5}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
 
-  pm.Push<Hist1D>(Axis(90,1920,2100, "Dst_2010_minus_M","unset",{1885.26,2135.26}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(120,140,152, "Dst_2010_minus_M - D0_M","unset",{160}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(120,140,152, "Dst_2010_minus_MM - D0_MM","unset",{160}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(120,0,6,"Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF","D*^{+} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{100}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(90,1920,2100, "Dst_2010_minus_M","unset",{1885.26,2135.26}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(120,140,152, "Dst_2010_minus_M - D0_M","unset",{160}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(120,140,152, "Dst_2010_minus_MM - D0_MM","unset",{160}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(120,0,6,"Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF","D*^{+} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{100}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
 
-  pm.Push<Hist1D>(Axis(200,-100,100, "Dst_2010_minus_ENDVERTEX_X"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(200,-100,100, "Dst_2010_minus_ENDVERTEX_Y"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(200,-1500,1000, "Dst_2010_minus_ENDVERTEX_Z"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(25,-1,1, "Dst_2010_minus_DIRA_ORIVX"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,25, "Dst_2010_minus_MMERR"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,1000, "Dst_2010_minus_FD_OWNPV"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(200,-100,100, "Dst_2010_minus_ENDVERTEX_X"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(200,-100,100, "Dst_2010_minus_ENDVERTEX_Y"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(200,-1500,1000, "Dst_2010_minus_ENDVERTEX_Z"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(25,-1,1, "Dst_2010_minus_DIRA_ORIVX"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,25, "Dst_2010_minus_MMERR"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,1000, "Dst_2010_minus_FD_OWNPV"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
 
-  pm.Push<Hist1D>(Axis(25,-1,1, "Dst_2010_minus_DIRA_OWNPV"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,1500, "Dst_2010_minus_FD_ORIVX"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,-15,15, "Dst_2010_minus_ORIVX_X"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,-15,15, "Dst_2010_minus_ORIVX_Y"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,-200,450, "Dst_2010_minus_ORIVX_Z"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0.35,0.85, "Dst_2010_minus_OWNPV_X"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,-200,200, "Dst_2010_minus_OWNPV_Z"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,6, "Dst_2010_minus_IP_OWNPV"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,-50,50, "Dst_2010_minus_OWNPV_Z - D0_OWNPV_Z"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
-
-
-  pm.Push<Hist1D>(Axis(100,0,5000, "muplus_IPCHI2_OWNPV","unset",{45}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,0.2, "muplus_TRACK_GhostProb","unset",{0.5}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(140,0,14, "muplus_PIDmu","unset",{2}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,3, "muplus_TRACK_CHI2NDOF","unset",{3}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,2000,8000, "Y_M","unset",{10000}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,2000,8000, "Y_MM","unset",{10000}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0,6, "Y_ENDVERTEX_CHI2/Y_ENDVERTEX_NDOF","unset",{6}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(100,0.9995,1, "Y_DIRA_OWNPV","unset",{0.9995}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(25,-1,1, "Dst_2010_minus_DIRA_OWNPV"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,1500, "Dst_2010_minus_FD_ORIVX"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,-15,15, "Dst_2010_minus_ORIVX_X"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,-15,15, "Dst_2010_minus_ORIVX_Y"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,-200,450, "Dst_2010_minus_ORIVX_Z"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0.35,0.85, "Dst_2010_minus_OWNPV_X"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,-200,200, "Dst_2010_minus_OWNPV_Z"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,6, "Dst_2010_minus_IP_OWNPV"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,-50,50, "Dst_2010_minus_OWNPV_Z - D0_OWNPV_Z"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
 
 
-  // Momentum
-  pm.Push<Hist1D>(Axis(150,0,150, "Kplus_P/1000", "p(K^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(150,0,150, "piminus0_P/1000", "p(#pi^{-}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(60,0,30, "piminus_P/1000", "p(#pi^{-}_{slow}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,5000, "muplus_IPCHI2_OWNPV","unset",{45}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,0.2, "muplus_TRACK_GhostProb","unset",{0.5}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(140,0,14, "muplus_PIDmu","unset",{2}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,3, "muplus_TRACK_CHI2NDOF","unset",{3}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,2000,8000, "Y_M","unset",{10000}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,2000,8000, "Y_MM","unset",{10000}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,6, "Y_ENDVERTEX_CHI2/Y_ENDVERTEX_NDOF","unset",{6}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0.9995,1, "Y_DIRA_OWNPV","unset",{0.9995}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
 
-  pm.Push<Hist1D>(Axis(100,0,100, "muplus_P/1000", "p(#mu^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(250,0,250, "D0_P/1000", "p(D^{0}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(250,0,250, "Dst_2010_minus_P/1000", "p(D*^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(350,0,350, "Y_P/1000", "p(D*^{+}#mu) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+
+  //// Momentum
+  //pm.Push<Hist1D>(Axis(150,0,150, "Kplus_P/1000", "p(K^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(150,0,150, "piminus0_P/1000", "p(#pi^{-}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(60,0,30, "piminus_P/1000", "p(#pi^{-}_{slow}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+
+  //pm.Push<Hist1D>(Axis(100,0,100, "muplus_P/1000", "p(#mu^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(250,0,250, "D0_P/1000", "p(D^{0}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(250,0,250, "Dst_2010_minus_P/1000", "p(D*^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(350,0,350, "Y_P/1000", "p(D*^{+}#mu) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
 
 
-  // Transverse momentum
-  pm.Push<Hist1D>(Axis(48,0,12, "Kplus_PT/1000", "p_{T}(K^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(48,0,12, "piminus0_PT/1000", "p_{T}(#pi^{-}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(50,0,2, "piminus_PT/1000", "p_{T}(#pi^{-}_{slow}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //// Transverse momentum
+  //pm.Push<Hist1D>(Axis(48,0,12, "Kplus_PT/1000", "p_{T}(K^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(48,0,12, "piminus0_PT/1000", "p_{T}(#pi^{-}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(50,0,2, "piminus_PT/1000", "p_{T}(#pi^{-}_{slow}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
 
-  pm.Push<Hist1D>(Axis(100,0,10, "muplus_PT/1000", "p_{T}(#mu^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(250,0,25, "D0_PT/1000", "p_{T}(D^{0}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(250,0,25, "Dst_2010_minus_PT/1000", "p_{T}(D*^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
-  pm.Push<Hist1D>(Axis(350,0,35, "Y_PT/1000", "p_{T}(D*^{+}#mu) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(100,0,10, "muplus_PT/1000", "p_{T}(#mu^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(250,0,25, "D0_PT/1000", "p_{T}(D^{0}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(250,0,25, "Dst_2010_minus_PT/1000", "p_{T}(D*^{+}) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
+  //pm.Push<Hist1D>(Axis(350,0,35, "Y_PT/1000", "p_{T}(D*^{+}#mu) [GeV]"), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe");
 
 
 
   // Impact of cuts
-  NamedFunc fullcut = "1";
-  for(size_t ind = 0; ind < cuts.size(); ind++) {
-    fullcut = fullcut && cuts[ind];
-    pm.Push<Hist1D>(Axis(50,0,250, "D0_P/1000", "p(D^{0}) [GeV]"), fullcut, procs, plottypes).RatioTitle("Yipeng","Phoebe").Tag("cuts");
-    pm.Push<Hist1D>(Axis(120,140,152, "Dst_2010_minus_M - D0_M","unset",{160}), fullcut, procs, plottypes).RatioTitle("Yipeng","Phoebe").Tag("cuts");
-    pm.Push<Hist1D>(Axis(120,0,6,"Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF","D*^{+} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{100}),
-                    fullcut, procs, plottypes).RatioTitle("Yipeng","Phoebe").Tag("cuts");
-  }
+  //NamedFunc fullcut = "1";
+  //for(size_t ind = 0; ind < cuts.size(); ind++) {
+    //fullcut = fullcut && cuts[ind];
+    //pm.Push<Hist1D>(Axis(50,0,250, "D0_P/1000", "p(D^{0}) [GeV]"), fullcut, procs, plottypes).RatioTitle("Yipeng","Phoebe").Tag("cuts");
+    //pm.Push<Hist1D>(Axis(120,140,152, "Dst_2010_minus_M - D0_M","unset",{160}), fullcut, procs, plottypes).RatioTitle("Yipeng","Phoebe").Tag("cuts");
+    //pm.Push<Hist1D>(Axis(120,0,6,"Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF","D*^{+} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{100}),
+                    //fullcut, procs, plottypes).RatioTitle("Yipeng","Phoebe").Tag("cuts");
+  //}
 
   pm.MakePlots(1); // The "1" is the luminosity to rescale the bkg to
 
