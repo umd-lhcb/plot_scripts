@@ -5,9 +5,11 @@ where it's unclear to me if Phoebe's code actually matches up with the ANA note 
 hopefully some description), or anywhere where I think work needs to be done for correctness' sake. */
 
 /* Lines of Phoebe's code (at least partially) not implemented from Process function (including commented out code):
-1100-1136, 1145-1171, 1172-1173, 1180-1192, 1197-1203, 1205-1254, ** 1260-1261,1263-1268, 1270, 1274, 1276-1279, 1281,
-1282-1292,
-** still have to fully implement other lines between lines after this
+1100-1136, 1145-1171, 1172-1173, 1180-1192, 1197-1203, 1205-1254, 1260-1261,1263-1268, 1270, 1274, 1276-1279, 1281,
+1282, 1287-1292, 1366-1379, 1380-1381
+Still TODO lines 1382-1937, 2900/2989-2990 (have to check which of misID, comb, comb_D* event is, then add totweight
+condition accordingly)... skip all other lines (mark them above... including lines with histogram filling you
+didn't use/altered)
 Also, I assume use_uBDT and calibTrig are true, and all the other variables in lines 35-49 are false
 */
 
@@ -317,6 +319,13 @@ int main(){
     Double_t w_mc=b.mcWeight();
     Double_t w_ff=b.FFweight();
 
+    Double_t iso_NNkw = b.iso_NNkw();
+    if(iso_NNkw > -1) { // I won't worry about "thecut==true", since if it isn't true, this event will be cut anyway
+      //iso_NNkw=iso_NNkw*(b.iso_Type()==3);
+      double kidweight=(1-iso_NNkw);
+      w_mc*=kidweight;
+    }
+
     w_mc = GetFinalMCWeight(w_mc);
 
     return w_mc*w_ff;
@@ -325,7 +334,16 @@ int main(){
   NamedFunc w_2os("w_2os",[&](const Baby &b){
     Double_t w_mc=b.mcWeight();
     Double_t w_ff=b.FFweight();
-    //...
+
+    Double_t iso_NNkw = b.iso_NNkw();
+    if(iso_NNkw > -1) { // I won't worry about "thecut==true", since if it isn't true, this event will be cut anyway
+      iso_NNkw=iso_NNkw*(b.iso_Type()==3);
+      Double_t iso_NNkw2 = b.iso_NNkw2();;
+      iso_NNkw2=iso_NNkw2*(b.iso_Type2()==3);
+      double kidweight=(1-iso_NNkw);
+      kidweight=1-(iso_NNkw+iso_NNkw2-iso_NNkw*iso_NNkw2);
+      w_mc*=kidweight;
+    }
 
     w_mc = GetFinalMCWeight(w_mc);
 
@@ -336,7 +354,13 @@ int main(){
   NamedFunc w_1os("w_1os",[&](const Baby &b){
     Double_t w_mc=b.mcWeight();
     Double_t w_ff=b.FFweight();
-    //...
+
+    Double_t iso_NNkw = b.iso_NNkw();
+    if(iso_NNkw > -1) { // I won't worry about "thecut==true", since if it isn't true, this event will be cut anyway
+      //iso_NNkw=iso_NNkw*(b.iso_Type()==3);
+      double kidweight=(1-iso_NNkw);
+      w_mc*=kidweight;
+    }
 
     w_mc = GetFinalMCWeight(w_mc);
 
@@ -346,9 +370,6 @@ int main(){
   // NamedFunc totweight() TODO -- for data components used in background, will have to be sure of process order and
                                 // include this weight func in the right position in the vector given as argument
                                 // to the plot pushed to plotmaker
-                                // shouldn't have to do this for mm2, el, q2, since this will only be used for
-                                // misID_plus_comb process, which will all be data (so no smearing that you're taking
-                                // into account in weights)
 
 
   ////////////////////////// Processes //////////////////////////////////
@@ -394,11 +415,13 @@ int main(){
   ///////////////////////// Selection cuts ////////////////////////
   // ISO cuts not explicitly mentioned in Phoebe's code
   NamedFunc isocuts("ISO", [&](const Baby &b){ // edit?
+    if (!(b.ISOnum()==0)) return false; // singleCand, line 1282
     return PassesBasicCuts(b) && (b.iso_BDT() < 0.15 || (b.ishigher() && b.keepme() && b.isData()==0.));
   });
 
   // DD cuts starts at line 1294
   NamedFunc ddcuts("DD", [&](const Baby &b){ // edit? this differs (more complicated) from table 15 of ANA note (July 9)
+    if (!(b.AntiISOnum()==0)) return false; // singleCand, line 1300
     if (b.iso_NNkw() > -1) return (b.iso_BDT() > 0.15);
 
     Double_t iso_NNk = b.iso_NNk();
@@ -428,6 +451,8 @@ int main(){
                                                  // Actually, I think Phoebe's code is logically incorrect, too. Lines 1342
                                                  // and 1343 shouldn't be inside the "else" (as then they'll only be applied
                                                  // if "thecut" is already false)
+     if (!(b.AntiISOnum()==0)) return false; // singleCand, line 1329
+
      Double_t iso_NNk = b.iso_NNk();
      Double_t iso_NNk2 = b.iso_NNk2();
      Float_t iso_P = b.iso_P();
@@ -452,12 +477,14 @@ int main(){
                                                  // Actually, I think Phoebe's code is logically incorrect, too. Line 1363
                                                  // shouldn't be inside the "else" (as then it'll only be applied
                                                  // if "thecut" is already false)
+     if (!(b.AntiISOnum()==0)) return false; // singleCand, line 1350
+
      Double_t iso_NNk = b.iso_NNk();
      Float_t iso_P = b.iso_P();
      Float_t iso_PT = b.iso_PT();
      Double_t iso_BDT = b.iso_BDT();
      Double_t iso_BDT2 = b.iso_BDT2();
-     Float_t iso_CHARGE = b.iso_CHARGE(); // charge not mentioned in table 12?
+     Float_t iso_CHARGE = b.iso_CHARGE(); // charge not mentioned in table 15?
      Int_t Dst_ID = b.Dst_ID();
 
      return PassesBasicCuts(b) && (iso_BDT > 0.15 && iso_BDT2 < 0.15 && iso_CHARGE*Dst_ID < 0 && iso_P > 5e3
@@ -468,12 +495,14 @@ int main(){
   // in Phoebe's code currently, so remove the mass cut above, and just copy the 1OS cut w the mass cut here. Also,
   // use the mass cut given in table 12, not in the code.
   NamedFunc dsscuts("DSS", [&](const Baby &b) { // edit?
+    if (!(b.AntiISOnum()==0)) return false; // singleCand, line 1350
+
     Double_t iso_NNk = b.iso_NNk();
     Float_t iso_P = b.iso_P();
     Float_t iso_PT = b.iso_PT();
     Double_t iso_BDT = b.iso_BDT();
     Double_t iso_BDT2 = b.iso_BDT2();
-    Float_t iso_CHARGE = b.iso_CHARGE(); // charge not mentioned in table 12?
+    Float_t iso_CHARGE = b.iso_CHARGE(); // charge not mentioned in table 15?
     Int_t Dst_ID = b.Dst_ID();
     Double_t iso_DeltaM = b.iso_DeltaM();
 
@@ -506,8 +535,8 @@ int main(){
   PlotMaker pm;
   // ignore line 1137 in Phoebe's code and just plot m_nu1, El, and q2 that can be found in baby
   // create one histo per selection cut (for now I'm just using random cuts while plotting) TODO
-  vector<NamedFunc> cuts{isocuts}; //, ddcuts, twooscuts, oneoscuts, dsscuts};
-  vector<NamedFunc> MC_w{w_iso, w_dd}; // should correspond to cut in same order as vector above
+  vector<NamedFunc> cuts{isocuts, ddcuts, twooscuts, oneoscuts, dsscuts};
+  vector<NamedFunc> MC_w{w_iso, w_dd, w_2os, w_1os, w_dss}; // should correspond to cut in same order as vector above
   for (Int_t i=0; i<static_cast<Int_t>(cuts.size()); i++) {
     pm.Push<Hist1D>(Axis(40, -2, 10, mm2, "m_{miss}^{2} [GeV^{2}]"), cuts[i], procs, plottypes,
                     vector<NamedFunc>({"1", "1", MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i]}));
