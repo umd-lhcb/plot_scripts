@@ -207,7 +207,7 @@ Double_t GetFinalMCWeight(Double_t w_mc) { // run after all other MC weight calc
   return w_mc;
 }
 
-Bool_t PassesBasicCuts(const Baby &b) { // event muss pass all these cuts and also other, more specific, cuts
+Bool_t PassesBasicCuts(const Baby &b) { // event must pass all these cuts and also other, more specific, cuts
   if ((b.isData() > 0 && b.muPID() > 0 && b.Y_M() < 5280 &&
     (//DOCAVAR > DOCAmax
     //|| DOCAVAR < DOCAmin
@@ -393,7 +393,7 @@ int main(){
 
   ///////////////////////// Selection cuts ////////////////////////
   // ISO cuts not explicitly mentioned in Phoebe's code
-  NamedFunc isocuts("ISO", [&](const Baby &b){ // edit? TODO
+  NamedFunc isocuts("ISO", [&](const Baby &b){ // edit?
     return PassesBasicCuts(b) && (b.iso_BDT() < 0.15 || (b.ishigher() && b.keepme() && b.isData()==0.));
   });
 
@@ -430,18 +430,16 @@ int main(){
                                                  // if "thecut" is already false)
      Double_t iso_NNk = b.iso_NNk();
      Double_t iso_NNk2 = b.iso_NNk2();
-     //Double_t iso_NNk3 = b.iso_NNk3();
      Float_t iso_P = b.iso_P();
      Float_t iso_PT = b.iso_PT();
      Float_t iso_P2 = b.iso_P2();
      Float_t iso_PT2 = b.iso_PT2();
-     //Float_t iso_P3 = b.iso_P3();
-     //Float_t iso_PT3 = b.iso_PT3();
      Double_t iso_BDT = b.iso_BDT();
      Double_t iso_BDT2 = b.iso_BDT2();
      Double_t iso_BDT3 = b.iso_BDT3();
      Float_t iso_CHARGE = b.iso_CHARGE();
      Float_t iso_CHARGE2 = b.iso_CHARGE2();
+
 
      return PassesBasicCuts(b) && (iso_BDT > 0.15 && iso_BDT2 > 0.15 && iso_BDT3 < 0.15 && iso_CHARGE != iso_CHARGE2
        && iso_CHARGE != 0 && iso_CHARGE2 != 0 && iso_CHARGE < 100
@@ -455,36 +453,32 @@ int main(){
                                                  // shouldn't be inside the "else" (as then it'll only be applied
                                                  // if "thecut" is already false)
      Double_t iso_NNk = b.iso_NNk();
-     //Double_t iso_NNk2 = b.iso_NNk2();
-     //Double_t iso_NNk3 = b.iso_NNk3();
      Float_t iso_P = b.iso_P();
      Float_t iso_PT = b.iso_PT();
-     //Float_t iso_P2 = b.iso_P2();
-     //Float_t iso_PT2 = b.iso_PT2();
-     //Float_t iso_P3 = b.iso_P3();
-     //Float_t iso_PT3 = b.iso_PT3();
      Double_t iso_BDT = b.iso_BDT();
      Double_t iso_BDT2 = b.iso_BDT2();
-     //Double_t iso_BDT3 = b.iso_BDT3();
-     Float_t iso_CHARGE = b.iso_CHARGE();
-     //Float_t iso_CHARGE2 = b.iso_CHARGE2();
+     Float_t iso_CHARGE = b.iso_CHARGE(); // charge not mentioned in table 12?
      Int_t Dst_ID = b.Dst_ID();
-     Double_t iso_DeltaM = b.iso_DeltaM();
 
-     return PassesBasicCuts(b) && (iso_BDT > 0.15 && iso_BDT2 < 0.15 && iso_CHARGE*Dst_ID < 0 && (iso_DeltaM > 360
-       && iso_DeltaM < 600) && iso_P > 5e3 && iso_PT > 150 && iso_NNk < 0.2);
+     return PassesBasicCuts(b) && (iso_BDT > 0.15 && iso_BDT2 < 0.15 && iso_CHARGE*Dst_ID < 0 && iso_P > 5e3
+       && iso_PT > 150 && iso_NNk < 0.2);
   });
 
   // D** cuts just the same as 1OS but with mass cut on D*+pi1... I actually think this is what is implemented
-  // in Phoebe's code currently, so remove the mass cut above, and just copy the 1OS cut w the mass cut here TODO
+  // in Phoebe's code currently, so remove the mass cut above, and just copy the 1OS cut w the mass cut here. Also,
+  // use the mass cut given in table 12, not in the code.
   NamedFunc dsscuts("DSS", [&](const Baby &b) { // edit?
-    Double_t iso_BDT = b.iso_BDT();
-    Double_t iso_BDT2 = b.iso_BDT2();
     Double_t iso_NNk = b.iso_NNk();
     Float_t iso_P = b.iso_P();
     Float_t iso_PT = b.iso_PT();
+    Double_t iso_BDT = b.iso_BDT();
+    Double_t iso_BDT2 = b.iso_BDT2();
+    Float_t iso_CHARGE = b.iso_CHARGE(); // charge not mentioned in table 12?
+    Int_t Dst_ID = b.Dst_ID();
+    Double_t iso_DeltaM = b.iso_DeltaM();
 
-    return PassesBasicCuts(b) && (iso_BDT > 0.15 && iso_BDT2 < 0.15 && iso_NNk< 0.2 && iso_P > 5e3 && iso_PT > 150);
+    return PassesBasicCuts(b) && (iso_BDT > 0.15 && iso_BDT2 < 0.15 && iso_CHARGE*Dst_ID < 0 && (iso_DeltaM > 360
+      && iso_DeltaM < 600) && iso_P > 5e3 && iso_PT > 150 && iso_NNk < 0.2);
   });
 
 
