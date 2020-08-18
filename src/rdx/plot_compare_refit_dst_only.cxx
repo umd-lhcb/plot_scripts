@@ -39,7 +39,8 @@ int main(){
     .Bottom(BottomType::ratio)
     .YAxis(YAxisType::linear)
     .Stack(StackType::signal_on_top)
-    .Overflow(OverflowType::both);
+    .Overflow(OverflowType::both)
+    .FileExtensions({"png"});
 
   PlotOpt log_lumi = lin_lumi().YAxis(YAxisType::log);
   vector<PlotOpt> plottypes = {lin_lumi};
@@ -52,7 +53,7 @@ int main(){
         "Run 2 cocktail: full refit", Process::Type::data, colors("data"),
         set<string>({repofolder+"Dst_D0--20_08_18--cutflow_mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09b_Trig0x6138160F_Reco16_Turbo03_Stripping26NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root"}), "1"));
   procs.push_back(Process::MakeShared<Baby_rdx_std_step1>(
-        "Run 2 cocktail: partial refit", Process::Type::signal, colors("blue"),
+        "Run 2 cocktail: refit D* only", Process::Type::signal, colors("blue"),
         set<string>({repofolder+"Dst_D0--20_08_18--cutflow_mc--refit_dst_only--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09b_Trig0x6138160F_Reco16_Turbo03_Stripping26NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root"}), "1"));
 
 
@@ -91,11 +92,11 @@ int main(){
   PlotMaker pm;
 
   // Comparison with DaVinci 36 and Yipeng's script
-  pm.Push<Hist1D>(Axis(48,140,152, "dst_M - d0_M","unset",{160}), "1", procs, plottypes).RatioTitle("DV42","DV36").Tag("dv36");
-  pm.Push<Hist1D>(Axis(48,140,152, "dst_MM - d0_MM","unset",{160}), "1", procs, plottypes).RatioTitle("DV42","DV36").Tag("dv36");
-  pm.Push<Hist1D>(Axis(35,-25,10, "dst_ENDVERTEX_X"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe").Tag("dv36");
-  pm.Push<Hist1D>(Axis(25,0,6,"dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF","D*^{+} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{100}), "1", procs, plottypes).RatioTitle("Yipeng","Phoebe").Tag("dv36");
-  pm.Push<Hist1D>(Axis(100,0,1500, "dst_FD_ORIVX"), "1", procs, plotboth).RatioTitle("Yipeng","Phoebe");
+  pm.Push<Hist1D>(Axis(48,140,152, "dst_M - d0_M","unset",{160}), "1", procs, plottypes).RatioTitle("Full refit", "D* only");
+  pm.Push<Hist1D>(Axis(48,140,152, "dst_MM - d0_MM","unset",{160}), "1", procs, plottypes).RatioTitle("Full refit","D* only");
+  pm.Push<Hist1D>(Axis(35,-25,10, "dst_ENDVERTEX_X"), "1", procs, plotboth).RatioTitle("Full refit", "D* only");
+  pm.Push<Hist1D>(Axis(25,0,6,"dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF","D*^{+} ENDVERTEX_CHI2/ENDVERTEX_NDOF",{100}), "1", procs, plottypes).RatioTitle("Full refit", "D* only");
+  pm.Push<Hist1D>(Axis(100,0,1500, "dst_FD_ORIVX"), "1", procs, plotboth).RatioTitle("Full refit","D* only");
 
   pm.MakePlots(1); // The "1" is the luminosity to rescale the bkg to
 
