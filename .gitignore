@@ -41,6 +41,7 @@ ntuples
 *.root
 *.log
 *.pdf
+*.png
 *.fdb_latexmk
 *.fls
 !txt/variables/*
