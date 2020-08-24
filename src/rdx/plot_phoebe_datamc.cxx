@@ -184,7 +184,6 @@ Double_t GetFinalMCWeight(Double_t w_mc) { // run after all other MC weight calc
   return w_mc;
 }
 
-// TODO investigate why data yields with this function as is don't match ANA note...
 Bool_t PassesBasicCuts(const Baby &b) { // event must pass all these cuts and also other, more specific, cuts
   if ((b.isData() > 0 && b.muPID() > 0 && b.Y_M() < 5280 &&
     (//DOCAVAR > DOCAmax
@@ -209,7 +208,9 @@ Bool_t PassesBasicCuts(const Baby &b) { // event must pass all these cuts and al
   else if (b.isData() > 0 && b.muPID() > 0 && b.BDTmu() < 0.25) return false;   // ASSUMES use_uBDT IS TRUE
   //else if (b.isData() > 0 && b.muPID() > 0 && b.BDTmu() > 0.25) return false    // ASSUMES use_notuBDT IS TRUE
   else if (b.mu_P() > 100e3) return false;
-  // edit? I'm going to ignore lines 2302-2307... I think it's selecting only D** sideband...
+  // edit? This next line slightly different from Phoebe's code; I think it's ok, because I'm not plotting the
+  // data Dst sideband like Phoebe is... when this next line is included, data yields look ok (at least for ISO)
+  else if (TMath::Abs(b.Dst_M()-b.D0_M()-145.454) > 2.) return false;
   // **NOTE** Be careful of line 2305 for flagDstSB when filling components! (I think?) TODO
 
   return true;
@@ -548,7 +549,7 @@ as I stopped working on them). I'll leave them here, commented out, but doubt I'
   /////////////////////////// Plots /////////////////////////////
 
   PlotMaker pm;
-  vector<NamedFunc> cuts{isocuts, ddcuts, twooscuts, oneoscuts, dsscuts};
+  vector<NamedFunc> cuts{isocuts};//, ddcuts, twooscuts, oneoscuts, dsscuts};
   //vector<NamedFunc> MC_w{w_iso, w_dd, w_2os, w_1os, w_dss}; // should correspond to cut in same order as vector above
   for (Int_t i=0; i<static_cast<Int_t>(cuts.size()); i++) {
     pm.Push<Hist1D>(Axis(40, -2.0, 10.0, mm2, "m_{miss}^{2} [GeV^{2}]"), cuts[i], procs, plottypes,
