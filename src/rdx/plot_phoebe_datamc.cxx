@@ -1,8 +1,9 @@
 /* Overall, the goal of this script is to translate Phoebe's code redoHistos_Dst in
 RDRDsrRun1AnalaysisPreservation to work using the plotscripts packages. The plan (for now) is to
 essentially copy her code and run over a run 1 ntuple (with data and MC). I'll try to mark the places
-where it's unclear to me if Phoebe's code actually matches up with the ANA note (with an "edit?" and
-hopefully some description), or anywhere where I think work needs to be done for correctness' sake. */
+where it's unclear to me if Phoebe's code actually matches up with the ANA note, or anywhere where I
+think work needs to be done for correctness' sake. I generally make comments like this with an "edit"
+or, if I know what I want to do/investigate, a "TODO". */
 
 /* Lines of Phoebe's code (at least partially) not implemented from Process function (including commented out code):
 1100-1136, 1145-1171, 1172-1173, 1180-1192, 1197-1203, 1205-1254, 1260-1261,1263-1268, 1270, 1274, 1276-1279, 1281,
@@ -40,15 +41,18 @@ using namespace std;
 using namespace PlotOptTypes;
 
 
-// Groupings chosen to (more or less) match Phoebe's plots in chapter 8
-// Note dss is really dss_light, decaying to only 1 pion, while dss_heav decays to two pions
+// Groupings chosen to match Phoebe's plots in chapter 8
+// Note dss is really dss_light, decaying to only 1 pion, while dss_2s decays to two pions
 // Except for signal and normalization, I don't separate semimuonic and semitauonic modes
-enum class eventType {data, dsptau, dspmu, dss, dss_str, dss_heav, dd, misID_plus_comb, dss_2s, unknown};
+enum class eventType {data, dsptau, dspmu, dss, dss_str, dd, misID_plus_comb, dss_2s, unknown};
 
 
 // Obviously, this getType func could be more efficient/concise, but I think it's useful to explicitly single
 // out every process for now
-// Note there is no D** (-> D* pi pi) tau nu component. Assumedly, it would be small if it were included.
+// Note there is no D** (-> D* pi pi) tau nu component. Assumedly, it would be small if it were included, I think?
+// Most channels get contributions from both B0 and B-, but not the B0s->Ds**mu channels (assumedly the B-
+// would have the same shape, so it wouldn't matter for the fit, I think?). These strange channels also don't
+// include Ds**tau, assumedly for the same reason that the contribution would be small.
 eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t muPID, Double_t flagDstSB,
                   Double_t flagtaumu, Double_t JustDst, Double_t DstOk, Int_t Btype, Double_t flagBmu,
                   Int_t Y_BKGCAT, Double_t flagTauonicD, Double_t flagDoubleD, Bool_t ishigher,
@@ -84,7 +88,7 @@ eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t 
   else if(isData == 0. &&  flagBmu > 0. && JustDst > 0. && DstOk > 0. && muPID == 1. && Btype == 511 && Y_BKGCAT==0)
     return eventType::dspmu;
 
-  // TODO add h_D2Smu ??
+  // B -> D** (-> D* pi pi) mu nu, either B0 or B-, D** is one of heavy (2S, not 1P) states, Phoebe's h_D2Smu
   else if(isData == 0. && flagBmu > 0. && JustDst < 1.  && DstOk > 0. && ishigher && muPID == 1.)
     return eventType::dss_2s;
 
@@ -92,85 +96,52 @@ eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t 
   else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 10413
      && muPID == 1. && !ishigher && mm_mom < 250. && Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
-  // B0 -> D1 (-> D* pi pi) mu nu
-  else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 10413
-     && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)))
-    return eventType::dss_heav;
   // B0 -> D2* (-> D* pi) mu nu
   else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 415
      && muPID == 1. && !ishigher && mm_mom < 250. && Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
-  // B0 -> D2* (-> D* pi pi) mu nu
-  // edit? Slightly different from Phoebe's code, there no Dststtype==415 condition. I did this this way here
-  // to make this symmetric with all the other dss and dss_heav
-  else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 415
-     && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)))
-    return eventType::dss_heav;
   // B0 -> D1' (-> D* pi) mu nu
   else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 20413
      && muPID == 1. && !ishigher && mm_mom < 250. && Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
-  // B0 -> D1' (-> D* pi pi) mu nu
-  else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 20413
-     && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)))
-    return eventType::dss_heav;
   // B- -> D1 (-> D* pi) mu nu
   else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 10423
      && muPID == 1. && !ishigher && mm_mom < 250. && Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
-  // B- -> D1 (-> D* pi pi) mu nu
-  else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 10423
-     && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)))
-    return eventType::dss_heav;
   // B- -> D2* (-> D* pi) mu nu
   else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 425
      && muPID == 1. && !ishigher && mm_mom < 250. && Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
-  // B- -> D2* (-> D* pi pi) mu nu
-  // edit? Slightly different from Phoebe's code, there no Dststtype==425 condition. I did this this way here
-  // to make this symmetric with all the other dss and dss_heav
-  else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 425
-     && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)))
-    return eventType::dss_heav;
   // B- -> D1' (-> D* pi) mu nu
   else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 20423
      && muPID == 1. && !ishigher && mm_mom < 250. && Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
-  // B- -> D1' (-> D* pi pi) mu nu
-  else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 20423
-     && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)))
-    return eventType::dss_heav;
 
-  // B0 -> D1 tau nu ***NOTE*** no more !ishigher? Also, more critically, if these tau D** processes
-  // are included, the histograms really get thrown off (way too many of these events, and most in a single bin)...
-  // I'm going to comment them out for now, but you should do some experimenting/investigating. TODO
-  // If I include the lines cutting out weights higher than 50 or less than 0, these processes don't contribute anything?
-  // Something must be truly weird about their weights in the ntuple... maybe all negative? See if you can find out...
-  // begin questionable plots...
-  /*else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 10413
-     && muPID == 1. && !ishigher && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
+  // B0 -> D1 tau nu   edit? no more !ishigher?
+  // Notably, there aren't many of these D**tau events--about a few thousand
+  else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 10413
+     && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
   // B0 -> D2* tau nu
   else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 415
-     && muPID == 1. && !ishigher && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
+     && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
   // B0 -> D1' tau nu
   else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==511 && Dststtype == 20413
-     && muPID == 1. && !ishigher && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
+     && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
   // B- -> D1 tau nu
   else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 10423
-     && muPID == 1. && !ishigher && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
+     && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
   // B- -> D2* tau nu
   else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 425
-     && muPID == 1. && !ishigher && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
+     && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
     return eventType::dss;
   // B- -> D1' tau nu
   else if(isData == 0. &&  flagtaumu > 0. && JustDst < 1. && DstOk > 0. && Btype==521 && Dststtype == 20423
-     && muPID == 1. && !ishigher && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
-    return eventType::dss;*/
-  // end questionable plots...
+     && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
+    return eventType::dss;
 
   // B0s -> Ds1' mu nu
   else if(isData == 0. &&  flagBmu > 0. && JustDst < 1. && DstOk > 0. && Btype==531 && Dststtype == 435
@@ -182,16 +153,19 @@ eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t 
     return eventType::dss_str;
 
   // B0 -> D* [Dq -> mu nu X'] X
+  // TODO note the weights in Phoebe's code for these components!! Line 2827, 2847, 2865
   else if(isData == 0. &&  DstOk > 0. && muPID == 1. && flagDoubleD > 0. && flagTauonicD < 1. && Btype==511)
     return eventType::dd;
   // B- -> D* [Dq -> mu nu X'] X
   else if(isData == 0. &&  DstOk > 0. && muPID == 1. && flagDoubleD > 0. && flagTauonicD < 1. && Btype==521)
     return eventType::dd;
   // B0s -> D* [Dq -> mu nu X'] X ***NOTE*** this process is not mentioned in table 18; there is also no
-  // corresponding process for tau
-  else if(isData == 0. &&  DstOk > 0. && muPID == 1. && flagDoubleD > 0. && flagTauonicD < 1. && Btype==531)
-    return eventType::dd;
-  // B0 -> D* [Ds -> tau nu] X ***NOTE*** why no more flagDoubleD condition?
+  // corresponding process for tau... I'm going to comment this out, for now. edit?
+  // else if(isData == 0. &&  DstOk > 0. && muPID == 1. && flagDoubleD > 0. && flagTauonicD < 1. && Btype==531)
+  //   return eventType::dd;
+  // B0 -> D* [Ds -> tau nu] X ***NOTE*** why no more flagDoubleD condition? Look at def of this
+  // variable and flagTauonicD in AddB.C... edit?
+  // TODO note the weights in Phoebe's code for these components!! Line 2877, 2889
   else if(isData == 0. &&  DstOk > 0. && muPID == 1. && flagTauonicD > 0. && Btype==511)
     return eventType::dd;
   // B- -> D* [Ds -> tau nu] X
@@ -201,6 +175,7 @@ eventType getType(Double_t isData, Double_t DstIDprod, Double_t IDprod, Float_t 
   return eventType::unknown;
 }
 
+// Function is potentially also obsolete, like many weight calculations below...
 Double_t GetFinalMCWeight(Double_t w_mc) { // run after all other MC weight calculations are done
   if (w_mc > 50) w_mc = 0;
   if (w_mc > 5) w_mc = 5;
@@ -209,6 +184,7 @@ Double_t GetFinalMCWeight(Double_t w_mc) { // run after all other MC weight calc
   return w_mc;
 }
 
+// TODO investigate why data yields with this function as is don't match ANA note...
 Bool_t PassesBasicCuts(const Baby &b) { // event must pass all these cuts and also other, more specific, cuts
   if ((b.isData() > 0 && b.muPID() > 0 && b.Y_M() < 5280 &&
     (//DOCAVAR > DOCAmax
@@ -224,6 +200,18 @@ Bool_t PassesBasicCuts(const Baby &b) { // event must pass all these cuts and al
     || (b.isData() > 0 && b.muPID() > 0 && b.BDTmu() < 0.25)) {
       return false;
   }
+  else if (b.Y_M() > 5280) return false;
+  else if (b.isData() > 0 && b.muVeto()) return false;
+  else if (b.dxy() > 7) return false;
+  else if (!(b.Hlt1() && b.Hlt2())) return false;
+  else if (!b.YTOS() && !b.YTIS()) return false;
+  else if (!((b.Hlt1TAL0K() && b.K_PT() > 1700) || (b.Hlt1TAL0pi() && b.pi_PT() > 1700))) return false;
+  else if (b.isData() > 0 && b.muPID() > 0 && b.BDTmu() < 0.25) return false;   // ASSUMES use_uBDT IS TRUE
+  //else if (b.isData() > 0 && b.muPID() > 0 && b.BDTmu() > 0.25) return false    // ASSUMES use_notuBDT IS TRUE
+  else if (b.mu_P() > 100e3) return false;
+  // edit? I'm going to ignore lines 2302-2307... I think it's selecting only D** sideband...
+  // **NOTE** Be careful of line 2305 for flagDstSB when filling components! (I think?) TODO
+
   return true;
 }
 
@@ -269,18 +257,22 @@ int main(){
 
 
 
-  // TODO fix weight funcs here, add more weight funcs. Include as much of weight calculations (that don't
-  // depend on option variable or rounds) from Phoebe's code as you can, and make comments about which Lines
-  // excluded.
+/* All of these weight funcs are obsolete (they aren't fully implemented from Phoebe's code, either,
+as I stopped working on them). I'll leave them here, commented out, but doubt I'll look at them again.
 
   // Weights used depends on the sample we're looking at, so make a weight func for each sample
 
-  // not explicitly mentioned in Phoebe's code... I'm assuming iso cut just defined at line 1284
   NamedFunc w_iso("w_iso",[&](const Baby &b){
     Double_t w_mc=b.mcWeight();
     Double_t w_ff=b.FFweight();
 
     w_mc = GetFinalMCWeight(w_mc);
+    // for some reason, for D** tau nu processes, FFweight isn't used anymore... Note that flagtaumu and flagBmu
+    // should be mutually exclusive, so for D** events, test if there's a tau, and set w_ff=1 if there is
+    if (b.flagtaumu() > 0. && eventType::dss == getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(),
+       b.flagDstSB(), b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
+       b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(), b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom()))
+      w_ff=1;
 
     return w_mc*w_ff;
   });
@@ -310,6 +302,12 @@ int main(){
     }
 
     w_mc = GetFinalMCWeight(w_mc);
+    // for some reason, for D** tau nu processes, FFweight isn't used anymore... Note that flagtaumu and flagBmu
+    // should be mutually exclusive, so for D** events, test if there's a tau, and set w_ff=1 if there is
+    if (b.flagtaumu() > 0. && eventType::dss == getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(),
+       b.flagDstSB(), b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
+       b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(), b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom()))
+      w_ff=1;
 
     return w_mc*w_ff;
   });
@@ -327,6 +325,12 @@ int main(){
     }
 
     w_mc = GetFinalMCWeight(w_mc);
+    // for some reason, for D** tau nu processes, FFweight isn't used anymore... Note that flagtaumu and flagBmu
+    // should be mutually exclusive, so for D** events, test if there's a tau, and set w_ff=1 if there is
+    if (b.flagtaumu() > 0. && eventType::dss == getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(),
+       b.flagDstSB(), b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
+       b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(), b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom()))
+      w_ff=1;
 
     return w_mc*w_ff;
   });
@@ -338,7 +342,7 @@ int main(){
     Double_t iso_NNkw = b.iso_NNkw();
     if(iso_NNkw > -1) { // I won't worry about "thecut==true", since if it isn't true, this event will be cut anyway
       iso_NNkw=iso_NNkw*(b.iso_Type()==3);
-      Double_t iso_NNkw2 = b.iso_NNkw2();;
+      Double_t iso_NNkw2 = b.iso_NNkw2();
       iso_NNkw2=iso_NNkw2*(b.iso_Type2()==3);
       double kidweight=(1-iso_NNkw);
       kidweight=1-(iso_NNkw+iso_NNkw2-iso_NNkw*iso_NNkw2);
@@ -346,6 +350,12 @@ int main(){
     }
 
     w_mc = GetFinalMCWeight(w_mc);
+    // for some reason, for D** tau nu processes, FFweight isn't used anymore... Note that flagtaumu and flagBmu
+    // should be mutually exclusive, so for D** events, test if there's a tau, and set w_ff=1 if there is
+    if (b.flagtaumu() > 0. && eventType::dss == getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(),
+       b.flagDstSB(), b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
+       b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(), b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom()))
+      w_ff=1;
 
     return w_mc*w_ff;
   });
@@ -363,6 +373,12 @@ int main(){
     }
 
     w_mc = GetFinalMCWeight(w_mc);
+    // for some reason, for D** tau nu processes, FFweight isn't used anymore... Note that flagtaumu and flagBmu
+    // should be mutually exclusive, so for D** events, test if there's a tau, and set w_ff=1 if there is
+    if (b.flagtaumu() > 0. && eventType::dss == getType(b.isData(), b.DstIDprod(), b.IDprod(), b.muPID(),
+       b.flagDstSB(), b.flagtaumu(), b.JustDst(), b.DstOk(), b.Btype(), b.flagBmu(), b.Y_BKGCAT(),
+       b.flagTauonicD(), b.flagDoubleD(), b.ishigher(), b.Dststtype(), b.Dst_2010_minus_MC_MOTHER_ID(), b.mm_mom()))
+      w_ff=1;
 
     return w_mc*w_ff;
   });
@@ -370,6 +386,8 @@ int main(){
   // NamedFunc totweight() TODO -- for data components used in background, will have to be sure of process order and
                                 // include this weight func in the right position in the vector given as argument
                                 // to the plot pushed to plotmaker
+
+*/
 
 
   ////////////////////////// Processes //////////////////////////////////
@@ -390,18 +408,16 @@ int main(){
   procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D** l #nu",Process::Type::background, colors("dss"),
                                                        set<string>({repofolder+ntuplefile}),
                                                        event_type == static_cast<Double_t>(eventType::dss)));
-  procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D_{H}** l #nu",Process::Type::background, kBlue,
-                                                       set<string>({repofolder+ntuplefile}),
-                                                       event_type == static_cast<Double_t>(eventType::dss_heav)));
-  procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D_{s}** l #nu",Process::Type::background, colors("orange"),
-                                                       set<string>({repofolder+ntuplefile}),
-                                                       event_type == static_cast<Double_t>(eventType::dss_str)));
-  procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D* D X", Process::Type::background, colors("dd"),
-                                                       set<string>({repofolder+ntuplefile}),
-                                                       event_type == static_cast<Double_t>(eventType::dd)));
-  procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D_{2S}** #mu #nu", Process::Type::background, kBlack,
+  procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D_{H}** #mu #nu",Process::Type::background, kBlue,
                                                        set<string>({repofolder+ntuplefile}),
                                                        event_type == static_cast<Double_t>(eventType::dss_2s)));
+  procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D_{s}** #mu #nu",Process::Type::background, colors("orange"),
+                                                       set<string>({repofolder+ntuplefile}),
+                                                       event_type == static_cast<Double_t>(eventType::dss_str)));
+  procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("B #rightarrow D* D_{q,s} X", Process::Type::background, colors("dd"),
+                                                       set<string>({repofolder+ntuplefile}),
+                                                       event_type == static_cast<Double_t>(eventType::dd)));
+
   // Don't include unknown processes? They are concentrated heavily at large values (of mmiss2, El, q2), and there
   // are a lot of them...
   /*procs.push_back(Process::MakeShared<Baby_phoebe_dsp>("Unknown process",Process::Type::background, colors("purple"),
@@ -506,12 +522,13 @@ int main(){
     Int_t Dst_ID = b.Dst_ID();
     Double_t iso_DeltaM = b.iso_DeltaM();
 
-    return PassesBasicCuts(b) && (iso_BDT > 0.15 && iso_BDT2 < 0.15 && iso_CHARGE*Dst_ID < 0 && (iso_DeltaM > 360
-      && iso_DeltaM < 600) && iso_P > 5e3 && iso_PT > 150 && iso_NNk < 0.2);
+    return PassesBasicCuts(b) && (iso_BDT > 0.15 && iso_BDT2 < 0.15 && iso_CHARGE*Dst_ID < 0 && (iso_DeltaM > 390
+      && iso_DeltaM < 510) && iso_P > 5e3 && iso_PT > 150 && iso_NNk < 0.2);
   });
 
 
   /////////////////////// Plotting variables ////////////////////////
+
   NamedFunc mm2("mm2", [&](const Baby &b) {
     if (b.isData() > 0.) return b.m_nu1(); // data
     else return b.m_nu1smear()*1e-6; // MC
@@ -530,20 +547,19 @@ int main(){
 
   /////////////////////////// Plots /////////////////////////////
 
-  // TODO add more plots once everything else squared away
-
   PlotMaker pm;
-  // ignore line 1137 in Phoebe's code and just plot m_nu1, El, and q2 that can be found in baby
-  // create one histo per selection cut (for now I'm just using random cuts while plotting) TODO
   vector<NamedFunc> cuts{isocuts, ddcuts, twooscuts, oneoscuts, dsscuts};
-  vector<NamedFunc> MC_w{w_iso, w_dd, w_2os, w_1os, w_dss}; // should correspond to cut in same order as vector above
+  //vector<NamedFunc> MC_w{w_iso, w_dd, w_2os, w_1os, w_dss}; // should correspond to cut in same order as vector above
   for (Int_t i=0; i<static_cast<Int_t>(cuts.size()); i++) {
-    pm.Push<Hist1D>(Axis(40, -2, 10, mm2, "m_{miss}^{2} [GeV^{2}]"), cuts[i], procs, plottypes,
-                    vector<NamedFunc>({"1", "1", MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i]}));
-    pm.Push<Hist1D>(Axis(40, -3, 13, q2, "q^{2} [GeV^{2}]"), cuts[i], procs, plottypes,
-                    vector<NamedFunc>({"1", "1", MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i]}));
-    pm.Push<Hist1D>(Axis(40, -0.2, 3.8, el, "E_{l} [GeV]"), cuts[i], procs, plottypes,
-                    vector<NamedFunc>({"1", "1", MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i]}));
+    pm.Push<Hist1D>(Axis(40, -2.0, 10.0, mm2, "m_{miss}^{2} [GeV^{2}]"), cuts[i], procs, plottypes,
+                    vector<NamedFunc>({"1"}));
+                    //vector<NamedFunc>({"1", "1", MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i]}));
+    pm.Push<Hist1D>(Axis(4, -0.4, 12.6, q2, "q^{2} [GeV^{2}]"), cuts[i], procs, plottypes,
+                    vector<NamedFunc>({"1"}));
+                    //vector<NamedFunc>({"1", "1", MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i]}));
+    pm.Push<Hist1D>(Axis(32, 0.1, 2.5, el, "E_{l} [GeV]"), cuts[i], procs, plottypes,
+                    vector<NamedFunc>({"1"}));
+                    //vector<NamedFunc>({"1", "1", MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i], MC_w[i]}));
   }
   pm.MakePlots(1); // The "1" is the luminosity to rescale the bkg to
 
