@@ -41,6 +41,7 @@
 #include "TStyle.h"
 #include "TGraphAsymmErrors.h"
 #include "TMath.h"
+#include "TLine.h"
 #include "TLegendEntry.h"
 
 #include "core/utilities.hpp"

@@ -180,6 +180,7 @@ void Variable::SetEntry(const string &baby_type,
   \return True if variable accessor can be implemented in Baby
 */
 bool Variable::ImplementInBase() const{
+  return false; // Having problems with functions in base
   set<string> type_set = GetTypeSet();
   return type_set.size()==1 && *(type_set.cbegin()) != "";
 }
@@ -318,10 +319,13 @@ set<Variable> GetVariables(const vector<string> &files, vector<string> &tree_nam
   for(const auto &file: files){
     ifstream ifs("txt/variables/"+file);
     //DBG("Doing file txt/variables/"+file+"\n\n");
+    bool found_tree = false;
     for(string line; std::getline(ifs, line); ){
       //DBG("Reading line: "+line);
       size_t fcolon = line.find(":"), fspace = line.find(" ");
       if(fcolon!=std::string::npos &&  fspace==std::string::npos){
+        if(found_tree) break;
+        else found_tree = true;
         string treename = line;
         treename.erase(fcolon);
         tree_names.push_back(treename);
