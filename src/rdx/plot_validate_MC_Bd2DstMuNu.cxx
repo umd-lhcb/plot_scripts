@@ -1,6 +1,6 @@
 // Program to compare run 1 MC between us/Phoebe and compare us run1/run2, mainly to validate our reco script, using plot_scripts
 // Created: Jan 17, 2021
-// Last edited: Feb 22, 2021
+// Last edited: Mar 5, 2021
 // Note: relevant ntuples (see file names below) need to be downloaded, and the ntuple file paths in the processes
 // should be edited to reflect their location. The ntuples are generated from dst files found (in DIRAC) at
 // (for run 1) MC/2012/Beam4000GeV-2012-MagDown-Nu2.5-Pythia8/Sim08e/Digi13/Trig0x409f0045/Stripping20Filtered/11574020/DSTTAUNU.SAFESTRIPTRIG.DST
@@ -79,6 +79,7 @@ int main(){
   //double d0_m = 1864.83;
 
   // Cuts are the same between the three ntuples, but individual NamedFuncs are created because of different variable names
+  // Note: commented lines are the same as corresponding uncommented lines, except they contain some PID cuts
   // Variables for Phoebe's ntuple should be defined in txt/variables/phoebe_step1_mc_Bd2DstMuNu
   NamedFunc cuts_phoebe("cuts_phoebe", [&](const Baby &b){
     // L0
@@ -86,10 +87,13 @@ int main(){
     if (!(b.muplus_L0Global_TIS())) return false;
     // HLT2
     if (!(b.Kplus_TRACK_CHI2NDOF()<3 && b.piminus0_TRACK_CHI2NDOF()<3 && b.Kplus_PT()>800 && b.piminus0_PT()>800 && b.Kplus_P()>5000 && b.piminus0_P()>5000 && (b.Kplus_PT()>1500 || b.piminus0_PT()>1500) && (b.Dst_2010_minus_ENDVERTEX_CHI2()/b.Dst_2010_minus_ENDVERTEX_NDOF())<10 && b.D0_PT()>2000
-                && (b.Kplus_PT()+b.piminus0_PT())>2500 && 1830<b.D0_MM() && b.D0_MM()<1910 && b.D0_DIRA_OWNPV()>0.999)) return false;
+                && (b.Kplus_PT()+b.piminus0_PT())>2500 && 1830<b.D0_MM() && b.D0_MM()<1910 && b.D0_DIRA_OWNPV()>0.99985)) return false;
     // Stripping
-    if (!(b.muplus_IPCHI2_OWNPV()>45 && b.muplus_TRACK_GhostProb()<0.5 && b.muplus_PIDmu()>2 && b.muplus_P()>3000 && b.piminus0_IPCHI2_OWNPV()>45 && b.Kplus_IPCHI2_OWNPV()>45 && b.Kplus_PIDK()>4 && b.piminus0_PIDK()<2 && b.piminus0_TRACK_GhostProb()<0.5 && b.Kplus_TRACK_GhostProb()<0.5
+    //if (!(b.muplus_IPCHI2_OWNPV()>45 && b.muplus_TRACK_GhostProb()<0.5 && b.muplus_PIDmu()>2 && b.muplus_P()>3000 && b.piminus0_IPCHI2_OWNPV()>45 && b.Kplus_IPCHI2_OWNPV()>45 && b.Kplus_PIDK()>4 && b.piminus0_PIDK()<2 && b.piminus0_TRACK_GhostProb()<0.5 && b.Kplus_TRACK_GhostProb()<0.5
+    //            && (b.D0_ENDVERTEX_CHI2()/b.D0_ENDVERTEX_NDOF())<4 && b.D0_FDCHI2_OWNPV()>250 && (b.Y_ENDVERTEX_CHI2()/b.Y_ENDVERTEX_NDOF())<6 && b.Y_DIRA_OWNPV()>0.9995)) return false;
+    if (!(b.muplus_IPCHI2_OWNPV()>45 && b.muplus_TRACK_GhostProb()<0.5 && b.muplus_P()>3000 && b.piminus0_IPCHI2_OWNPV()>45 && b.Kplus_IPCHI2_OWNPV()>45 && b.piminus0_TRACK_GhostProb()<0.5 && b.Kplus_TRACK_GhostProb()<0.5
                 && (b.D0_ENDVERTEX_CHI2()/b.D0_ENDVERTEX_NDOF())<4 && b.D0_FDCHI2_OWNPV()>250 && (b.Y_ENDVERTEX_CHI2()/b.Y_ENDVERTEX_NDOF())<6 && b.Y_DIRA_OWNPV()>0.9995)) return false;
+
     // Reco Script
     if (!(b.piminus_TRACK_Type()==3 && b.Y_MM()<5400 && abs(b.Dst_2010_minus_MM()-dst_2010_m)<125 && abs(b.Dst_2010_minus_MM()-b.D0_MM())<160 && b.muplus_TRACK_CHI2NDOF()<3 && b.piminus_IPCHI2_OWNPV()>0 && b.piminus_TRACK_CHI2NDOF()<3 && b.piminus_TRACK_GhostProb()<0.25)) return false;
     // finally, get rid of events where truth matching fails (not fully implemented for all particles here, just for B and D*, for now...)
@@ -104,20 +108,22 @@ int main(){
     if (!(b.mu_L0Global_TIS())) return false;
     // HLT2
     if(!(b.k_TRACK_CHI2NDOF()<3 && b.pi_TRACK_CHI2NDOF()<3 && b.k_PT()>800 && b.pi_PT()>800 && b.k_P()>5000 && b.pi_P()>5000 && (b.k_PT()>1500 || b.pi_PT()>1500) && (b.dst_ENDVERTEX_CHI2()/b.dst_ENDVERTEX_NDOF())<10 && b.d0_PT()>2000 && (b.k_PT()+b.pi_PT())>2500 && 1830<b.d0_MM()
-               && b.d0_MM()<1910 && b.d0_DIRA_OWNPV()>0.999)) return false;
+               && b.d0_MM()<1910 && b.d0_DIRA_OWNPV()>0.99985)) return false;
     // Stripping
-    if (!(b.mu_IPCHI2_OWNPV()>45 && b.mu_TRACK_GhostProb()<0.5 && b.mu_PIDmu()>2 && b.mu_P()>3000 && b.pi_IPCHI2_OWNPV()>45 && b.k_IPCHI2_OWNPV()>45 && b.k_PIDK()>4 && b.pi_PIDK()<2 && b.pi_TRACK_GhostProb()<0.5 && b.k_TRACK_GhostProb()<0.5 && (b.d0_ENDVERTEX_CHI2()/b.d0_ENDVERTEX_NDOF())<4
+    //if (!(b.mu_IPCHI2_OWNPV()>45 && b.mu_TRACK_GhostProb()<0.5 && b.mu_PIDmu()>2 && b.mu_P()>3000 && b.pi_IPCHI2_OWNPV()>45 && b.k_IPCHI2_OWNPV()>45 && b.k_PIDK()>4 && b.pi_PIDK()<2 && b.pi_TRACK_GhostProb()<0.5 && b.k_TRACK_GhostProb()<0.5 && (b.d0_ENDVERTEX_CHI2()/b.d0_ENDVERTEX_NDOF())<4
+    //           && b.d0_FDCHI2_OWNPV()>250 && (b.b0_ENDVERTEX_CHI2()/b.b0_ENDVERTEX_NDOF())<6 && b.b0_DIRA_OWNPV()>0.9995)) return false;
+    if (!(b.mu_IPCHI2_OWNPV()>45 && b.mu_TRACK_GhostProb()<0.5 && b.mu_P()>3000 && b.pi_IPCHI2_OWNPV()>45 && b.k_IPCHI2_OWNPV()>45 && b.pi_TRACK_GhostProb()<0.5 && b.k_TRACK_GhostProb()<0.5 && (b.d0_ENDVERTEX_CHI2()/b.d0_ENDVERTEX_NDOF())<4
                && b.d0_FDCHI2_OWNPV()>250 && (b.b0_ENDVERTEX_CHI2()/b.b0_ENDVERTEX_NDOF())<6 && b.b0_DIRA_OWNPV()>0.9995)) return false;
     // Reco Script
     if (!(b.spi_TRACK_Type()==3 && b.b0_MM()<5400 && abs(b.dst_MM()-dst_2010_m)<125 && abs(b.dst_MM()-b.d0_MM())<160 && b.mu_TRACK_CHI2NDOF()<3 && b.spi_IPCHI2_OWNPV()>0 && b.spi_TRACK_CHI2NDOF()<3 && b.spi_TRACK_GhostProb()<0.25)) return false;
     // finally, get rid of events where truth matching fails
-    if (!(abs(b.b0_TRUEID())==511)) return false;
+    /*if (!(abs(b.b0_TRUEID())==511)) return false;
     if (!(abs(b.dst_TRUEID())==413)) return false;
     //if (!(abs(b.d0_TRUEID())==421)) return false; // D doesn't ever seem to be misreconstructed? trueID variable always matches actual ID?
     if (!(abs(b.k_TRUEID())==321)) return false;
     if (!(abs(b.mu_TRUEID())==13)) return false;
     if (!(abs(b.pi_TRUEID())==211)) return false;
-    if (!(abs(b.spi_TRUEID())==211)) return false; // NOTE: including all these truth matchings, there are still some multiple cand events, but notably fewer
+    if (!(abs(b.spi_TRUEID())==211)) return false;*/ // NOTE: including all these truth matchings, there are still some multiple cand events, but notably fewer
     return true;
   });
   // Variables for our run 2 ntuple should be defined in txt/variables/run2_step1_mc_Bd2DstMuNu
@@ -127,19 +133,23 @@ int main(){
     if ((b.dst_L0HadronDecision_TOS() && !b.b0_L0Global_TIS()) && !(b.dst_PT()>3700 && b.nSPDhits()<450)) return false;
     if (!(b.mu_L0Global_TIS())) return false;
     // HLT2
-    if (!(b.k_TRACK_CHI2NDOF()<3 && b.pi_TRACK_CHI2NDOF()<3 && b.k_PT()>800 && b.pi_PT()>800 && b.k_P()>5000 && b.pi_P()>5000 && (b.k_PT()>1500 || b.pi_PT()>1500) && (b.dst_ENDVERTEX_CHI2()/b.dst_ENDVERTEX_NDOF())<10 && b.d0_PT()>2000 && (b.k_PT()+b.pi_PT())>2500 && 1830<b.d0_MM() && b.d0_MM()<1910 && b.d0_DIRA_OWNPV()>0.999)) return false;
+    if(!(b.k_TRACK_CHI2NDOF()<3 && b.pi_TRACK_CHI2NDOF()<3 && b.k_PT()>800 && b.pi_PT()>800 && b.k_P()>5000 && b.pi_P()>5000 && (b.k_PT()>1500 || b.pi_PT()>1500) && (b.dst_ENDVERTEX_CHI2()/b.dst_ENDVERTEX_NDOF())<10 && b.d0_PT()>2000 && (b.k_PT()+b.pi_PT())>2500 && 1830<b.d0_MM()
+               && b.d0_MM()<1910 && b.d0_DIRA_OWNPV()>0.99985)) return false;
     // Stripping
-    if (!(b.mu_IPCHI2_OWNPV()>45 && b.mu_TRACK_GhostProb()<0.5 && b.mu_PIDmu()>2 && b.mu_P()>3000 && b.pi_IPCHI2_OWNPV()>45 && b.k_IPCHI2_OWNPV()>45 && b.k_PIDK()>4 && b.pi_PIDK()<2 && b.pi_TRACK_GhostProb()<0.5 && b.k_TRACK_GhostProb()<0.5 && (b.d0_ENDVERTEX_CHI2()/b.d0_ENDVERTEX_NDOF())<4 && b.d0_FDCHI2_OWNPV()>250 && (b.b0_ENDVERTEX_CHI2()/b.b0_ENDVERTEX_NDOF())<6 && b.b0_DIRA_OWNPV()>0.9995)) return false;
+    //if (!(b.mu_IPCHI2_OWNPV()>45 && b.mu_TRACK_GhostProb()<0.5 && b.mu_PIDmu()>2 && b.mu_P()>3000 && b.pi_IPCHI2_OWNPV()>45 && b.k_IPCHI2_OWNPV()>45 && b.k_PIDK()>4 && b.pi_PIDK()<2 && b.pi_TRACK_GhostProb()<0.5 && b.k_TRACK_GhostProb()<0.5 && (b.d0_ENDVERTEX_CHI2()/b.d0_ENDVERTEX_NDOF())<4
+    //           && b.d0_FDCHI2_OWNPV()>250 && (b.b0_ENDVERTEX_CHI2()/b.b0_ENDVERTEX_NDOF())<6 && b.b0_DIRA_OWNPV()>0.9995)) return false;
+    if (!(b.mu_IPCHI2_OWNPV()>45 && b.mu_TRACK_GhostProb()<0.5 && b.mu_P()>3000 && b.pi_IPCHI2_OWNPV()>45 && b.k_IPCHI2_OWNPV()>45 && b.pi_TRACK_GhostProb()<0.5 && b.k_TRACK_GhostProb()<0.5 && (b.d0_ENDVERTEX_CHI2()/b.d0_ENDVERTEX_NDOF())<4
+               && b.d0_FDCHI2_OWNPV()>250 && (b.b0_ENDVERTEX_CHI2()/b.b0_ENDVERTEX_NDOF())<6 && b.b0_DIRA_OWNPV()>0.9995)) return false;
     // Reco Script
     if (!(b.spi_TRACK_Type()==3 && b.b0_MM()<5400 && abs(b.dst_MM()-dst_2010_m)<125 && abs(b.dst_MM()-b.d0_MM())<160 && b.mu_TRACK_CHI2NDOF()<3 && b.spi_IPCHI2_OWNPV()>0 && b.spi_TRACK_CHI2NDOF()<3 && b.spi_TRACK_GhostProb()<0.25)) return false;
     // finally, get rid of events where truth matching fails
-    if (!(abs(b.b0_TRUEID())==511)) return false;
+    /*if (!(abs(b.b0_TRUEID())==511)) return false;
     if (!(abs(b.dst_TRUEID())==413)) return false;
     //if (!(abs(b.d0_TRUEID())==421)) return false; // D doesn't ever seem to be misreconstructed? trueID variable always matches actual ID?
     if (!(abs(b.k_TRUEID())==321)) return false;
     if (!(abs(b.mu_TRUEID())==13)) return false;
     if (!(abs(b.pi_TRUEID())==211)) return false;
-    if (!(abs(b.spi_TRUEID())==211)) return false; // NOTE: including all these truth matchings, there are still some multiple cand events, but notably fewer
+    if (!(abs(b.spi_TRUEID())==211)) return false;*/ // NOTE: including all these truth matchings, there are still some multiple cand events, but notably fewer
     return true;
   });
 
@@ -172,35 +182,35 @@ int main(){
   procs_us_phoebe.push_back(Process::MakeShared<Baby_phoebe_step1_mc_Bd2DstMuNu>("Phoebe", Process::Type::signal, colors("blue"),
                                                 set<string>({repofolder+"../ref_ntuples/TFYCands_Bd2Dstmunu_e_Py8_MD.root"}), cuts_phoebe));
   procs_us_phoebe.push_back(Process::MakeShared<Baby_run1_step1_mc_Bd2DstMuNu>("Us (run1)", Process::Type::data, colors("data"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1));
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1));
   procs_us_phoebe_nocuts.push_back(Process::MakeShared<Baby_phoebe_step1_mc_Bd2DstMuNu>("Phoebe", Process::Type::signal, colors("blue"),
                                                 set<string>({repofolder+"../ref_ntuples/TFYCands_Bd2Dstmunu_e_Py8_MD.root"})));
   procs_us_phoebe_nocuts.push_back(Process::MakeShared<Baby_run1_step1_mc_Bd2DstMuNu>("Us (run1)", Process::Type::data, colors("data"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"})));
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"})));
   procs_us_run12.push_back(Process::MakeShared<Baby_run1_step1_mc_Bd2DstMuNu>("Run 1", Process::Type::data, colors("data"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1));
-  procs_us_run12.push_back(Process::MakeShared<Baby_run2_step1_mc_Bd2DstMuNu>("Run 2", Process::Type::signal, colors("blue"),
-                                                set<string>({repofolder+"../lhcb-ntuples-gen/run2-rdx/samples/Dst_D0--21_01_27--mc--Bd2DstMuNu--2016--md--py8-sim09j-dv45-subset.root"}), cuts_us_run2));
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1));
+  procs_us_run12.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("Run 2", Process::Type::signal, colors("blue"),
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11574021_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run2));
   procs_us_run12_nocuts.push_back(Process::MakeShared<Baby_run1_step1_mc_Bd2DstMuNu>("Run 1", Process::Type::data, colors("data"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"})));
-  procs_us_run12_nocuts.push_back(Process::MakeShared<Baby_run2_step1_mc_Bd2DstMuNu>("Run 2", Process::Type::signal, colors("blue"),
-                                                set<string>({repofolder+"../lhcb-ntuples-gen/run2-rdx/samples/Dst_D0--21_01_27--mc--Bd2DstMuNu--2016--md--py8-sim09j-dv45-subset.root"})));
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"})));
+  procs_us_run12_nocuts.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("Run 2", Process::Type::signal, colors("blue"),
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11574021_D0TAUNU.SAFESTRIPTRIG.DST.root"})));
   procs_us_run1_q2.push_back(Process::MakeShared<Baby_run1_step1_mc_Bd2DstMuNu>("q^{2}_{true}<1", Process::Type::background, colors("blue"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1&&low_q2_study));
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1&&low_q2_study));
   procs_us_run1_q2.push_back(Process::MakeShared<Baby_run1_step1_mc_Bd2DstMuNu>("4<q^{2}_{true}<5", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1&&mid_q2_study));
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1&&mid_q2_study));
   procs_us_run1_q2.push_back(Process::MakeShared<Baby_run1_step1_mc_Bd2DstMuNu>("1<q^{2}_{true}<4 or 5<q^{2}_{true}", Process::Type::background, colors("green"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1&&(!low_q2_study&&!mid_q2_study)));
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1&&(!low_q2_study&&!mid_q2_study)));
   procs_us_run1_q2.push_back(Process::MakeShared<Baby_run1_step1_mc_Bd2DstMuNu>("All q^{2}_{true}", Process::Type::data, colors("data"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1));
-  procs_us_run2_q2.push_back(Process::MakeShared<Baby_run2_step1_mc_Bd2DstMuNu>("q^{2}_{true}<1", Process::Type::background, colors("blue"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run2&&low_q2_study));
-  procs_us_run2_q2.push_back(Process::MakeShared<Baby_run2_step1_mc_Bd2DstMuNu>("4<q^{2}_{true}<5", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run2&&mid_q2_study));
-  procs_us_run2_q2.push_back(Process::MakeShared<Baby_run2_step1_mc_Bd2DstMuNu>("1<q^{2}_{true}<4 or 5<q^{2}_{true}", Process::Type::background, colors("green"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run2&&(!low_q2_study&&!mid_q2_study)));
-  procs_us_run2_q2.push_back(Process::MakeShared<Baby_run2_step1_mc_Bd2DstMuNu>("All q^{2}_{true}", Process::Type::data, colors("data"),
-                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run2));
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run1));
+  procs_us_run2_q2.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("q^{2}_{true}<1", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run2&&low_q2_study));
+  procs_us_run2_q2.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("4<q^{2}_{true}<5", Process::Type::background, colors("red"),
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run2&&mid_q2_study));
+  procs_us_run2_q2.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("1<q^{2}_{true}<4 or 5<q^{2}_{true}", Process::Type::background, colors("green"),
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run2&&(!low_q2_study&&!mid_q2_study)));
+  procs_us_run2_q2.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("All q^{2}_{true}", Process::Type::data, colors("data"),
+                                                set<string>({repofolder+"ntuples/0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_02_25--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), cuts_us_run2));
 
 
   ///////////////////////// Define Custom NamedFuncs for complicated variables
