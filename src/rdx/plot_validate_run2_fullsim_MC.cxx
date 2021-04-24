@@ -1,10 +1,10 @@
-// Code for making plots for run2 fullsim MC validation (using plot_scripts)
+// Code for making plots for run2 fullsim MC validation (using plot_scripts), and for now, some plots for tracker only too
 
-// This is going to be slightly ugly and repetitive code... but I'm not sure there's any way around that,
+// This is going to be slightly ugly and repetitive code... but I'm not sure there's any way around that for a short term solution,
 // and being ugly may make it the easiest to edit in this case, honestly.
 
 // Created: Feb 22, 2021
-// Last edited: Apr 13, 2021
+// Last edited: Apr 22, 2021
 // Note: relevant ntuples (see file names below) need to be downloaded, and the repofolder variable should
 // be edited to reflect their location.
 
@@ -99,8 +99,10 @@ int main(){
 
   PlotOpt lin_lumi_shapes = lin_shapes().Stack(StackType::lumi_shapes).Overflow(OverflowType::both);
   PlotOpt log_lumi_shapes = lin_lumi_shapes().YAxis(YAxisType::log);
+  PlotOpt lin_shapes_ratio = lin_shapes().Bottom(BottomType::ratio);
 
   vector<PlotOpt> plotshapes = {lin_shapes};
+  vector<PlotOpt> plotshapesratio = {lin_shapes_ratio};
   vector<PlotOpt> plotlumi = {lin_lumi_shapes};
   vector<PlotOpt> plotloglumi = {log_lumi_shapes};
   vector<PlotOpt> plotboth = {lin_shapes, lin_lumi_shapes};
@@ -174,18 +176,19 @@ int main(){
   });
 
   // Phoebe doesn't have this histogram, so I'll extrapolate for selections
-  NamedFunc selec_Bd2DststMuNu_D0st("selec_Bd2DststMuNu_D0st", [&](const Baby &b){
-    // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10411)) && muPID == 1. && !ishigher (I ignore ishigher)
-    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-    if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
-    // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==511)) return false;
-    // justDst from Phoebe AddB.C line 2814 (simplified for me)
-    if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
-    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10411)) return false;
-    return true;
-  });
+  // Actually, in an effort to temporarily mimic exactly what templates Phoebe produced for her analysis, I won't use this mode for the D* sample (since D*_0 -> D* pi pi only, and Phoebe cuts out the two pi events)
+  // NamedFunc selec_Bd2DststMuNu_D0st("selec_Bd2DststMuNu_D0st", [&](const Baby &b){
+  //   // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10411)) && muPID == 1. && !ishigher (I ignore ishigher)
+  //   // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
+  //   // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //   if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==511)) return false;
+  //   // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
+  //   // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //   if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10411)) return false;
+  //   return true;
+  // });
 
   NamedFunc selec_Bd2DststMuNu_D1("selec_Bd2DststMuNu_D1", [&](const Baby &b){
     // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10413)) && muPID == 1. && !ishigher (I ignore ishigher)
@@ -196,7 +199,14 @@ int main(){
     // justDst from Phoebe AddB.C line 2814 (simplified for me)
     if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!((abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10413) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==511 && abs(b.dst_MC_GD_MOTHER_ID())==10413))) return false;
+    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10413)) return false;
+    // this commented out line is an alternative definition for Dststtype, different from Phoebe's in redoHistos, that doesn't require D** -> D* directly (can be multiple D** cascade)
+    // if (!((abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10413) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==511 && abs(b.dst_MC_GD_MOTHER_ID())==10413))) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
@@ -210,6 +220,11 @@ int main(){
     if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==20413)) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
@@ -222,23 +237,31 @@ int main(){
     // justDst from Phoebe AddB.C line 2814 (simplified for me)
     if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!((abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==511 && abs(b.dst_MC_GD_MOTHER_ID())==415))) return false;
+    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415)) return false;
+    // this commented out line is an alternative definition for Dststtype, different from Phoebe's in redoHistos, that doesn't require D** -> D* directly (can be multiple D** cascade)
+    // if (!((abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==511 && abs(b.dst_MC_GD_MOTHER_ID())==415))) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
   // Phoebe doesn't have this histogram, so I'll extrapolate for selections
-  NamedFunc selec_Bd2DststTauNu_D0st("selec_Bd2DststTauNu_D0st", [&](const Baby &b){
-    // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10411)) && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
-    // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==511)) return false;
-    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-    if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
-    // justDst from Phoebe AddB.C line 2814 (simplified for me)
-    if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
-    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10411)) return false;
-    return true;
-  });
+  // Actually, in an effort to temporarily mimic exactly what templates Phoebe produced for her analysis, I won't use this mode for the D* sample (since D*_0 -> D* pi pi only, and Phoebe cuts out the two pi events)
+  // NamedFunc selec_Bd2DststTauNu_D0st("selec_Bd2DststTauNu_D0st", [&](const Baby &b){
+  //   // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10411)) && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
+  //   // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //   if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==511)) return false;
+  //   // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
+  //   // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
+  //   // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //   if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10411)) return false;
+  //   return true;
+  // });
 
   NamedFunc selec_Bd2DststTauNu_D1("selec_Bd2DststTauNu_D1", [&](const Baby &b){
     // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10413)) && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID))
@@ -249,7 +272,14 @@ int main(){
     // justDst from Phoebe AddB.C line 2814 (simplified for me)
     if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!((abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10413) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==511 && abs(b.dst_MC_GD_MOTHER_ID())==10413))) return false;
+    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10413)) return false;
+    // this commented out line is an alternative definition for Dststtype, different from Phoebe's in redoHistos, that doesn't require D** -> D* directly (can be multiple D** cascade)
+    // if (!((abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10413) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==511 && abs(b.dst_MC_GD_MOTHER_ID())==10413))) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
@@ -263,6 +293,11 @@ int main(){
     if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==20413)) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
@@ -275,23 +310,31 @@ int main(){
     // justDst from Phoebe AddB.C line 2814 (simplified for me)
     if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!((abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==511 && abs(b.dst_MC_GD_MOTHER_ID())==415))) return false;
+    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415)) return false;
+    // this commented out line is an alternative definition for Dststtype, different from Phoebe's in redoHistos, that doesn't require D** -> D* directly (can be multiple D** cascade)
+    // if (!((abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==511 && abs(b.dst_MC_GD_MOTHER_ID())==415))) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
   // Phoebe doesn't have this histogram, so I'll extrapolate for selections
-  NamedFunc selec_Bu2DststMuNu_D0st("selec_Bu2DststMuNu_D0st", [&](const Baby &b){
-    // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10421)) && muPID == 1. && !ishigher (I ignore ishigher)
-    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-    if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
-    // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==521)) return false;
-    // justDst from Phoebe AddB.C line 2814 (simplified for me)
-    if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
-    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10421)) return false;
-    return true;
-  });
+  // Actually, in an effort to temporarily mimic exactly what templates Phoebe produced for her analysis, I won't use this mode for the D* sample (since D*_0 -> D* pi pi only, and Phoebe cuts out the two pi events)
+  // NamedFunc selec_Bu2DststMuNu_D0st("selec_Bu2DststMuNu_D0st", [&](const Baby &b){
+  //   // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10421)) && muPID == 1. && !ishigher (I ignore ishigher)
+  //   // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
+  //   // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //   if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==521)) return false;
+  //   // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
+  //   // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //   if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10421)) return false;
+  //   return true;
+  // });
 
   NamedFunc selec_Bu2DststMuNu_D1("selec_Bu2DststMuNu_D1", [&](const Baby &b){
     // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10423)) && muPID == 1. && !ishigher (I ignore ishigher)
@@ -302,7 +345,14 @@ int main(){
     // justDst from Phoebe AddB.C line 2814 (simplified for me)
     if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!((abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10423) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==521 && abs(b.dst_MC_GD_MOTHER_ID())==10423))) return false;
+    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10423)) return false;
+    // this commented out line is an alternative definition for Dststtype, different from Phoebe's in redoHistos, that doesn't require D** -> D* directly (can be multiple D** cascade)
+    // if (!((abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10423) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==521 && abs(b.dst_MC_GD_MOTHER_ID())==10423))) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
@@ -316,6 +366,11 @@ int main(){
     if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==20423)) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
@@ -328,23 +383,31 @@ int main(){
     // justDst from Phoebe AddB.C line 2814 (simplified for me)
     if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!((abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==521 && abs(b.dst_MC_GD_MOTHER_ID())==425))) return false;
+    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425)) return false;
+    // this commented out line is an alternative definition for Dststtype, different from Phoebe's in redoHistos, that doesn't require D** -> D* directly (can be multiple D** cascade)
+    // if (!((abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==521 && abs(b.dst_MC_GD_MOTHER_ID())==425))) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
   // Phoebe doesn't have this histogram, so I'll extrapolate for selections
-  NamedFunc selec_Bu2DststTauNu_D0st("selec_Bu2DststTauNu_D0st", [&](const Baby &b){
-    // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10421)) && muPID == 1. && !ishigher (I ignore ishigher)
-    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-    if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
-    // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==521)) return false;
-    // justDst from Phoebe AddB.C line 2814 (simplified for me)
-    if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
-    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10421)) return false;
-    return true;
-  });
+  // Actually, in an effort to temporarily mimic exactly what templates Phoebe produced for her analysis, I won't use this mode for the D* sample (since D*_0 -> D* pi pi only, and Phoebe cuts out the two pi events)
+  // NamedFunc selec_Bu2DststTauNu_D0st("selec_Bu2DststTauNu_D0st", [&](const Baby &b){
+  //   // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10421)) && muPID == 1. && !ishigher (I ignore ishigher)
+  //   // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
+  //   // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //   if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==521)) return false;
+  //   // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
+  //   // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //   if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10421)) return false;
+  //   return true;
+  // });
 
   NamedFunc selec_Bu2DststTauNu_D1("selec_Bu2DststTauNu_D1", [&](const Baby &b){
     // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10423)) && muPID == 1. && !ishigher (I ignore ishigher)
@@ -355,7 +418,14 @@ int main(){
     // justDst from Phoebe AddB.C line 2814 (simplified for me)
     if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!((abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10423) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==521 && abs(b.dst_MC_GD_MOTHER_ID())==10423))) return false;
+    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10423)) return false;
+    // this commented out line is an alternative definition for Dststtype, different from Phoebe's in redoHistos, that doesn't require D** -> D* directly (can be multiple D** cascade)
+    // if (!((abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10423) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==521 && abs(b.dst_MC_GD_MOTHER_ID())==10423))) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
@@ -369,6 +439,11 @@ int main(){
     if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==20423)) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
@@ -381,28 +456,35 @@ int main(){
     // justDst from Phoebe AddB.C line 2814 (simplified for me)
     if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!((abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==521 && abs(b.dst_MC_GD_MOTHER_ID())==425))) return false;
+    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425)) return false;
+    // this commented out line is an alternative definition for Dststtype, different from Phoebe's in redoHistos, that doesn't require D** -> D* directly (can be multiple D** cascade)
+    // if (!((abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425) || (abs(b.dst_MC_GD_GD_MOTHER_ID())==521 && abs(b.dst_MC_GD_MOTHER_ID())==425))) return false;
+    // mm_mom from Phoebe AddB.C line 3136-3141; I didn't list this cut above, but in fact in Phoebe's redoHistos for the D* sample, she cuts out D** events that go to two pions
+    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+    double mm2_mom=(dst_mom_p-dst_p).M2();
+    if (mm2_mom>0 && sqrt(mm2_mom)>250) return false;
     return true;
   });
 
   // Phoebe doesn't seem to have this histogram, but I'll extrapolate the selections for D0* from the other related two pi D** histograms
-  NamedFunc selec_Bd2DststMuNu_D0st_pipi("selec_Bd2DststMuNu_D0st_pipi", [&](const Baby &b){
-     // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10411)) && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I ignore ishigher, also I think last condition is always false)
-     // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-     if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
-     // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-     if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==511)) return false;
-     // justDst from Phoebe AddB.C line 2814 (simplified for me)
-     if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
-     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10411)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
-     // mm_mom from Phoebe AddB.C line 3136-3141
-     TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
-     TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
-     double mm2_mom=(dst_mom_p-dst_p).M2();
-     if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
-     return true;
-   });
+  // NamedFunc selec_Bd2DststMuNu_D0st_pipi("selec_Bd2DststMuNu_D0st_pipi", [&](const Baby &b){
+  //    // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10411)) && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I ignore ishigher, also I think last condition is always false)
+  //    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //    if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
+  //    // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==511)) return false;
+  //    // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //    if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
+  //    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10411)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
+  //    // mm_mom from Phoebe AddB.C line 3136-3141
+  //    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+  //    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+  //    double mm2_mom=(dst_mom_p-dst_p).M2();
+  //    if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
+  //    return true;
+  //  });
 /*
  // looking at out dec file, these seelctions should cut everything, since there are no 2 pion decays with a D* coming from D1 (this will be a test if the momentum cut does a good job of identifying two pion decays like this)
  NamedFunc selec_Bd2DststMuNu_D1_pipi("selec_Bd2DststMuNu_D1_pipi", [&](const Baby &b){
@@ -442,42 +524,42 @@ int main(){
     return true;
   });
 */
-  NamedFunc selec_Bd2DststMuNu_D2st_pipi("selec_Bd2DststMuNu_D2st_pipi", [&](const Baby &b){
-    // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511)) && muPID == 1. && !ishigher && Dststtype==415 (I ignore ishigher)
-    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-    if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
-    // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==511)) return false;
-    // justDst from Phoebe AddB.C line 2814 (simplified for me)
-    if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
-    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
-    // mm_mom from Phoebe AddB.C line 3136-3141
-    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
-    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
-    double mm2_mom=(dst_mom_p-dst_p).M2();
-    if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
-    return true;
-  });
+  // NamedFunc selec_Bd2DststMuNu_D2st_pipi("selec_Bd2DststMuNu_D2st_pipi", [&](const Baby &b){
+  //   // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511)) && muPID == 1. && !ishigher && Dststtype==415 (I ignore ishigher)
+  //   // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
+  //   // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //   if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==511)) return false;
+  //   // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
+  //   // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //   if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
+  //   // mm_mom from Phoebe AddB.C line 3136-3141
+  //   TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+  //   TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+  //   double mm2_mom=(dst_mom_p-dst_p).M2();
+  //   if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
+  //   return true;
+  // });
 
   // Phoebe doesn't seem to have this histogram, but I'll extrapolate the selections for D0* from the other related two pi D** histograms
-  NamedFunc selec_Bd2DststTauNu_D0st_pipi("selec_Bd2DststTauNu_D0st_pipi", [&](const Baby &b){
-     // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10411)) && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (last condition is always false)
-     // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-     if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==511)) return false;
-     // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-     if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
-     // justDst from Phoebe AddB.C line 2814 (simplified for me)
-     if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
-     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10411)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
-     // mm_mom from Phoebe AddB.C line 3136-3141
-     TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
-     TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
-     double mm2_mom=(dst_mom_p-dst_p).M2();
-     if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
-     return true;
-   });
+  // NamedFunc selec_Bd2DststTauNu_D0st_pipi("selec_Bd2DststTauNu_D0st_pipi", [&](const Baby &b){
+  //    // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 10411)) && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (last condition is always false)
+  //    // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==511)) return false;
+  //    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //    if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
+  //    // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //    if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
+  //    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10411)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
+  //    // mm_mom from Phoebe AddB.C line 3136-3141
+  //    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+  //    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+  //    double mm2_mom=(dst_mom_p-dst_p).M2();
+  //    if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
+  //    return true;
+  //  });
   /*
   // looking at out dec file, these seelctions should cut everything, since there are no 2 pion decays with a D* coming from D1 (this will be a test if the momentum cut does a good job of identifying two pion decays like this)
   NamedFunc selec_Bd2DststTauNu_D1_pipi("selec_Bd2DststTauNu_D1_pipi", [&](const Baby &b){
@@ -517,42 +599,42 @@ int main(){
     return true;
   });
   */
-  NamedFunc selec_Bd2DststTauNu_D2st_pipi("selec_Bd2DststTauNu_D2st_pipi", [&](const Baby &b){
-    // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 415)) && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (last condition is always false)
-    // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==511)) return false;
-    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-    if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
-    // justDst from Phoebe AddB.C line 2814 (simplified for me)
-    if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
-    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
-    // mm_mom from Phoebe AddB.C line 3136-3141
-    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
-    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
-    double mm2_mom=(dst_mom_p-dst_p).M2();
-    if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
-    return true;
-  });
+  // NamedFunc selec_Bd2DststTauNu_D2st_pipi("selec_Bd2DststTauNu_D2st_pipi", [&](const Baby &b){
+  //   // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==511 && Dststtype == 415)) && muPID == 1. && Dststtype == TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (last condition is always false)
+  //   // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //   if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==511)) return false;
+  //   // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
+  //   // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
+  //   // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //   if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
+  //   // mm_mom from Phoebe AddB.C line 3136-3141
+  //   TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+  //   TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+  //   double mm2_mom=(dst_mom_p-dst_p).M2();
+  //   if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
+  //   return true;
+  // });
 
   // Phoebe doesn't seem to have this histogram, but I'll extrapolate the selections for D0* from the other related two pi D** histograms
-  NamedFunc selec_Bu2DststMuNu_D0st_pipi("selec_Bu2DststMuNu_D0st_pipi", [&](const Baby &b){
-     // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10421)) && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I ignore ishigher, also I think last condition is always false)
-     // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-     if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
-     // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-     if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==521)) return false;
-     // justDst from Phoebe AddB.C line 2814 (simplified for me)
-     if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
-     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10421)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
-     // mm_mom from Phoebe AddB.C line 3136-3141
-     TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
-     TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
-     double mm2_mom=(dst_mom_p-dst_p).M2();
-     if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
-     return true;
-   });
+  // NamedFunc selec_Bu2DststMuNu_D0st_pipi("selec_Bu2DststMuNu_D0st_pipi", [&](const Baby &b){
+  //    // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10421)) && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I ignore ishigher, also I think last condition is always false)
+  //    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //    if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
+  //    // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==521)) return false;
+  //    // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //    if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
+  //    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10421)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
+  //    // mm_mom from Phoebe AddB.C line 3136-3141
+  //    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+  //    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+  //    double mm2_mom=(dst_mom_p-dst_p).M2();
+  //    if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
+  //    return true;
+  //  });
 /*
  // looking at out dec file, these seelctions should cut everything, since there are no 2 pion decays with a D* coming from D1 (this will be a test if the momentum cut does a good job of identifying two pion decays like this)
  NamedFunc selec_Bu2DststMuNu_D1_pipi("selec_Bu2DststMuNu_D1_pipi", [&](const Baby &b){
@@ -592,42 +674,42 @@ int main(){
     return true;
   });
 */
-  NamedFunc selec_Bu2DststMuNu_D2st_pipi("selec_Bu2DststMuNu_D2st_pipi", [&](const Baby &b){
-    // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521)) && muPID == 1. && !ishigher && Dststtype==425 && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I think last condition is always false) (I ignore ishigher)
-    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-    if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
-    // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==521)) return false;
-    // justDst from Phoebe AddB.C line 2814 (simplified for me)
-    if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
-    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
-    // mm_mom from Phoebe AddB.C line 3136-3141
-    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
-    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
-    double mm2_mom=(dst_mom_p-dst_p).M2();
-    if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
-    return true;
-  });
+  // NamedFunc selec_Bu2DststMuNu_D2st_pipi("selec_Bu2DststMuNu_D2st_pipi", [&](const Baby &b){
+  //   // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521)) && muPID == 1. && !ishigher && Dststtype==425 && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I think last condition is always false) (I ignore ishigher)
+  //   // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
+  //   // flagBmu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //   if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==521)) return false;
+  //   // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
+  //   // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //   if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
+  //   // mm_mom from Phoebe AddB.C line 3136-3141
+  //   TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+  //   TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+  //   double mm2_mom=(dst_mom_p-dst_p).M2();
+  //   if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
+  //   return true;
+  // });
 
   // Phoebe doesn't seem to have this histogram, but I'll extrapolate the selections for D0* from the other related two pi D** histograms
-  NamedFunc selec_Bu2DststTauNu_D0st_pipi("selec_Bu2DststTauNu_D0st_pipi", [&](const Baby &b){
-     // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10421)) && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I ignore ishigher, also I think last condition is always false)
-     // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-     if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
-     // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-     if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==521)) return false;
-     // justDst from Phoebe AddB.C line 2814 (simplified for me)
-     if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
-     // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10421)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
-     // mm_mom from Phoebe AddB.C line 3136-3141
-     TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
-     TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
-     double mm2_mom=(dst_mom_p-dst_p).M2();
-     if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
-     return true;
-   });
+  // NamedFunc selec_Bu2DststTauNu_D0st_pipi("selec_Bu2DststTauNu_D0st_pipi", [&](const Baby &b){
+  //    // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521 && Dststtype == 10421)) && muPID == 1. && !ishigher && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I ignore ishigher, also I think last condition is always false)
+  //    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //    if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
+  //    // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==521)) return false;
+  //    // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //    if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
+  //    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10421)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
+  //    // mm_mom from Phoebe AddB.C line 3136-3141
+  //    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+  //    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+  //    double mm2_mom=(dst_mom_p-dst_p).M2();
+  //    if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
+  //    return true;
+  //  });
   /*
   // looking at out dec file, these seelctions should cut everything, since there are no 2 pion decays with a D* coming from D1 (this will be a test if the momentum cut does a good job of identifying two pion decays like this)
   NamedFunc selec_Bu2DststTauNu_D1_pipi("selec_Bu2DststTauNu_D1_pipi", [&](const Baby &b){
@@ -667,23 +749,23 @@ int main(){
     return true;
   });
   */
-  NamedFunc selec_Bu2DststTauNu_D2st_pipi("selec_Bu2DststTauNu_D2st_pipi", [&](const Baby &b){
-    // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521)) && muPID == 1. && Dststtype==425 && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I think last condition is always false)
-    // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
-    if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
-    // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
-    if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==521)) return false;
-    // justDst from Phoebe AddB.C line 2814 (simplified for me)
-    if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
-    // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
-    if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
-    // mm_mom from Phoebe AddB.C line 3136-3141
-    TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
-    TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
-    double mm2_mom=(dst_mom_p-dst_p).M2();
-    if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
-    return true;
-  });
+  // NamedFunc selec_Bu2DststTauNu_D2st_pipi("selec_Bu2DststTauNu_D2st_pipi", [&](const Baby &b){
+  //   // Phoebe redoHistos_Dst.C: (flagtaumu > 0.) && JustDst < 1.  && DstOk > 0. && ((Btype==521)) && muPID == 1. && Dststtype==425 && (mm_mom > 250. || Dststtype!=TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)) (I think last condition is always false)
+  //   // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
+  //   // flagtaumu from Phoebe's AddB.C lines 2726-2754... I simplified a little, I don't think is totally equivalent to Phoebe (mine should be looser)
+  //   if (!(abs(b.mu_TRUEID())==13 && abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==521)) return false;
+  //   // justDst from Phoebe AddB.C line 2814 (simplified for me)
+  //   if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
+  //   // Dststtype from Phoebe AddB.C 2814-2864... I simplified a bit, I don't think is totally equivalent to Phoebe (mine should be a looser selection)
+  //   if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425)) return false; // my implementation (and I think Phoebe's too) ensures Dststtype==TMath::Abs(Dst_2010_minus_MC_MOTHER_ID)
+  //   // mm_mom from Phoebe AddB.C line 3136-3141
+  //   TLorentzVector dst_mom_p(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
+  //   TLorentzVector dst_p(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
+  //   double mm2_mom=(dst_mom_p-dst_p).M2();
+  //   if (!(mm2_mom>0 && sqrt(mm2_mom)>250)) return false;
+  //   return true;
+  // });
 
   NamedFunc selec_Bd2DststMuNu_higher_pipi_Dst2S("selec_Bd2DststMuNu_higher_pipi_Dst2S", [&](const Baby &b){
      // Phoebe redoHistos_Dst.C: (flagBmu > 0.) && JustDst < 1.  && DstOk > 0. && (ishigher) && muPID == 1 (I ignore ishigher)
@@ -899,6 +981,10 @@ int main(){
     return true;
   });
 
+  // IMPORTANT: Phoebe's truth-matching selections for D** modes the D0 sample seem to be markedly different from the D* sample; in particular, she does
+  // NOT require that a decay NOT have two D** (eg. not cutting out B->D**->D**->D*), and she doesn't cut out D**->D(*)pipi events here, like she did for D* sample
+  // For now, it's fine to live with just copying what Phoebe does, but in the future, it will be important to think more crtically about these selections (and
+  // perhaps get updated code from Phoebe to see what she did for her templates in the end)
   NamedFunc selec_Bd2DststMuNu_D0st_bu("selec_Bd2DststMuNu_D0st_bu", [&](const Baby &b){
     // Phoebe redoHistos_D0.C: (flagBmu > 0.) && JustDst < 1.  &&  ((Btype==511 && Dststtype == 10411)) && muPID == 1. && mcut && !ishigher (I ignore ishigher)
     // Btype is defined in Phoebe AddD0B_temp.C lines 2120-2137, then re-defined in lines 2148-2168: this is too complicated, so I've simplified (not equivalent to Phoebe and I might actually be TIGHTER, but I don't expect it to be significant)
@@ -1470,193 +1556,228 @@ int main(){
   string repofolder = "ntuples/0.9.3-production_for_validation/Dst_D0-mc/";
 
   // first define one process per sample, then combine processes into new process as desired (I want to keep the vector structure for indiv processes in case I decide to plot indiv processes- PlotMaker requires a vector as input, I think)
-  // vector<shared_ptr<Process>> proc_Bd2DstMuNu;
-  // vector<shared_ptr<Process>> proc_Bd2DstTauNu;
-  vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0st;
+  vector<shared_ptr<Process>> proc_Bd2DstMuNu;
+  vector<shared_ptr<Process>> proc_Bd2DstTauNu;
+  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0st;
   vector<shared_ptr<Process>> proc_Bd2DststMuNu_D1;
   vector<shared_ptr<Process>> proc_Bd2DststMuNu_D1p;
   vector<shared_ptr<Process>> proc_Bd2DststMuNu_D2st;
-  vector<shared_ptr<Process>> proc_Bd2DststTauNu_D0st;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_notruthmatch;
+  // vector<shared_ptr<Process>> proc_Bd2DststTauNu_D0st;
   vector<shared_ptr<Process>> proc_Bd2DststTauNu_D1;
   vector<shared_ptr<Process>> proc_Bd2DststTauNu_D1p;
   vector<shared_ptr<Process>> proc_Bd2DststTauNu_D2st;
-  vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0st;
+  vector<shared_ptr<Process>> proc_Bd2DststTauNu_notruthmatch;
+  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0st;
   vector<shared_ptr<Process>> proc_Bu2DststMuNu_D1;
   vector<shared_ptr<Process>> proc_Bu2DststMuNu_D1p;
   vector<shared_ptr<Process>> proc_Bu2DststMuNu_D2st;
-  vector<shared_ptr<Process>> proc_Bu2DststTauNu_D0st;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_notruthmatch;
+  // vector<shared_ptr<Process>> proc_Bu2DststTauNu_D0st;
   vector<shared_ptr<Process>> proc_Bu2DststTauNu_D1;
   vector<shared_ptr<Process>> proc_Bu2DststTauNu_D1p;
   vector<shared_ptr<Process>> proc_Bu2DststTauNu_D2st;
-  vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0st_pipi;
+  vector<shared_ptr<Process>> proc_Bu2DststTauNu_notruthmatch;
+  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0st_pipi;
   // //vector<shared_ptr<Process>> proc_Bd2DststMuNu_D1_pipi;
   // //vector<shared_ptr<Process>> proc_Bd2DststMuNu_D1p_pipi;
-  vector<shared_ptr<Process>> proc_Bd2DststMuNu_D2st_pipi;
-  vector<shared_ptr<Process>> proc_Bd2DststTauNu_D0st_pipi;
+  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_D2st_pipi;
+  // vector<shared_ptr<Process>> proc_Bd2DststTauNu_D0st_pipi;
   // //vector<shared_ptr<Process>> proc_Bd2DststTauNu_D1_pipi;
   // //vector<shared_ptr<Process>> proc_Bd2DststTauNu_D1p_pipi;
-  vector<shared_ptr<Process>> proc_Bd2DststTauNu_D2st_pipi;
-  vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0st_pipi;
+  // vector<shared_ptr<Process>> proc_Bd2DststTauNu_D2st_pipi;
+  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0st_pipi;
   // //vector<shared_ptr<Process>> proc_Bd2DststMuNu_D1_pipi;
   // //vector<shared_ptr<Process>> proc_Bd2DststMuNu_D1p_pipi;
-  vector<shared_ptr<Process>> proc_Bu2DststMuNu_D2st_pipi;
-  vector<shared_ptr<Process>> proc_Bu2DststTauNu_D0st_pipi;
+  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_D2st_pipi;
+  // vector<shared_ptr<Process>> proc_Bu2DststTauNu_D0st_pipi;
   // //vector<shared_ptr<Process>> proc_Bd2DststTauNu_D1_pipi;
   // //vector<shared_ptr<Process>> proc_Bd2DststTauNu_D1p_pipi;
-  vector<shared_ptr<Process>> proc_Bu2DststTauNu_D2st_pipi;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_Dst2S;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D2S;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D2750;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D3000;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_Dst2S;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D2S;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D2750;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D3000;
-  // vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds1p;
-  // vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds2st;
+  // vector<shared_ptr<Process>> proc_Bu2DststTauNu_D2st_pipi;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_Dst2S;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D2S;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D2750;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D3000;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_notruthmatch;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_Dst2S;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D2S;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D2750;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D3000;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_notruthmatch;
+  vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds1p;
+  vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds2st;
+  vector<shared_ptr<Process>> proc_Bs2DststMuNu_notruthmatch;
   vector<shared_ptr<Process>> proc_Bd2DstDXMuNu;
   vector<shared_ptr<Process>> proc_Bu2DstDXMuNu;
   vector<shared_ptr<Process>> proc_Bd2DstDXTauNu;
   vector<shared_ptr<Process>> proc_Bu2DstDXTauNu;
 
-  // vector<shared_ptr<Process>> proc_Bu2D0MuNu;
-  // vector<shared_ptr<Process>> proc_Bu2D0TauNu;
-  // vector<shared_ptr<Process>> proc_Bu2DstMuNu;
-  // vector<shared_ptr<Process>> proc_Bu2DstTauNu;
+  vector<shared_ptr<Process>> proc_Bu2D0MuNu;
+  vector<shared_ptr<Process>> proc_Bu2D0TauNu;
+  vector<shared_ptr<Process>> proc_Bu2DstMuNu;
+  vector<shared_ptr<Process>> proc_Bu2DstTauNu;
   vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0st_bu;
   vector<shared_ptr<Process>> proc_Bd2DststMuNu_D1_bu;
   vector<shared_ptr<Process>> proc_Bd2DststMuNu_D1p_bu;
   vector<shared_ptr<Process>> proc_Bd2DststMuNu_D2st_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_notruthmatch_bu;
   vector<shared_ptr<Process>> proc_Bd2DststTauNu_D0st_bu;
   vector<shared_ptr<Process>> proc_Bd2DststTauNu_D1_bu;
   vector<shared_ptr<Process>> proc_Bd2DststTauNu_D1p_bu;
   vector<shared_ptr<Process>> proc_Bd2DststTauNu_D2st_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststTauNu_notruthmatch_bu;
   vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0st_bu;
   vector<shared_ptr<Process>> proc_Bu2DststMuNu_D1_bu;
   vector<shared_ptr<Process>> proc_Bu2DststMuNu_D1p_bu;
   vector<shared_ptr<Process>> proc_Bu2DststMuNu_D2st_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_notruthmatch_bu;
   vector<shared_ptr<Process>> proc_Bu2DststTauNu_D0st_bu;
   vector<shared_ptr<Process>> proc_Bu2DststTauNu_D1_bu;
   vector<shared_ptr<Process>> proc_Bu2DststTauNu_D1p_bu;
   vector<shared_ptr<Process>> proc_Bu2DststTauNu_D2st_bu;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_Dst2S_bu;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D2S_bu;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D2750_bu;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D3000_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_Dst2S_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D2S_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D2750_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D3000_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0_higher_pipi_D2S_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0_higher_pipi_D2750_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0_higher_pipi_D3000_bu;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0_higher_pipi_D2S_bu;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0_higher_pipi_D2750_bu;
-  // vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0_higher_pipi_D3000_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu;
-  // vector<shared_ptr<Process>> proc_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu;
-  // vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds1p_bu;
-  // vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds2st_bu;
-  // vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds1p_mix_bu;
-  // vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds2st_mix_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststTauNu_notruthmatch_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_Dst2S_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D2S_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D2750_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_pipi_D3000_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_higher_notruthmatch_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_Dst2S_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D2S_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D2750_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_pipi_D3000_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_higher_notruthmatch_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0_higher_pipi_D2S_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0_higher_pipi_D2750_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0_higher_pipi_D3000_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_D0_higher_notruthmatch_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0_higher_pipi_D2S_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0_higher_pipi_D2750_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0_higher_pipi_D3000_bu;
+  vector<shared_ptr<Process>> proc_Bd2DststMuNu_D0_higher_notruthmatch_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu;
+  vector<shared_ptr<Process>> proc_Bu2DststMuNu_Dst0_higher_notruthmatch_bu;
+  vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds1p_bu;
+  vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds2st_bu;
+  vector<shared_ptr<Process>> proc_Bs2DststMuNu_notruthmatch_bu;
+  vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds1p_mix_bu;
+  vector<shared_ptr<Process>> proc_Bs2DststMuNu_Ds2st_mix_bu;
+  vector<shared_ptr<Process>> proc_Bs2DststMuNu_mix_notruthmatch_bu;
   vector<shared_ptr<Process>> proc_Bd2D0DXMuNu;
   vector<shared_ptr<Process>> proc_Bu2D0DXMuNu;
   vector<shared_ptr<Process>> proc_Bd2D0DXTauNu;
   vector<shared_ptr<Process>> proc_Bu2D0DXTauNu;
-  //
-  //
-  // proc_Bd2DstMuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{*} #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11574021_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DstMuNu));
-  // proc_Bd2DstTauNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{*} #tau #nu", Process::Type::signal, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11574011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DstTauNu));
-  proc_Bd2DststMuNu_D0st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D0st));
-  proc_Bd2DststMuNu_D1.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{1}[#rightarrow D_{0}^{*}||D^{*}] #mu #nu", Process::Type::background, colors("green"),
+
+  vector<shared_ptr<Process>> proc_Bd2DstMuNu_trackeronly;
+
+
+
+  proc_Bd2DstMuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{*} #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11574021_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DstMuNu));
+  proc_Bd2DstTauNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{*} #tau #nu", Process::Type::signal, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11574011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DstTauNu));
+  // proc_Bd2DststMuNu_D0st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("red"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D0st));
+  proc_Bd2DststMuNu_D1.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{1}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("green"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D1));
   proc_Bd2DststMuNu_D1p.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D'_{1}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("orange"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D1p));
-  proc_Bd2DststMuNu_D2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D_{0}^{*}||D^{*}] #mu #nu", Process::Type::background, colors("blue"),
+  proc_Bd2DststMuNu_D2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D2st));
-  proc_Bd2DststTauNu_D0st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D0st));
-  proc_Bd2DststTauNu_D1.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{1}[#rightarrow D_{0}^{*}||D^{*}] #tau #nu", Process::Type::background, colors("green"),
+  proc_Bd2DststMuNu_notruthmatch.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{**}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  // proc_Bd2DststTauNu_D0st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("red"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D0st));
+  proc_Bd2DststTauNu_D1.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{1}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("green"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D1));
   proc_Bd2DststTauNu_D1p.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D'_{1}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("orange"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D1p));
-  proc_Bd2DststTauNu_D2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D_{0}^{*}||D^{*}] #tau #nu", Process::Type::background, colors("blue"),
+  proc_Bd2DststTauNu_D2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D2st));
-  proc_Bu2DststMuNu_D0st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D0st));
-  proc_Bu2DststMuNu_D1.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{1}[#rightarrow D_{0}^{*}||D^{*}] #mu #nu", Process::Type::background, colors("green"),
+  proc_Bd2DststTauNu_notruthmatch.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{**}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  // proc_Bu2DststMuNu_D0st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("red"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D0st));
+  proc_Bu2DststMuNu_D1.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{1}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("green"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D1));
   proc_Bu2DststMuNu_D1p.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D'_{1}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("orange"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D1p));
-  proc_Bu2DststMuNu_D2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D_{0}^{*}||D^{*}] #mu #nu", Process::Type::background, colors("blue"),
+  proc_Bu2DststMuNu_D2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D2st));
-  proc_Bu2DststTauNu_D0st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D0st));
-  proc_Bu2DststTauNu_D1.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{1}[#rightarrow D_{0}^{*}||D^{*}] #tau #nu", Process::Type::background, colors("green"),
+  proc_Bu2DststMuNu_notruthmatch.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D^{**}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  // proc_Bu2DststTauNu_D0st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("red"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D0st));
+  proc_Bu2DststTauNu_D1.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{1}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("green"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D1));
   proc_Bu2DststTauNu_D1p.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D'_{1}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("orange"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D1p));
-  proc_Bu2DststTauNu_D2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D_{0}^{*}||D^{*}] #tau #nu", Process::Type::background, colors("blue"),
+  proc_Bu2DststTauNu_D2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D2st));
-  proc_Bd2DststMuNu_D0st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D0st_pipi));
+  proc_Bu2DststTauNu_notruthmatch.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D^{**}[#rightarrow D^{*}] #tau #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  // proc_Bd2DststMuNu_D0st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D0st_pipi));
   // //proc_Bd2DststMuNu_D1_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{1}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
   // //                                              set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D1_pipi));
   // //proc_Bd2DststMuNu_D1p_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D'_{1}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
   // //                                              set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D1p_pipi));
-  proc_Bd2DststMuNu_D2st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D2st_pipi));
-  proc_Bd2DststTauNu_D0st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D0st_pipi));
+  // proc_Bd2DststMuNu_D2st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_D2st_pipi));
+  // proc_Bd2DststTauNu_D0st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("red"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D0st_pipi));
   // //proc_Bd2DststTauNu_D1_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{1}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("green"),
   // //                                              set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D1_pipi));
   // //proc_Bd2DststTauNu_D1p_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D'_{1}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("orange"),
   // //                                              set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D1p_pipi));
-  proc_Bd2DststTauNu_D2st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("blue"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D2st_pipi));
-  proc_Bu2DststMuNu_D0st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D0st_pipi));
+  // proc_Bd2DststTauNu_D2st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("blue"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststTauNu_D2st_pipi));
+  // proc_Bu2DststMuNu_D0st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D0st_pipi));
   // //proc_Bd2DststMuNu_D1_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{1}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
   // //                                              set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D1_pipi));
   // //proc_Bd2DststMuNu_D1p_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D'_{1}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
   // //                                              set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D1p_pipi));
-  proc_Bu2DststMuNu_D2st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D2st_pipi));
-  proc_Bu2DststTauNu_D0st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("red"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D0st_pipi));
+  // proc_Bu2DststMuNu_D2st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_D2st_pipi));
+  // proc_Bu2DststTauNu_D0st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("red"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D0st_pipi));
   // //proc_Bd2DststTauNu_D1_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{1}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("green"),
   // //                                              set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D1_pipi));
   // //proc_Bd2DststTauNu_D1p_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D'_{1}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("orange"),
   // //                                              set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D1p_pipi));
-  proc_Bu2DststTauNu_D2st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("blue"),
-                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D2st_pipi));
-  // proc_Bd2DststMuNu_higher_pipi_Dst2S.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{*}(2S)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_higher_pipi_Dst2S));
-  // proc_Bd2DststMuNu_higher_pipi_D2S.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D(2S)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_higher_pipi_D2S));
-  // proc_Bd2DststMuNu_higher_pipi_D2750.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D(2750)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_higher_pipi_D2750));
-  // proc_Bd2DststMuNu_higher_pipi_D3000.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D(3000)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_higher_pipi_D3000));
-  // proc_Bu2DststMuNu_higher_pipi_Dst2S.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D^{*}(2S)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_higher_pipi_Dst2S));
-  // proc_Bu2DststMuNu_higher_pipi_D2S.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D(2S)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_higher_pipi_D2S));
-  // proc_Bu2DststMuNu_higher_pipi_D2750.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D(2750)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_higher_pipi_D2750));
-  // proc_Bu2DststMuNu_higher_pipi_D3000.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D(3000)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_higher_pipi_D3000));
-  // proc_Bs2DststMuNu_Ds1p.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D'_{s1}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bs2DststMuNu_Ds1p));
-  // proc_Bs2DststMuNu_Ds2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{s2}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bs2DststMuNu_Ds2st));
+  // proc_Bu2DststTauNu_D2st_pipi.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D^{*}#pi#pi] #tau #nu", Process::Type::background, colors("blue"),
+  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststTauNu_D2st_pipi));
+  proc_Bd2DststMuNu_higher_pipi_Dst2S.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{*}(2S)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_higher_pipi_Dst2S));
+  proc_Bd2DststMuNu_higher_pipi_D2S.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D(2S)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_higher_pipi_D2S));
+  proc_Bd2DststMuNu_higher_pipi_D2750.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D(2750)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_higher_pipi_D2750));
+  proc_Bd2DststMuNu_higher_pipi_D3000.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D(3000)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DststMuNu_higher_pipi_D3000));
+  proc_Bd2DststMuNu_higher_notruthmatch.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{H}^{**}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  proc_Bu2DststMuNu_higher_pipi_Dst2S.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D^{*}(2S)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_higher_pipi_Dst2S));
+  proc_Bu2DststMuNu_higher_pipi_D2S.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D(2S)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_higher_pipi_D2S));
+  proc_Bu2DststMuNu_higher_pipi_D2750.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D(2750)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_higher_pipi_D2750));
+  proc_Bu2DststMuNu_higher_pipi_D3000.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D(3000)[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DststMuNu_higher_pipi_D3000));
+  proc_Bu2DststMuNu_higher_notruthmatch.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D_{H}^{**}[#rightarrow D^{*}#pi#pi] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  proc_Bs2DststMuNu_Ds1p.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D'_{s1}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bs2DststMuNu_Ds1p));
+  proc_Bs2DststMuNu_Ds2st.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{s2}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bs2DststMuNu_Ds2st));
+  proc_Bs2DststMuNu_notruthmatch.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D_{s}^{**}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
   proc_Bd2DstDXMuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{*} X_{c}[#rightarrow #mu #nu X'] X", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11894610_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DstDXMuNu));
   proc_Bu2DstDXMuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D^{*} X_{c}[#rightarrow #mu #nu X'] X", Process::Type::background, colors("blue"),
@@ -1666,14 +1787,14 @@ int main(){
   proc_Bu2DstDXTauNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{-} #rightarrow D^{*} D_{s}[#rightarrow #tau #nu] X", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12895000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bu2DstDXTauNu));
   //
-  // proc_Bu2D0MuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{0} #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12573012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2D0MuNu));
-  // proc_Bu2D0TauNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{0} #tau #nu", Process::Type::signal, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12573001_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2D0TauNu));
-  // proc_Bu2DstMuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*0} #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12773410_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DstMuNu));
-  // proc_Bu2DstTauNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*0} #tau #nu", Process::Type::signal, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12773400_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DstTauNu));
+  proc_Bu2D0MuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{0} #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12573012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2D0MuNu));
+  proc_Bu2D0TauNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{0} #tau #nu", Process::Type::signal, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12573001_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2D0TauNu));
+  proc_Bu2DstMuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*0} #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12773410_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DstMuNu));
+  proc_Bu2DstTauNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*0} #tau #nu", Process::Type::signal, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12773400_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DstTauNu));
   proc_Bd2DststMuNu_D0st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}||D^{0}] #mu #nu", Process::Type::background, colors("red"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D0st_bu));
   proc_Bd2DststMuNu_D1_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{1}[#rightarrow D^{*}||D_{0}^{*}] #mu #nu", Process::Type::background, colors("green"),
@@ -1682,6 +1803,8 @@ int main(){
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D1p_bu));
   proc_Bd2DststMuNu_D2st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D^{*}||D_{0}^{*}||D^{0}] #mu #nu", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D2st_bu));
+  proc_Bd2DststMuNu_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D^{**} #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874430_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
   proc_Bd2DststTauNu_D0st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{0}^{*}[#rightarrow D^{*}||D^{0}] #tau #nu", Process::Type::background, colors("red"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststTauNu_D0st_bu));
   proc_Bd2DststTauNu_D1_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{1}[#rightarrow D^{*}||D_{0}^{*}] #tau #nu", Process::Type::background, colors("green"),
@@ -1690,6 +1813,8 @@ int main(){
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststTauNu_D1p_bu));
   proc_Bd2DststTauNu_D2st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{2}^{*}[#rightarrow D^{*}||D_{0}^{*}||D^{0}] #tau #nu", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststTauNu_D2st_bu));
+  proc_Bd2DststTauNu_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D^{**} #tau #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11874440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
   proc_Bu2DststMuNu_D0st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}||D^{0}] #mu #nu", Process::Type::background, colors("red"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D0st_bu));
   proc_Bu2DststMuNu_D1_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D_{1}[#rightarrow D^{*}||D_{0}^{*}] #mu #nu", Process::Type::background, colors("green"),
@@ -1698,6 +1823,8 @@ int main(){
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D1p_bu));
   proc_Bu2DststMuNu_D2st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D^{*}||D_{0}^{*}||D^{0}] #mu #nu", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D2st_bu));
+  proc_Bu2DststMuNu_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{**} #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873450_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
   proc_Bu2DststTauNu_D0st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D_{0}^{*}[#rightarrow D^{*}||D^{0}] #tau #nu", Process::Type::background, colors("red"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststTauNu_D0st_bu));
   proc_Bu2DststTauNu_D1_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D_{1}[#rightarrow D^{*}||D_{0}^{*}] #tau #nu", Process::Type::background, colors("green"),
@@ -1706,54 +1833,70 @@ int main(){
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststTauNu_D1p_bu));
   proc_Bu2DststTauNu_D2st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D_{2}^{*}[#rightarrow D^{*}||D_{0}^{*}||D^{0}] #tau #nu", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststTauNu_D2st_bu));
-  // proc_Bd2DststMuNu_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D^{*}(2S)[#rightarrow D^{*+}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_higher_pipi_Dst2S_bu));
-  // proc_Bd2DststMuNu_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(2S)[#rightarrow D^{*+}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("green"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_higher_pipi_D2S_bu));
-  // proc_Bd2DststMuNu_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(2750)[#rightarrow D^{*+}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_higher_pipi_D2750_bu));
-  // proc_Bd2DststMuNu_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(3000)[#rightarrow D^{*+}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_higher_pipi_D3000_bu));
-  // proc_Bu2DststMuNu_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*}(2S)[#rightarrow D^{*}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_higher_pipi_Dst2S_bu));
-  // proc_Bu2DststMuNu_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2S)[#rightarrow D^{*}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("green"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_higher_pipi_D2S_bu));
-  // proc_Bu2DststMuNu_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2750)[#rightarrow D^{*}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_higher_pipi_D2750_bu));
-  // proc_Bu2DststMuNu_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(3000)[#rightarrow D^{*}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_higher_pipi_D3000_bu));
-  // proc_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*}(2S)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu));
-  // proc_Bu2DststMuNu_D0_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2S)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D0_higher_pipi_D2S_bu));
-  // proc_Bu2DststMuNu_D0_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2750)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D0_higher_pipi_D2750_bu));
-  // proc_Bu2DststMuNu_D0_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(3000)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D0_higher_pipi_D3000_bu));
-  // proc_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D^{*}(2S)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11674401_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu));
-  // proc_Bd2DststMuNu_D0_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(2S)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11674401_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D0_higher_pipi_D2S_bu));
-  // proc_Bd2DststMuNu_D0_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(2750)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11674401_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D0_higher_pipi_D2750_bu));
-  // proc_Bd2DststMuNu_D0_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(3000)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11674401_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D0_higher_pipi_D3000_bu));
-  // proc_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*}(2S)[#rightarrow D^{*0}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("red"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12875440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu));
-  // proc_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2S)[#rightarrow D^{*0}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("green"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12875440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu));
-  // proc_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2750)[#rightarrow D^{*0}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12875440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu));
-  // proc_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(3000)[#rightarrow D^{*0}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12875440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu));
-  // proc_Bs2DststMuNu_Ds1p_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D'_{s1}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bs2DststMuNu_Ds1p_bu));
-  // proc_Bs2DststMuNu_Ds2st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{s2}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bs2DststMuNu_Ds2st_bu));
-  // proc_Bs2DststMuNu_Ds1p_mix_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D'_{s1}[#rightarrow D^{*+}||D^{*0}] #mu #nu", Process::Type::background, colors("orange"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13874020_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bs2DststMuNu_Ds1p_mix_bu));
-  // proc_Bs2DststMuNu_Ds2st_mix_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{s2}^{*}[#rightarrow D^{*+}||D^{*0}||D^{0}] #mu #nu", Process::Type::background, colors("blue"),
-  //                                               set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13874020_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bs2DststMuNu_Ds2st_mix_bu));
+  proc_Bu2DststTauNu_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{**} #tau #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12873460_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  proc_Bd2DststMuNu_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D^{*}(2S)[#rightarrow D^{*+}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_higher_pipi_Dst2S_bu));
+  proc_Bd2DststMuNu_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(2S)[#rightarrow D^{*+}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("green"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_higher_pipi_D2S_bu));
+  proc_Bd2DststMuNu_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(2750)[#rightarrow D^{*+}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_higher_pipi_D2750_bu));
+  proc_Bd2DststMuNu_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(3000)[#rightarrow D^{*+}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_higher_pipi_D3000_bu));
+  proc_Bd2DststMuNu_higher_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{H}^{**}[#rightarrow D^{*+}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11676012_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  proc_Bu2DststMuNu_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*}(2S)[#rightarrow D^{*}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_higher_pipi_Dst2S_bu));
+  proc_Bu2DststMuNu_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2S)[#rightarrow D^{*}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("green"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_higher_pipi_D2S_bu));
+  proc_Bu2DststMuNu_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2750)[#rightarrow D^{*}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_higher_pipi_D2750_bu));
+  proc_Bu2DststMuNu_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(3000)[#rightarrow D^{*}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_higher_pipi_D3000_bu));
+  proc_Bu2DststMuNu_higher_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D_{H}^{**}[#rightarrow D^{*}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675402_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  proc_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*}(2S)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu));
+  proc_Bu2DststMuNu_D0_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2S)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D0_higher_pipi_D2S_bu));
+  proc_Bu2DststMuNu_D0_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2750)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D0_higher_pipi_D2750_bu));
+  proc_Bu2DststMuNu_D0_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(3000)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_D0_higher_pipi_D3000_bu));
+  proc_Bu2DststMuNu_D0_higher_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D_{H}^{**}[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12675011_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  proc_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D^{*}(2S)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11674401_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu));
+  proc_Bd2DststMuNu_D0_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(2S)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("green"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11674401_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D0_higher_pipi_D2S_bu));
+  proc_Bd2DststMuNu_D0_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(2750)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11674401_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D0_higher_pipi_D2750_bu));
+  proc_Bd2DststMuNu_D0_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D(3000)[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11674401_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2DststMuNu_D0_higher_pipi_D3000_bu));
+  proc_Bd2DststMuNu_D0_higher_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{H}^{**}[#rightarrow D^{0}#pi#pi] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11674401_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  proc_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{*}(2S)[#rightarrow D^{*0}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("red"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12875440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu));
+  proc_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2S)[#rightarrow D^{*0}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("green"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12875440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu));
+  proc_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(2750)[#rightarrow D^{*0}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12875440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu));
+  proc_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D(3000)[#rightarrow D^{*0}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12875440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu));
+  proc_Bu2DststMuNu_Dst0_higher_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D_{H}^{**}[#rightarrow D^{*0}[#rightarrow D^{0}#pi]#pi#pi] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12875440_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  proc_Bs2DststMuNu_Ds1p_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D'_{s1}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bs2DststMuNu_Ds1p_bu));
+  proc_Bs2DststMuNu_Ds2st_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{s2}^{*}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bs2DststMuNu_Ds2st_bu));
+  proc_Bs2DststMuNu_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{s}^{**}[#rightarrow D^{*}] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13674000_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
+  proc_Bs2DststMuNu_Ds1p_mix_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D'_{s1}[#rightarrow D^{*+}||D^{*0}] #mu #nu", Process::Type::background, colors("orange"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13874020_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bs2DststMuNu_Ds1p_mix_bu));
+  proc_Bs2DststMuNu_Ds2st_mix_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{s2}^{*}[#rightarrow D^{*+}||D^{*0}||D^{0}] #mu #nu", Process::Type::background, colors("blue"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13874020_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bs2DststMuNu_Ds2st_mix_bu));
+  proc_Bs2DststMuNu_mix_notruthmatch_bu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D_{s}^{**}[#rightarrow D^{*+}||D^{*0}||D^{0}] #mu #nu", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"Dst_D0--21_02_15--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_13874020_D0TAUNU.SAFESTRIPTRIG.DST.root"}), "1"));
   proc_Bd2D0DXMuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{0} #rightarrow D^{0} X_{c}[#rightarrow #mu #nu X'] X", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11894600_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2D0DXMuNu));
   proc_Bu2D0DXMuNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{0} X_{c}[#rightarrow #mu #nu X'] X", Process::Type::background, colors("blue"),
@@ -1762,97 +1905,116 @@ int main(){
                                                 set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11894200_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bd2D0DXTauNu));
   proc_Bu2D0DXTauNu.push_back(Process::MakeShared<Baby_run2_fullsim_Bu>("B^{-} #rightarrow D^{0} D_{s}[#rightarrow #tau #nu] X", Process::Type::background, colors("blue"),
                                                 set<string>({repofolder+"Dst_D0--21_02_14--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_12893610_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bu&&selec_Bu2D0DXTauNu));
+  // really should create a new baby type for tracker only, but this will work for now
+  proc_Bd2DstMuNu_trackeronly.push_back(Process::MakeShared<Baby_run2_fullsim_Bd>("B^{0} #rightarrow D^{*} #mu #nu (tra. only)", Process::Type::data, colors("green"),
+                                                set<string>({repofolder+"Dst_D0--21_03_10--mc--tracker_only--MC_2016_Beam6500GeV-2016-MagDown-TrackerOnly-Nu1.6-25ns-Pythia8_Sim09j_Reco16_Filtered_11574021_D0TAUNU.SAFESTRIPTRIG.DST.root"}), cuts_bd&&selec_Bd2DstMuNu));
 
   // // define multiple-process processes
-  // vector<shared_ptr<Process>> procs_Bd2DstMuNu_Bd2DstTauNu(proc_Bd2DstMuNu.begin(),proc_Bd2DstMuNu.end());
-  // procs_Bd2DstMuNu_Bd2DstTauNu.insert(procs_Bd2DstMuNu_Bd2DstTauNu.end(),proc_Bd2DstTauNu.begin(),proc_Bd2DstTauNu.end());
-  // vector<shared_ptr<Process>> procs_Bu2D0MuNu_Bu2D0TauNu(proc_Bu2D0MuNu.begin(),proc_Bu2D0MuNu.end());
-  // procs_Bu2D0MuNu_Bu2D0TauNu.insert(procs_Bu2D0MuNu_Bu2D0TauNu.end(),proc_Bu2D0TauNu.begin(),proc_Bu2D0TauNu.end());
-  // vector<shared_ptr<Process>> procs_Bu2DstMuNu_Bu2DstTauNu(proc_Bu2DstMuNu.begin(),proc_Bu2DstMuNu.end());
-  // procs_Bu2DstMuNu_Bu2DstTauNu.insert(procs_Bu2DstMuNu_Bu2DstTauNu.end(),proc_Bu2DstTauNu.begin(),proc_Bu2DstTauNu.end());
-  vector<shared_ptr<Process>> procs_Bd2DststMuNu(proc_Bd2DststMuNu_D0st.begin(),proc_Bd2DststMuNu_D0st.end());
-  procs_Bd2DststMuNu.insert(procs_Bd2DststMuNu.end(),proc_Bd2DststMuNu_D1.begin(),proc_Bd2DststMuNu_D1.end());
+  vector<shared_ptr<Process>> procs_Bd2DstMuNu_Bd2DstTauNu(proc_Bd2DstMuNu.begin(),proc_Bd2DstMuNu.end());
+  procs_Bd2DstMuNu_Bd2DstTauNu.insert(procs_Bd2DstMuNu_Bd2DstTauNu.end(),proc_Bd2DstTauNu.begin(),proc_Bd2DstTauNu.end());
+  vector<shared_ptr<Process>> procs_Bu2D0MuNu_Bu2D0TauNu(proc_Bu2D0MuNu.begin(),proc_Bu2D0MuNu.end());
+  procs_Bu2D0MuNu_Bu2D0TauNu.insert(procs_Bu2D0MuNu_Bu2D0TauNu.end(),proc_Bu2D0TauNu.begin(),proc_Bu2D0TauNu.end());
+  vector<shared_ptr<Process>> procs_Bu2DstMuNu_Bu2DstTauNu(proc_Bu2DstMuNu.begin(),proc_Bu2DstMuNu.end());
+  procs_Bu2DstMuNu_Bu2DstTauNu.insert(procs_Bu2DstMuNu_Bu2DstTauNu.end(),proc_Bu2DstTauNu.begin(),proc_Bu2DstTauNu.end());
+  vector<shared_ptr<Process>> procs_Bd2DststMuNu(proc_Bd2DststMuNu_D1.begin(),proc_Bd2DststMuNu_D1.end());
   procs_Bd2DststMuNu.insert(procs_Bd2DststMuNu.end(),proc_Bd2DststMuNu_D1p.begin(),proc_Bd2DststMuNu_D1p.end());
   procs_Bd2DststMuNu.insert(procs_Bd2DststMuNu.end(),proc_Bd2DststMuNu_D2st.begin(),proc_Bd2DststMuNu_D2st.end());
-  vector<shared_ptr<Process>> procs_Bd2DststTauNu(proc_Bd2DststTauNu_D0st.begin(),proc_Bd2DststTauNu_D0st.end());
-  procs_Bd2DststTauNu.insert(procs_Bd2DststTauNu.end(),proc_Bd2DststTauNu_D1.begin(),proc_Bd2DststTauNu_D1.end());
+  // procs_Bd2DststMuNu.insert(procs_Bd2DststMuNu.end(),proc_Bd2DststMuNu_notruthmatch.begin(),proc_Bd2DststMuNu_notruthmatch.end());
+  vector<shared_ptr<Process>> procs_Bd2DststTauNu(proc_Bd2DststTauNu_D1.begin(),proc_Bd2DststTauNu_D1.end());
   procs_Bd2DststTauNu.insert(procs_Bd2DststTauNu.end(),proc_Bd2DststTauNu_D1p.begin(),proc_Bd2DststTauNu_D1p.end());
   procs_Bd2DststTauNu.insert(procs_Bd2DststTauNu.end(),proc_Bd2DststTauNu_D2st.begin(),proc_Bd2DststTauNu_D2st.end());
-  vector<shared_ptr<Process>> procs_Bu2DststMuNu(proc_Bu2DststMuNu_D0st.begin(),proc_Bu2DststMuNu_D0st.end());
-  procs_Bu2DststMuNu.insert(procs_Bu2DststMuNu.end(),proc_Bu2DststMuNu_D1.begin(),proc_Bu2DststMuNu_D1.end());
+  // procs_Bd2DststTauNu.insert(procs_Bd2DststTauNu.end(),proc_Bd2DststTauNu_notruthmatch.begin(),proc_Bd2DststTauNu_notruthmatch.end());
+  vector<shared_ptr<Process>> procs_Bu2DststMuNu(proc_Bu2DststMuNu_D1.begin(),proc_Bu2DststMuNu_D1.end());
   procs_Bu2DststMuNu.insert(procs_Bu2DststMuNu.end(),proc_Bu2DststMuNu_D1p.begin(),proc_Bu2DststMuNu_D1p.end());
   procs_Bu2DststMuNu.insert(procs_Bu2DststMuNu.end(),proc_Bu2DststMuNu_D2st.begin(),proc_Bu2DststMuNu_D2st.end());
-  vector<shared_ptr<Process>> procs_Bu2DststTauNu(proc_Bu2DststTauNu_D0st.begin(),proc_Bu2DststTauNu_D0st.end());
-  procs_Bu2DststTauNu.insert(procs_Bu2DststTauNu.end(),proc_Bu2DststTauNu_D1.begin(),proc_Bu2DststTauNu_D1.end());
+  // procs_Bu2DststMuNu.insert(procs_Bu2DststMuNu.end(),proc_Bu2DststMuNu_notruthmatch.begin(),proc_Bu2DststMuNu_notruthmatch.end());
+  vector<shared_ptr<Process>> procs_Bu2DststTauNu(proc_Bu2DststTauNu_D1.begin(),proc_Bu2DststTauNu_D1.end());
   procs_Bu2DststTauNu.insert(procs_Bu2DststTauNu.end(),proc_Bu2DststTauNu_D1p.begin(),proc_Bu2DststTauNu_D1p.end());
   procs_Bu2DststTauNu.insert(procs_Bu2DststTauNu.end(),proc_Bu2DststTauNu_D2st.begin(),proc_Bu2DststTauNu_D2st.end());
-  vector<shared_ptr<Process>> procs_Bd2DststMuNu_pipi(proc_Bd2DststMuNu_D0st_pipi.begin(),proc_Bd2DststMuNu_D0st_pipi.end());
+  // procs_Bu2DststTauNu.insert(procs_Bu2DststTauNu.end(),proc_Bu2DststTauNu_notruthmatch.begin(),proc_Bu2DststTauNu_notruthmatch.end());
+  // vector<shared_ptr<Process>> procs_Bd2DststMuNu_pipi(proc_Bd2DststMuNu_D0st_pipi.begin(),proc_Bd2DststMuNu_D0st_pipi.end());
   //procs_Bd2DststMuNu_pipi.insert(procs_Bd2DststMuNu_pipi.end(),proc_Bd2DststMuNu_D1_pipi.begin(),proc_Bd2DststMuNu_D1_pipi.end());
   //procs_Bd2DststMuNu_pipi.insert(procs_Bd2DststMuNu_pipi.end(),proc_Bd2DststMuNu_D1p_pipi.begin(),proc_Bd2DststMuNu_D1p_pipi.end());
-  procs_Bd2DststMuNu_pipi.insert(procs_Bd2DststMuNu_pipi.end(),proc_Bd2DststMuNu_D2st_pipi.begin(),proc_Bd2DststMuNu_D2st_pipi.end());
-  vector<shared_ptr<Process>> procs_Bd2DststTauNu_pipi(proc_Bd2DststTauNu_D0st_pipi.begin(),proc_Bd2DststTauNu_D0st_pipi.end());
+  // procs_Bd2DststMuNu_pipi.insert(procs_Bd2DststMuNu_pipi.end(),proc_Bd2DststMuNu_D2st_pipi.begin(),proc_Bd2DststMuNu_D2st_pipi.end());
+  // vector<shared_ptr<Process>> procs_Bd2DststTauNu_pipi(proc_Bd2DststTauNu_D0st_pipi.begin(),proc_Bd2DststTauNu_D0st_pipi.end());
   // //procs_Bd2DststTauNu_pipi.insert(procs_Bd2DststTauNu_pipi.end(),proc_Bd2DststTauNu_D1_pipi.begin(),proc_Bd2DststTauNu_D1_pipi.end());
   // //procs_Bd2DststTauNu_pipi.insert(procs_Bd2DststTauNu_pipi.end(),proc_Bd2DststTauNu_D1p_pipi.begin(),proc_Bd2DststTauNu_D1p_pipi.end());
-  procs_Bd2DststTauNu_pipi.insert(procs_Bd2DststTauNu_pipi.end(),proc_Bd2DststTauNu_D2st_pipi.begin(),proc_Bd2DststTauNu_D2st_pipi.end());
-  vector<shared_ptr<Process>> procs_Bu2DststMuNu_pipi(proc_Bu2DststMuNu_D0st_pipi.begin(),proc_Bu2DststMuNu_D0st_pipi.end());
+  // procs_Bd2DststTauNu_pipi.insert(procs_Bd2DststTauNu_pipi.end(),proc_Bd2DststTauNu_D2st_pipi.begin(),proc_Bd2DststTauNu_D2st_pipi.end());
+  // vector<shared_ptr<Process>> procs_Bu2DststMuNu_pipi(proc_Bu2DststMuNu_D0st_pipi.begin(),proc_Bu2DststMuNu_D0st_pipi.end());
   // //procs_Bu2DststMuNu_pipi.insert(procs_Bu2DststMuNu_pipi.end(),proc_Bu2DststMuNu_D1_pipi.begin(),proc_Bu2DststMuNu_D1_pipi.end());
   // //procs_Bu2DststMuNu_pipi.insert(procs_Bu2DststMuNu_pipi.end(),proc_Bu2DststMuNu_D1p_pipi.begin(),proc_Bu2DststMuNu_D1p_pipi.end());
-  procs_Bu2DststMuNu_pipi.insert(procs_Bu2DststMuNu_pipi.end(),proc_Bu2DststMuNu_D2st_pipi.begin(),proc_Bu2DststMuNu_D2st_pipi.end());
-  vector<shared_ptr<Process>> procs_Bu2DststTauNu_pipi(proc_Bu2DststTauNu_D0st_pipi.begin(),proc_Bu2DststTauNu_D0st_pipi.end());
+  // procs_Bu2DststMuNu_pipi.insert(procs_Bu2DststMuNu_pipi.end(),proc_Bu2DststMuNu_D2st_pipi.begin(),proc_Bu2DststMuNu_D2st_pipi.end());
+  // vector<shared_ptr<Process>> procs_Bu2DststTauNu_pipi(proc_Bu2DststTauNu_D0st_pipi.begin(),proc_Bu2DststTauNu_D0st_pipi.end());
   // //procs_Bu2DststTauNu_pipi.insert(procs_Bu2DststTauNu_pipi.end(),proc_Bu2DststTauNu_D1_pipi.begin(),proc_Bu2DststTauNu_D1_pipi.end());
   // //procs_Bu2DststTauNu_pipi.insert(procs_Bu2DststTauNu_pipi.end(),proc_Bu2DststTauNu_D1p_pipi.begin(),proc_Bu2DststTauNu_D1p_pipi.end());
-  procs_Bu2DststTauNu_pipi.insert(procs_Bu2DststTauNu_pipi.end(),proc_Bu2DststTauNu_D2st_pipi.begin(),proc_Bu2DststTauNu_D2st_pipi.end());
-  // vector<shared_ptr<Process>> procs_Bd2DststMuNu_higher_pipi(proc_Bd2DststMuNu_higher_pipi_Dst2S.begin(),proc_Bd2DststMuNu_higher_pipi_Dst2S.end());
-  // procs_Bd2DststMuNu_higher_pipi.insert(procs_Bd2DststMuNu_higher_pipi.end(),proc_Bd2DststMuNu_higher_pipi_D2S.begin(),proc_Bd2DststMuNu_higher_pipi_D2S.end());
-  // procs_Bd2DststMuNu_higher_pipi.insert(procs_Bd2DststMuNu_higher_pipi.end(),proc_Bd2DststMuNu_higher_pipi_D2750.begin(),proc_Bd2DststMuNu_higher_pipi_D2750.end());
-  // procs_Bd2DststMuNu_higher_pipi.insert(procs_Bd2DststMuNu_higher_pipi.end(),proc_Bd2DststMuNu_higher_pipi_D3000.begin(),proc_Bd2DststMuNu_higher_pipi_D3000.end());
-  // vector<shared_ptr<Process>> procs_Bu2DststMuNu_higher_pipi(proc_Bu2DststMuNu_higher_pipi_Dst2S.begin(),proc_Bu2DststMuNu_higher_pipi_Dst2S.end());
-  // procs_Bu2DststMuNu_higher_pipi.insert(procs_Bu2DststMuNu_higher_pipi.end(),proc_Bu2DststMuNu_higher_pipi_D2S.begin(),proc_Bu2DststMuNu_higher_pipi_D2S.end());
-  // procs_Bu2DststMuNu_higher_pipi.insert(procs_Bu2DststMuNu_higher_pipi.end(),proc_Bu2DststMuNu_higher_pipi_D2750.begin(),proc_Bu2DststMuNu_higher_pipi_D2750.end());
-  // procs_Bu2DststMuNu_higher_pipi.insert(procs_Bu2DststMuNu_higher_pipi.end(),proc_Bu2DststMuNu_higher_pipi_D3000.begin(),proc_Bu2DststMuNu_higher_pipi_D3000.end());
-  // vector<shared_ptr<Process>> procs_Bs2DststMuNu(proc_Bs2DststMuNu_Ds1p.begin(),proc_Bs2DststMuNu_Ds1p.end());
-  // procs_Bs2DststMuNu.insert(procs_Bs2DststMuNu.end(),proc_Bs2DststMuNu_Ds2st.begin(),proc_Bs2DststMuNu_Ds2st.end());
+  // procs_Bu2DststTauNu_pipi.insert(procs_Bu2DststTauNu_pipi.end(),proc_Bu2DststTauNu_D2st_pipi.begin(),proc_Bu2DststTauNu_D2st_pipi.end());
+  vector<shared_ptr<Process>> procs_Bd2DststMuNu_higher_pipi(proc_Bd2DststMuNu_higher_pipi_Dst2S.begin(),proc_Bd2DststMuNu_higher_pipi_Dst2S.end());
+  procs_Bd2DststMuNu_higher_pipi.insert(procs_Bd2DststMuNu_higher_pipi.end(),proc_Bd2DststMuNu_higher_pipi_D2S.begin(),proc_Bd2DststMuNu_higher_pipi_D2S.end());
+  procs_Bd2DststMuNu_higher_pipi.insert(procs_Bd2DststMuNu_higher_pipi.end(),proc_Bd2DststMuNu_higher_pipi_D2750.begin(),proc_Bd2DststMuNu_higher_pipi_D2750.end());
+  procs_Bd2DststMuNu_higher_pipi.insert(procs_Bd2DststMuNu_higher_pipi.end(),proc_Bd2DststMuNu_higher_pipi_D3000.begin(),proc_Bd2DststMuNu_higher_pipi_D3000.end());
+  // procs_Bd2DststMuNu_higher_pipi.insert(procs_Bd2DststMuNu_higher_pipi.end(),proc_Bd2DststMuNu_higher_notruthmatch.begin(),proc_Bd2DststMuNu_higher_notruthmatch.end());
+  vector<shared_ptr<Process>> procs_Bu2DststMuNu_higher_pipi(proc_Bu2DststMuNu_higher_pipi_Dst2S.begin(),proc_Bu2DststMuNu_higher_pipi_Dst2S.end());
+  procs_Bu2DststMuNu_higher_pipi.insert(procs_Bu2DststMuNu_higher_pipi.end(),proc_Bu2DststMuNu_higher_pipi_D2S.begin(),proc_Bu2DststMuNu_higher_pipi_D2S.end());
+  procs_Bu2DststMuNu_higher_pipi.insert(procs_Bu2DststMuNu_higher_pipi.end(),proc_Bu2DststMuNu_higher_pipi_D2750.begin(),proc_Bu2DststMuNu_higher_pipi_D2750.end());
+  procs_Bu2DststMuNu_higher_pipi.insert(procs_Bu2DststMuNu_higher_pipi.end(),proc_Bu2DststMuNu_higher_pipi_D3000.begin(),proc_Bu2DststMuNu_higher_pipi_D3000.end());
+  // procs_Bu2DststMuNu_higher_pipi.insert(procs_Bu2DststMuNu_higher_pipi.end(),proc_Bu2DststMuNu_higher_notruthmatch.begin(),proc_Bu2DststMuNu_higher_notruthmatch.end());
+  vector<shared_ptr<Process>> procs_Bs2DststMuNu(proc_Bs2DststMuNu_Ds1p.begin(),proc_Bs2DststMuNu_Ds1p.end());
+  procs_Bs2DststMuNu.insert(procs_Bs2DststMuNu.end(),proc_Bs2DststMuNu_Ds2st.begin(),proc_Bs2DststMuNu_Ds2st.end());
+  // procs_Bs2DststMuNu.insert(procs_Bs2DststMuNu.end(),proc_Bs2DststMuNu_notruthmatch.begin(),proc_Bs2DststMuNu_notruthmatch.end());
   vector<shared_ptr<Process>> procs_Bd2DststMuNu_bu(proc_Bd2DststMuNu_D0st_bu.begin(),proc_Bd2DststMuNu_D0st_bu.end());
   procs_Bd2DststMuNu_bu.insert(procs_Bd2DststMuNu_bu.end(),proc_Bd2DststMuNu_D1_bu.begin(),proc_Bd2DststMuNu_D1_bu.end());
   procs_Bd2DststMuNu_bu.insert(procs_Bd2DststMuNu_bu.end(),proc_Bd2DststMuNu_D1p_bu.begin(),proc_Bd2DststMuNu_D1p_bu.end());
   procs_Bd2DststMuNu_bu.insert(procs_Bd2DststMuNu_bu.end(),proc_Bd2DststMuNu_D2st_bu.begin(),proc_Bd2DststMuNu_D2st_bu.end());
+  // procs_Bd2DststMuNu_bu.insert(procs_Bd2DststMuNu_bu.end(),proc_Bd2DststMuNu_notruthmatch_bu.begin(),proc_Bd2DststMuNu_notruthmatch_bu.end());
   vector<shared_ptr<Process>> procs_Bd2DststTauNu_bu(proc_Bd2DststTauNu_D0st_bu.begin(),proc_Bd2DststTauNu_D0st_bu.end());
   procs_Bd2DststTauNu_bu.insert(procs_Bd2DststTauNu_bu.end(),proc_Bd2DststTauNu_D1_bu.begin(),proc_Bd2DststTauNu_D1_bu.end());
   procs_Bd2DststTauNu_bu.insert(procs_Bd2DststTauNu_bu.end(),proc_Bd2DststTauNu_D1p_bu.begin(),proc_Bd2DststTauNu_D1p_bu.end());
   procs_Bd2DststTauNu_bu.insert(procs_Bd2DststTauNu_bu.end(),proc_Bd2DststTauNu_D2st_bu.begin(),proc_Bd2DststTauNu_D2st_bu.end());
+  // procs_Bd2DststTauNu_bu.insert(procs_Bd2DststTauNu_bu.end(),proc_Bd2DststTauNu_notruthmatch_bu.begin(),proc_Bd2DststTauNu_notruthmatch_bu.end());
   vector<shared_ptr<Process>> procs_Bu2DststMuNu_bu(proc_Bu2DststMuNu_D0st_bu.begin(),proc_Bu2DststMuNu_D0st_bu.end());
   procs_Bu2DststMuNu_bu.insert(procs_Bu2DststMuNu_bu.end(),proc_Bu2DststMuNu_D1_bu.begin(),proc_Bu2DststMuNu_D1_bu.end());
   procs_Bu2DststMuNu_bu.insert(procs_Bu2DststMuNu_bu.end(),proc_Bu2DststMuNu_D1p_bu.begin(),proc_Bu2DststMuNu_D1p_bu.end());
   procs_Bu2DststMuNu_bu.insert(procs_Bu2DststMuNu_bu.end(),proc_Bu2DststMuNu_D2st_bu.begin(),proc_Bu2DststMuNu_D2st_bu.end());
+  // procs_Bu2DststMuNu_bu.insert(procs_Bu2DststMuNu_bu.end(),proc_Bu2DststMuNu_notruthmatch_bu.begin(),proc_Bu2DststMuNu_notruthmatch_bu.end());
   vector<shared_ptr<Process>> procs_Bu2DststTauNu_bu(proc_Bu2DststTauNu_D0st_bu.begin(),proc_Bu2DststTauNu_D0st_bu.end());
   procs_Bu2DststTauNu_bu.insert(procs_Bu2DststTauNu_bu.end(),proc_Bu2DststTauNu_D1_bu.begin(),proc_Bu2DststTauNu_D1_bu.end());
   procs_Bu2DststTauNu_bu.insert(procs_Bu2DststTauNu_bu.end(),proc_Bu2DststTauNu_D1p_bu.begin(),proc_Bu2DststTauNu_D1p_bu.end());
   procs_Bu2DststTauNu_bu.insert(procs_Bu2DststTauNu_bu.end(),proc_Bu2DststTauNu_D2st_bu.begin(),proc_Bu2DststTauNu_D2st_bu.end());
-  // vector<shared_ptr<Process>> procs_Bd2DststMuNu_higher_pipi_bu(proc_Bd2DststMuNu_higher_pipi_Dst2S_bu.begin(),proc_Bd2DststMuNu_higher_pipi_Dst2S_bu.end());
-  // procs_Bd2DststMuNu_higher_pipi_bu.insert(procs_Bd2DststMuNu_higher_pipi_bu.end(),proc_Bd2DststMuNu_higher_pipi_D2S_bu.begin(),proc_Bd2DststMuNu_higher_pipi_D2S_bu.end());
-  // procs_Bd2DststMuNu_higher_pipi_bu.insert(procs_Bd2DststMuNu_higher_pipi_bu.end(),proc_Bd2DststMuNu_higher_pipi_D2750_bu.begin(),proc_Bd2DststMuNu_higher_pipi_D2750_bu.end());
-  // procs_Bd2DststMuNu_higher_pipi_bu.insert(procs_Bd2DststMuNu_higher_pipi_bu.end(),proc_Bd2DststMuNu_higher_pipi_D3000_bu.begin(),proc_Bd2DststMuNu_higher_pipi_D3000_bu.end());
-  // vector<shared_ptr<Process>> procs_Bu2DststMuNu_higher_pipi_bu(proc_Bu2DststMuNu_higher_pipi_Dst2S_bu.begin(),proc_Bu2DststMuNu_higher_pipi_Dst2S_bu.end());
-  // procs_Bu2DststMuNu_higher_pipi_bu.insert(procs_Bu2DststMuNu_higher_pipi_bu.end(),proc_Bu2DststMuNu_higher_pipi_D2S_bu.begin(),proc_Bu2DststMuNu_higher_pipi_D2S_bu.end());
-  // procs_Bu2DststMuNu_higher_pipi_bu.insert(procs_Bu2DststMuNu_higher_pipi_bu.end(),proc_Bu2DststMuNu_higher_pipi_D2750_bu.begin(),proc_Bu2DststMuNu_higher_pipi_D2750_bu.end());
-  // procs_Bu2DststMuNu_higher_pipi_bu.insert(procs_Bu2DststMuNu_higher_pipi_bu.end(),proc_Bu2DststMuNu_higher_pipi_D3000_bu.begin(),proc_Bu2DststMuNu_higher_pipi_D3000_bu.end());
-  // vector<shared_ptr<Process>> procs_Bu2DststMuNu_D0_higher_pipi_bu(proc_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu.begin(),proc_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu.end());
-  // procs_Bu2DststMuNu_D0_higher_pipi_bu.insert(procs_Bu2DststMuNu_D0_higher_pipi_bu.end(),proc_Bu2DststMuNu_D0_higher_pipi_D2S_bu.begin(),proc_Bu2DststMuNu_D0_higher_pipi_D2S_bu.end());
-  // procs_Bu2DststMuNu_D0_higher_pipi_bu.insert(procs_Bu2DststMuNu_D0_higher_pipi_bu.end(),proc_Bu2DststMuNu_D0_higher_pipi_D2750_bu.begin(),proc_Bu2DststMuNu_D0_higher_pipi_D2750_bu.end());
-  // procs_Bu2DststMuNu_D0_higher_pipi_bu.insert(procs_Bu2DststMuNu_D0_higher_pipi_bu.end(),proc_Bu2DststMuNu_D0_higher_pipi_D3000_bu.begin(),proc_Bu2DststMuNu_D0_higher_pipi_D3000_bu.end());
-  // vector<shared_ptr<Process>> procs_Bd2DststMuNu_D0_higher_pipi_bu(proc_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu.begin(),proc_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu.end());
-  // procs_Bd2DststMuNu_D0_higher_pipi_bu.insert(procs_Bd2DststMuNu_D0_higher_pipi_bu.end(),proc_Bd2DststMuNu_D0_higher_pipi_D2S_bu.begin(),proc_Bd2DststMuNu_D0_higher_pipi_D2S_bu.end());
-  // procs_Bd2DststMuNu_D0_higher_pipi_bu.insert(procs_Bd2DststMuNu_D0_higher_pipi_bu.end(),proc_Bd2DststMuNu_D0_higher_pipi_D2750_bu.begin(),proc_Bd2DststMuNu_D0_higher_pipi_D2750_bu.end());
-  // procs_Bd2DststMuNu_D0_higher_pipi_bu.insert(procs_Bd2DststMuNu_D0_higher_pipi_bu.end(),proc_Bd2DststMuNu_D0_higher_pipi_D3000_bu.begin(),proc_Bd2DststMuNu_D0_higher_pipi_D3000_bu.end());
-  // vector<shared_ptr<Process>> procs_Bu2DststMuNu_Dst0_higher_pipi_bu(proc_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu.begin(),proc_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu.end());
-  // procs_Bu2DststMuNu_Dst0_higher_pipi_bu.insert(procs_Bu2DststMuNu_Dst0_higher_pipi_bu.end(),proc_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu.begin(),proc_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu.end());
-  // procs_Bu2DststMuNu_Dst0_higher_pipi_bu.insert(procs_Bu2DststMuNu_Dst0_higher_pipi_bu.end(),proc_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu.begin(),proc_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu.end());
-  // procs_Bu2DststMuNu_Dst0_higher_pipi_bu.insert(procs_Bu2DststMuNu_Dst0_higher_pipi_bu.end(),proc_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu.begin(),proc_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu.end());
-  // vector<shared_ptr<Process>> procs_Bs2DststMuNu_bu(proc_Bs2DststMuNu_Ds1p_bu.begin(),proc_Bs2DststMuNu_Ds1p_bu.end());
-  // procs_Bs2DststMuNu_bu.insert(procs_Bs2DststMuNu_bu.end(),proc_Bs2DststMuNu_Ds2st_bu.begin(),proc_Bs2DststMuNu_Ds2st_bu.end());
-  // vector<shared_ptr<Process>> procs_Bs2DststMuNu_mix_bu(proc_Bs2DststMuNu_Ds1p_mix_bu.begin(),proc_Bs2DststMuNu_Ds1p_mix_bu.end());
-  // procs_Bs2DststMuNu_mix_bu.insert(procs_Bs2DststMuNu_mix_bu.end(),proc_Bs2DststMuNu_Ds2st_mix_bu.begin(),proc_Bs2DststMuNu_Ds2st_mix_bu.end());
+  // procs_Bu2DststTauNu_bu.insert(procs_Bu2DststTauNu_bu.end(),proc_Bu2DststTauNu_notruthmatch_bu.begin(),proc_Bu2DststTauNu_notruthmatch_bu.end());
+  vector<shared_ptr<Process>> procs_Bd2DststMuNu_higher_pipi_bu(proc_Bd2DststMuNu_higher_pipi_Dst2S_bu.begin(),proc_Bd2DststMuNu_higher_pipi_Dst2S_bu.end());
+  procs_Bd2DststMuNu_higher_pipi_bu.insert(procs_Bd2DststMuNu_higher_pipi_bu.end(),proc_Bd2DststMuNu_higher_pipi_D2S_bu.begin(),proc_Bd2DststMuNu_higher_pipi_D2S_bu.end());
+  procs_Bd2DststMuNu_higher_pipi_bu.insert(procs_Bd2DststMuNu_higher_pipi_bu.end(),proc_Bd2DststMuNu_higher_pipi_D2750_bu.begin(),proc_Bd2DststMuNu_higher_pipi_D2750_bu.end());
+  procs_Bd2DststMuNu_higher_pipi_bu.insert(procs_Bd2DststMuNu_higher_pipi_bu.end(),proc_Bd2DststMuNu_higher_pipi_D3000_bu.begin(),proc_Bd2DststMuNu_higher_pipi_D3000_bu.end());
+  // procs_Bd2DststMuNu_higher_pipi_bu.insert(procs_Bd2DststMuNu_higher_pipi_bu.end(),proc_Bd2DststMuNu_higher_notruthmatch_bu.begin(),proc_Bd2DststMuNu_higher_notruthmatch_bu.end());
+  vector<shared_ptr<Process>> procs_Bu2DststMuNu_higher_pipi_bu(proc_Bu2DststMuNu_higher_pipi_Dst2S_bu.begin(),proc_Bu2DststMuNu_higher_pipi_Dst2S_bu.end());
+  procs_Bu2DststMuNu_higher_pipi_bu.insert(procs_Bu2DststMuNu_higher_pipi_bu.end(),proc_Bu2DststMuNu_higher_pipi_D2S_bu.begin(),proc_Bu2DststMuNu_higher_pipi_D2S_bu.end());
+  procs_Bu2DststMuNu_higher_pipi_bu.insert(procs_Bu2DststMuNu_higher_pipi_bu.end(),proc_Bu2DststMuNu_higher_pipi_D2750_bu.begin(),proc_Bu2DststMuNu_higher_pipi_D2750_bu.end());
+  procs_Bu2DststMuNu_higher_pipi_bu.insert(procs_Bu2DststMuNu_higher_pipi_bu.end(),proc_Bu2DststMuNu_higher_pipi_D3000_bu.begin(),proc_Bu2DststMuNu_higher_pipi_D3000_bu.end());
+  // procs_Bu2DststMuNu_higher_pipi_bu.insert(procs_Bu2DststMuNu_higher_pipi_bu.end(),proc_Bu2DststMuNu_higher_notruthmatch_bu.begin(),proc_Bu2DststMuNu_higher_notruthmatch_bu.end());
+  vector<shared_ptr<Process>> procs_Bu2DststMuNu_D0_higher_pipi_bu(proc_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu.begin(),proc_Bu2DststMuNu_D0_higher_pipi_Dst2S_bu.end());
+  procs_Bu2DststMuNu_D0_higher_pipi_bu.insert(procs_Bu2DststMuNu_D0_higher_pipi_bu.end(),proc_Bu2DststMuNu_D0_higher_pipi_D2S_bu.begin(),proc_Bu2DststMuNu_D0_higher_pipi_D2S_bu.end());
+  procs_Bu2DststMuNu_D0_higher_pipi_bu.insert(procs_Bu2DststMuNu_D0_higher_pipi_bu.end(),proc_Bu2DststMuNu_D0_higher_pipi_D2750_bu.begin(),proc_Bu2DststMuNu_D0_higher_pipi_D2750_bu.end());
+  procs_Bu2DststMuNu_D0_higher_pipi_bu.insert(procs_Bu2DststMuNu_D0_higher_pipi_bu.end(),proc_Bu2DststMuNu_D0_higher_pipi_D3000_bu.begin(),proc_Bu2DststMuNu_D0_higher_pipi_D3000_bu.end());
+  // procs_Bu2DststMuNu_D0_higher_pipi_bu.insert(procs_Bu2DststMuNu_D0_higher_pipi_bu.end(),proc_Bu2DststMuNu_D0_higher_notruthmatch_bu.begin(),proc_Bu2DststMuNu_D0_higher_notruthmatch_bu.end());
+  vector<shared_ptr<Process>> procs_Bd2DststMuNu_D0_higher_pipi_bu(proc_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu.begin(),proc_Bd2DststMuNu_D0_higher_pipi_Dst2S_bu.end());
+  procs_Bd2DststMuNu_D0_higher_pipi_bu.insert(procs_Bd2DststMuNu_D0_higher_pipi_bu.end(),proc_Bd2DststMuNu_D0_higher_pipi_D2S_bu.begin(),proc_Bd2DststMuNu_D0_higher_pipi_D2S_bu.end());
+  procs_Bd2DststMuNu_D0_higher_pipi_bu.insert(procs_Bd2DststMuNu_D0_higher_pipi_bu.end(),proc_Bd2DststMuNu_D0_higher_pipi_D2750_bu.begin(),proc_Bd2DststMuNu_D0_higher_pipi_D2750_bu.end());
+  procs_Bd2DststMuNu_D0_higher_pipi_bu.insert(procs_Bd2DststMuNu_D0_higher_pipi_bu.end(),proc_Bd2DststMuNu_D0_higher_pipi_D3000_bu.begin(),proc_Bd2DststMuNu_D0_higher_pipi_D3000_bu.end());
+  // procs_Bd2DststMuNu_D0_higher_pipi_bu.insert(procs_Bd2DststMuNu_D0_higher_pipi_bu.end(),proc_Bd2DststMuNu_D0_higher_notruthmatch_bu.begin(),proc_Bd2DststMuNu_D0_higher_notruthmatch_bu.end());
+  vector<shared_ptr<Process>> procs_Bu2DststMuNu_Dst0_higher_pipi_bu(proc_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu.begin(),proc_Bu2DststMuNu_Dst0_higher_pipi_Dst2S_bu.end());
+  procs_Bu2DststMuNu_Dst0_higher_pipi_bu.insert(procs_Bu2DststMuNu_Dst0_higher_pipi_bu.end(),proc_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu.begin(),proc_Bu2DststMuNu_Dst0_higher_pipi_D2S_bu.end());
+  procs_Bu2DststMuNu_Dst0_higher_pipi_bu.insert(procs_Bu2DststMuNu_Dst0_higher_pipi_bu.end(),proc_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu.begin(),proc_Bu2DststMuNu_Dst0_higher_pipi_D2750_bu.end());
+  procs_Bu2DststMuNu_Dst0_higher_pipi_bu.insert(procs_Bu2DststMuNu_Dst0_higher_pipi_bu.end(),proc_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu.begin(),proc_Bu2DststMuNu_Dst0_higher_pipi_D3000_bu.end());
+  // procs_Bu2DststMuNu_Dst0_higher_pipi_bu.insert(procs_Bu2DststMuNu_Dst0_higher_pipi_bu.end(),proc_Bu2DststMuNu_Dst0_higher_notruthmatch_bu.begin(),proc_Bu2DststMuNu_Dst0_higher_notruthmatch_bu.end());
+  vector<shared_ptr<Process>> procs_Bs2DststMuNu_bu(proc_Bs2DststMuNu_Ds1p_bu.begin(),proc_Bs2DststMuNu_Ds1p_bu.end());
+  procs_Bs2DststMuNu_bu.insert(procs_Bs2DststMuNu_bu.end(),proc_Bs2DststMuNu_Ds2st_bu.begin(),proc_Bs2DststMuNu_Ds2st_bu.end());
+  // procs_Bs2DststMuNu_bu.insert(procs_Bs2DststMuNu_bu.end(),proc_Bs2DststMuNu_notruthmatch_bu.begin(),proc_Bs2DststMuNu_notruthmatch_bu.end());
+  vector<shared_ptr<Process>> procs_Bs2DststMuNu_mix_bu(proc_Bs2DststMuNu_Ds1p_mix_bu.begin(),proc_Bs2DststMuNu_Ds1p_mix_bu.end());
+  procs_Bs2DststMuNu_mix_bu.insert(procs_Bs2DststMuNu_mix_bu.end(),proc_Bs2DststMuNu_Ds2st_mix_bu.begin(),proc_Bs2DststMuNu_Ds2st_mix_bu.end());
+  // procs_Bs2DststMuNu_mix_bu.insert(procs_Bs2DststMuNu_mix_bu.end(),proc_Bs2DststMuNu_mix_notruthmatch_bu.begin(),proc_Bs2DststMuNu_mix_notruthmatch_bu.end());
 
+  vector<shared_ptr<Process>> procs_Bd2DstMuNu_trackeronly_fullsim(proc_Bd2DstMuNu.begin(),proc_Bd2DstMuNu.end());
+  procs_Bd2DstMuNu_trackeronly_fullsim.insert(procs_Bd2DstMuNu_trackeronly_fullsim.end(),proc_Bd2DstMuNu_trackeronly.begin(),proc_Bd2DstMuNu_trackeronly.end());
 
   ///////////////////////////////////////////// Define Custom NamedFuncs ////////////////////////////////////////////
 
@@ -2371,17 +2533,17 @@ int main(){
     if (dst_mom == 511 || dst_mom == 521) { // sample selections should already require that the B have the correct charge for the given decay
       TLorentzVector B(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
       TLorentzVector B_daughter(b.dst_TRUEP_X(),b.dst_TRUEP_Y(),b.dst_TRUEP_Z(),b.dst_TRUEP_E());
-      return (B-B_daughter).M2()/1e6;
+      return sqrt((B-B_daughter).M2()/1e6);
     }
     else if (dst_gd_mom == 511 || dst_gd_mom == 521) {
       TLorentzVector B(b.dst_MC_GD_MOTHER_TRUEPX(),b.dst_MC_GD_MOTHER_TRUEPY(),b.dst_MC_GD_MOTHER_TRUEPZ(),b.dst_MC_GD_MOTHER_TRUEPE());
       TLorentzVector B_daughter(b.dst_MC_MOTHER_TRUEPX(),b.dst_MC_MOTHER_TRUEPY(),b.dst_MC_MOTHER_TRUEPZ(),b.dst_MC_MOTHER_TRUEPE());
-      return (B-B_daughter).M2()/1e6;
+      return sqrt((B-B_daughter).M2()/1e6);
     }
     else if (dst_gd_gd_mom == 511 || dst_gd_gd_mom == 521) {
       TLorentzVector B(b.dst_MC_GD_GD_MOTHER_TRUEPX(),b.dst_MC_GD_GD_MOTHER_TRUEPY(),b.dst_MC_GD_GD_MOTHER_TRUEPZ(),b.dst_MC_GD_GD_MOTHER_TRUEPE());
       TLorentzVector B_daughter(b.dst_MC_GD_MOTHER_TRUEPX(),b.dst_MC_GD_MOTHER_TRUEPY(),b.dst_MC_GD_MOTHER_TRUEPZ(),b.dst_MC_GD_MOTHER_TRUEPE());
-      return (B-B_daughter).M2()/1e6;
+      return sqrt((B-B_daughter).M2()/1e6);
     }
     else return -1.0; // quantity should be positive, so this will just be a bin you artificially fill to indicate you couldn't find B in D* ancestry
   });
@@ -2393,17 +2555,17 @@ int main(){
     if (d0_mom == 511 || d0_mom == 521) { // sample selections should already require that the B have the correct charge for the given decay
       TLorentzVector B(b.d0_MC_MOTHER_TRUEPX(),b.d0_MC_MOTHER_TRUEPY(),b.d0_MC_MOTHER_TRUEPZ(),b.d0_MC_MOTHER_TRUEPE());
       TLorentzVector B_daughter(b.d0_TRUEP_X(),b.d0_TRUEP_Y(),b.d0_TRUEP_Z(),b.d0_TRUEP_E());
-      return (B-B_daughter).M2()/1e6;
+      return sqrt((B-B_daughter).M2()/1e6);
     }
     else if (d0_gd_mom == 511 || d0_gd_mom == 521) {
       TLorentzVector B(b.d0_MC_GD_MOTHER_TRUEPX(),b.d0_MC_GD_MOTHER_TRUEPY(),b.d0_MC_GD_MOTHER_TRUEPZ(),b.d0_MC_GD_MOTHER_TRUEPE());
       TLorentzVector B_daughter(b.d0_MC_MOTHER_TRUEPX(),b.d0_MC_MOTHER_TRUEPY(),b.d0_MC_MOTHER_TRUEPZ(),b.d0_MC_MOTHER_TRUEPE());
-      return (B-B_daughter).M2()/1e6;
+      return sqrt((B-B_daughter).M2()/1e6);
     }
     else if (d0_gd_gd_mom == 511 || d0_gd_gd_mom == 521) {
       TLorentzVector B(b.d0_MC_GD_GD_MOTHER_TRUEPX(),b.d0_MC_GD_GD_MOTHER_TRUEPY(),b.d0_MC_GD_GD_MOTHER_TRUEPZ(),b.d0_MC_GD_GD_MOTHER_TRUEPE());
       TLorentzVector B_daughter(b.d0_MC_GD_MOTHER_TRUEPX(),b.d0_MC_GD_MOTHER_TRUEPY(),b.d0_MC_GD_MOTHER_TRUEPZ(),b.d0_MC_GD_MOTHER_TRUEPE());
-      return (B-B_daughter).M2()/1e6;
+      return sqrt((B-B_daughter).M2()/1e6);
     }
     else return -1.0; // quantity should be positive, so this will just be a bin you artificially fill to indicate you couldn't find B in D* ancestry
   });
@@ -2416,20 +2578,20 @@ int main(){
 
   // Convention: end the tag with _bd if reconstructed as B0 -> D*+ [-> D0 [-> K- pi+] spi+] mu-, _bu if reconstructed as B- -> D0 [-> K- pi+] mu-
   vector<proc_tag> vec_proc_tag;
-  // proc_tag Bd2DstMuNu_Bd2DstTauNu(procs_Bd2DstMuNu_Bd2DstTauNu, "Bd2DstMuTauNu_bd"); vec_proc_tag.push_back(Bd2DstMuNu_Bd2DstTauNu);
-  // proc_tag Bu2D0MuNu_Bu2D0TauNu(procs_Bu2D0MuNu_Bu2D0TauNu, "Bu2D0MuTauNu_bu"); vec_proc_tag.push_back(Bu2D0MuNu_Bu2D0TauNu);
-  // proc_tag Bu2DstMuNu_Bu2DstTauNu(procs_Bu2DstMuNu_Bu2DstTauNu, "Bu2DstMuTauNu_bu"); vec_proc_tag.push_back(Bu2DstMuNu_Bu2DstTauNu);
+  proc_tag Bd2DstMuNu_Bd2DstTauNu(procs_Bd2DstMuNu_Bd2DstTauNu, "Bd2DstMuTauNu_bd"); vec_proc_tag.push_back(Bd2DstMuNu_Bd2DstTauNu);
+  proc_tag Bu2D0MuNu_Bu2D0TauNu(procs_Bu2D0MuNu_Bu2D0TauNu, "Bu2D0MuTauNu_bu"); vec_proc_tag.push_back(Bu2D0MuNu_Bu2D0TauNu);
+  proc_tag Bu2DstMuNu_Bu2DstTauNu(procs_Bu2DstMuNu_Bu2DstTauNu, "Bu2DstMuTauNu_bu"); vec_proc_tag.push_back(Bu2DstMuNu_Bu2DstTauNu);
   proc_tag Bd2DststMuNu(procs_Bd2DststMuNu, "Bd2DststMuNu_bd"); vec_proc_tag.push_back(Bd2DststMuNu);
   proc_tag Bd2DststTauNu(procs_Bd2DststTauNu, "Bd2DststTauNu_bd"); vec_proc_tag.push_back(Bd2DststTauNu);
   proc_tag Bu2DststMuNu(procs_Bu2DststMuNu, "Bu2DststMuNu_bd"); vec_proc_tag.push_back(Bu2DststMuNu);
   proc_tag Bu2DststTauNu(procs_Bu2DststTauNu, "Bu2DststTauNu_bd"); vec_proc_tag.push_back(Bu2DststTauNu);
-  proc_tag Bd2DststMuNu_pipi(procs_Bd2DststMuNu_pipi, "Bd2DststMuNu_pipi_bd"); vec_proc_tag.push_back(Bd2DststMuNu_pipi);
-  proc_tag Bd2DststTauNu_pipi(procs_Bd2DststTauNu_pipi, "Bd2DststTauNu_pipi_bd"); vec_proc_tag.push_back(Bd2DststTauNu_pipi);
-  proc_tag Bu2DststMuNu_pipi(procs_Bu2DststMuNu_pipi, "Bu2DststMuNu_pipi_bd"); vec_proc_tag.push_back(Bu2DststMuNu_pipi);
-  proc_tag Bu2DststTauNu_pipi(procs_Bu2DststTauNu_pipi, "Bu2DststTauNu_pipi_bd"); vec_proc_tag.push_back(Bu2DststTauNu_pipi);
-  // proc_tag Bd2DststMuNu_higher_pipi(procs_Bd2DststMuNu_higher_pipi, "Bd2DststMuNu_higher_pipi_bd"); vec_proc_tag.push_back(Bd2DststMuNu_higher_pipi);
-  // proc_tag Bu2DststMuNu_higher_pipi(procs_Bu2DststMuNu_higher_pipi, "Bu2DststMuNu_higher_pipi_bd"); vec_proc_tag.push_back(Bu2DststMuNu_higher_pipi);
-  // proc_tag Bs2DststMuNu(procs_Bs2DststMuNu, "Bs2DststMuNu_bd"); vec_proc_tag.push_back(Bs2DststMuNu);
+  // proc_tag Bd2DststMuNu_pipi(procs_Bd2DststMuNu_pipi, "Bd2DststMuNu_pipi_bd"); vec_proc_tag.push_back(Bd2DststMuNu_pipi);
+  // proc_tag Bd2DststTauNu_pipi(procs_Bd2DststTauNu_pipi, "Bd2DststTauNu_pipi_bd"); vec_proc_tag.push_back(Bd2DststTauNu_pipi);
+  // proc_tag Bu2DststMuNu_pipi(procs_Bu2DststMuNu_pipi, "Bu2DststMuNu_pipi_bd"); vec_proc_tag.push_back(Bu2DststMuNu_pipi);
+  // proc_tag Bu2DststTauNu_pipi(procs_Bu2DststTauNu_pipi, "Bu2DststTauNu_pipi_bd"); vec_proc_tag.push_back(Bu2DststTauNu_pipi);
+  proc_tag Bd2DststMuNu_higher_pipi(procs_Bd2DststMuNu_higher_pipi, "Bd2DststMuNu_higher_pipi_bd"); vec_proc_tag.push_back(Bd2DststMuNu_higher_pipi);
+  proc_tag Bu2DststMuNu_higher_pipi(procs_Bu2DststMuNu_higher_pipi, "Bu2DststMuNu_higher_pipi_bd"); vec_proc_tag.push_back(Bu2DststMuNu_higher_pipi);
+  proc_tag Bs2DststMuNu(procs_Bs2DststMuNu, "Bs2DststMuNu_bd"); vec_proc_tag.push_back(Bs2DststMuNu);
   proc_tag Bd2DstDXMuNu(proc_Bd2DstDXMuNu, "Bd2DstDXMuNu_bd"); vec_proc_tag.push_back(Bd2DstDXMuNu);
   proc_tag Bu2DstDXMuNu(proc_Bu2DstDXMuNu, "Bu2DstDXMuNu_bd"); vec_proc_tag.push_back(Bu2DstDXMuNu);
   proc_tag Bd2DstDXTauNu(proc_Bd2DstDXTauNu, "Bd2DstDXTauNu_bd"); vec_proc_tag.push_back(Bd2DstDXTauNu);
@@ -2438,17 +2600,20 @@ int main(){
   proc_tag Bd2DststTauNu_bu(procs_Bd2DststTauNu_bu, "Bd2DststTauNu_bu"); vec_proc_tag.push_back(Bd2DststTauNu_bu);
   proc_tag Bu2DststMuNu_bu(procs_Bu2DststMuNu_bu, "Bu2DststMuNu_bu"); vec_proc_tag.push_back(Bu2DststMuNu_bu);
   proc_tag Bu2DststTauNu_bu(procs_Bu2DststTauNu_bu, "Bu2DststTauNu_bu"); vec_proc_tag.push_back(Bu2DststTauNu_bu);
-  // proc_tag Bd2DststMuNu_higher_pipi_bu(procs_Bd2DststMuNu_higher_pipi_bu, "Bd2DststMuNu_higher_pipi_bu"); vec_proc_tag.push_back(Bd2DststMuNu_higher_pipi_bu);
-  // proc_tag Bu2DststMuNu_higher_pipi_bu(procs_Bu2DststMuNu_higher_pipi_bu, "Bu2DststMuNu_higher_pipi_bu"); vec_proc_tag.push_back(Bu2DststMuNu_higher_pipi_bu);
-  // proc_tag Bu2DststMuNu_D0_higher_pipi_bu(procs_Bu2DststMuNu_D0_higher_pipi_bu, "Bu2DststMuNu_D0_higher_pipi_bu"); vec_proc_tag.push_back(Bu2DststMuNu_D0_higher_pipi_bu);
-  // proc_tag Bd2DststMuNu_D0_higher_pipi_bu(procs_Bd2DststMuNu_D0_higher_pipi_bu, "Bd2DststMuNu_D0_higher_pipi_bu"); vec_proc_tag.push_back(Bd2DststMuNu_D0_higher_pipi_bu);
-  // proc_tag Bu2DststMuNu_Dst0_higher_pipi_bu(procs_Bu2DststMuNu_Dst0_higher_pipi_bu, "Bu2DststMuNu_Dst0_higher_pipi_bu"); vec_proc_tag.push_back(Bu2DststMuNu_Dst0_higher_pipi_bu);
-  // proc_tag Bs2DststMuNu_bu(procs_Bs2DststMuNu_bu, "Bs2DststMuNu_bu"); vec_proc_tag.push_back(Bs2DststMuNu_bu);
-  // proc_tag Bs2DststMuNu_mix_bu(procs_Bs2DststMuNu_mix_bu, "Bs2DststMuNu_mix_bu"); vec_proc_tag.push_back(Bs2DststMuNu_mix_bu);
+  proc_tag Bd2DststMuNu_higher_pipi_bu(procs_Bd2DststMuNu_higher_pipi_bu, "Bd2DststMuNu_higher_pipi_bu"); vec_proc_tag.push_back(Bd2DststMuNu_higher_pipi_bu);
+  proc_tag Bu2DststMuNu_higher_pipi_bu(procs_Bu2DststMuNu_higher_pipi_bu, "Bu2DststMuNu_higher_pipi_bu"); vec_proc_tag.push_back(Bu2DststMuNu_higher_pipi_bu);
+  proc_tag Bu2DststMuNu_D0_higher_pipi_bu(procs_Bu2DststMuNu_D0_higher_pipi_bu, "Bu2DststMuNu_D0_higher_pipi_bu"); vec_proc_tag.push_back(Bu2DststMuNu_D0_higher_pipi_bu);
+  proc_tag Bd2DststMuNu_D0_higher_pipi_bu(procs_Bd2DststMuNu_D0_higher_pipi_bu, "Bd2DststMuNu_D0_higher_pipi_bu"); vec_proc_tag.push_back(Bd2DststMuNu_D0_higher_pipi_bu);
+  proc_tag Bu2DststMuNu_Dst0_higher_pipi_bu(procs_Bu2DststMuNu_Dst0_higher_pipi_bu, "Bu2DststMuNu_Dst0_higher_pipi_bu"); vec_proc_tag.push_back(Bu2DststMuNu_Dst0_higher_pipi_bu);
+  proc_tag Bs2DststMuNu_bu(procs_Bs2DststMuNu_bu, "Bs2DststMuNu_bu"); vec_proc_tag.push_back(Bs2DststMuNu_bu);
+  proc_tag Bs2DststMuNu_mix_bu(procs_Bs2DststMuNu_mix_bu, "Bs2DststMuNu_mix_bu"); vec_proc_tag.push_back(Bs2DststMuNu_mix_bu);
   proc_tag Bd2D0DXMuNu(proc_Bd2D0DXMuNu, "Bd2D0DXMuNu_bu"); vec_proc_tag.push_back(Bd2D0DXMuNu);
   proc_tag Bu2D0DXMuNu(proc_Bu2D0DXMuNu, "Bu2D0DXMuNu_bu"); vec_proc_tag.push_back(Bu2D0DXMuNu);
   proc_tag Bd2D0DXTauNu(proc_Bd2D0DXTauNu, "Bd2D0DXTauNu_bu"); vec_proc_tag.push_back(Bd2D0DXTauNu);
   proc_tag Bu2D0DXTauNu(proc_Bu2D0DXTauNu, "Bu2D0DXTauNu_bu"); vec_proc_tag.push_back(Bu2D0DXTauNu);
+
+  proc_tag Bd2DstMuNu_trackeronly_fullsim(procs_Bd2DstMuNu_trackeronly_fullsim, "Bd2DstMuNu_trackeronly_fullsim_bd"); vec_proc_tag.push_back(Bd2DstMuNu_trackeronly_fullsim);
+  // proc_tag Bd2DstTauNu(proc_Bd2DstTauNu, "Bd2DstTauNu_bd"); vec_proc_tag.push_back(Bd2DstTauNu);
 
   for (vector<proc_tag>::iterator pt = vec_proc_tag.begin(); pt != vec_proc_tag.end(); pt++) {
     vector<shared_ptr<Process>> processes = pt->Processes();
@@ -2465,7 +2630,7 @@ int main(){
       pm.Push<Hist1D>(Axis(240,-2000,d_dst_mom_upper, dst_mom_id,"|D^{*} Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
       pm.Push<Hist1D>(Axis(240,-2000,22000, spi_mom_id,"|#pi_{s} Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
       // q2, mm2, El
-      if (filetag=="Bd2DstMuTauNu_bd") {
+      if (filetag=="Bd2DstMuTauNu_bd" || filetag=="Bd2DstTauNu_bd") {
         pm.Push<Hist1D>(Axis(40,-2,10, true_mm2_Bd2Dst, "True m_{miss}^{2} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
         pm.Push<Hist1D>(Axis(45,-3,12, true_q2_Bd2Dst, "True q^{2} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
         pm.Push<Hist1D>(Axis(32,0.1,2.5, true_el_Bd2Dst, "True E_{#mu}^{*} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
@@ -2510,7 +2675,12 @@ int main(){
         pm.Push<Hist1D>(Axis(150,-10,140, "b0_BKGCAT", "B^{0} bkgcat"), "1", processes, plotloglumi).Tag(filetag); // for investigation...
       }
       if (filetag.find("DX") != string::npos) { // is one of the DD backgrounds contributing to D* sample
-        pm.Push<Hist1D>(Axis(60,-2,13, pB_minus_pBdaughter_DstD, "True (p_{B}-p_{B daughter})^{2} (GeV^{2})"), "1", processes, plotshapes).Tag(filetag).RightLabel({"B found from D^{*} ancestry", "-1 filled if can't find B"});
+        pm.Push<Hist1D>(Axis(60,1.0,3.5, pB_minus_pBdaughter_DstD, "True sqrt(p_{B}-p_{B daughter})^{2} (GeV)"), "1", processes, plotshapes).Tag(filetag).RightLabel({"B found from D^{*} ancestry", "-1 filled if can't find B"});
+      }
+      if (filetag=="Bd2DstMuNu_trackeronly_fullsim_bd") {
+        pm.Push<Hist1D>(Axis(40,-2,10, true_mm2_Bd2Dst, "True m_{miss}^{2} [GeV^{2}]"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+        pm.Push<Hist1D>(Axis(45,-3,12, true_q2_Bd2Dst, "True q^{2} [GeV^{2}]"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+        pm.Push<Hist1D>(Axis(32,0.1,2.5, true_el_Bd2Dst, "True E_{#mu}^{*} [GeV^{2}]"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
       }
     }
     else if (filetag.find("_bu") != string::npos) { // reconstructed as B- -> D0 [-> K- pi+] mu-
@@ -2570,7 +2740,7 @@ int main(){
       }
       // Other plots
       if (filetag.find("DX") != string::npos) { // is one of the DD backgrounds contributing to D* sample
-        pm.Push<Hist1D>(Axis(60,-2,13, pB_minus_pBdaughter_D0D, "True (p_{B}-p_{B daughter})^{2} (GeV^{2})"), "1", processes, plotshapes).Tag(filetag).RightLabel({"B found from D ancestry", "-1 filled if can't find B"});
+        pm.Push<Hist1D>(Axis(60,1.0,3.5, pB_minus_pBdaughter_D0D, "True sqrt(p_{B}-p_{B daughter})^{2} (GeV)"), "1", processes, plotshapes).Tag(filetag).RightLabel({"B found from D ancestry", "-1 filled if can't find B"});
       }
     }
     // Everyone should have these ID plots
@@ -2583,9 +2753,15 @@ int main(){
     pm.Push<Hist1D>(Axis(250,-20,480, k_mom_id,"|K Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
     pm.Push<Hist1D>(Axis(250,-20,480, pi_mom_id,"|#pi Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
     // Everyone should have these fitvars
-    pm.Push<Hist1D>(Axis(40,-2,10, fit_mm2, "m_{miss}^{2} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
-    pm.Push<Hist1D>(Axis(45,-3,12, fit_q2, "q^{2} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
-    pm.Push<Hist1D>(Axis(32,0.1,2.5, fit_el, "E_{#mu}^{*} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
+    if (filetag.find("trackeronly_fullsim") != string::npos) {
+      pm.Push<Hist1D>(Axis(40,-2,10, fit_mm2, "m_{miss}^{2} [GeV^{2}]"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(45,-3,12, fit_q2, "q^{2} [GeV^{2}]"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(32,0.1,2.5, fit_el, "E_{#mu}^{*} [GeV^{2}]"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+    } else {
+      pm.Push<Hist1D>(Axis(40,-2,10, fit_mm2, "m_{miss}^{2} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
+      pm.Push<Hist1D>(Axis(45,-3,12, fit_q2, "q^{2} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
+      pm.Push<Hist1D>(Axis(32,0.1,2.5, fit_el, "E_{#mu}^{*} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
+    }
   }
 
 
