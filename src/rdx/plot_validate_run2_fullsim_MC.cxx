@@ -4,7 +4,7 @@
 // and being ugly may make it the easiest to edit in this case, honestly.
 
 // Created: Feb 22, 2021
-// Last edited: Apr 22, 2021
+// Last edited: Apr 27, 2021
 // Note: relevant ntuples (see file names below) need to be downloaded, and the repofolder variable should
 // be edited to reflect their location.
 
@@ -916,7 +916,7 @@ int main(){
     // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
     if (!(abs(b.dst_MC_MOTHER_ID())==511 || abs(b.dst_MC_GD_MOTHER_ID())==511 || abs(b.dst_MC_GD_GD_MOTHER_ID())==511)) return false;
     // flagTauonicD is defined in Phoebe's AddB.C line 2791
-    if (abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==431) return false;
+    if (!(abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==431)) return false;
     return true;
   });
 
@@ -925,7 +925,7 @@ int main(){
     // Btype defined in Phoebe's AddB.C lines 2726-2754, then redefined in 2814-2864: quite confusing, and I've simplified here (should be equivalent for my purposes)
     if (!(abs(b.dst_MC_MOTHER_ID())==521 || abs(b.dst_MC_GD_MOTHER_ID())==521 || abs(b.dst_MC_GD_GD_MOTHER_ID())==521)) return false;
     // flagTauonicD is defined in Phoebe's AddB.C line 2791
-    if (abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==431) return false;
+    if (!(abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==431)) return false;
     return true;
   });
 
@@ -1537,7 +1537,7 @@ int main(){
     // Btype is defined in Phoebe AddD0B_temp.C lines 2120-2137, then re-defined in lines 2148-2168: this is too complicated, so I've simplified (not equivalent to Phoebe and I might actually be TIGHTER, but I don't expect it to be significant)
     if (!(abs(b.d0_MC_MOTHER_ID())==511 || abs(b.d0_MC_GD_MOTHER_ID())==511 || abs(b.d0_MC_GD_GD_MOTHER_ID())==511)) return false;
     // flagTauonicD is defined in Phoebe's AddD0B_temp.C line 2144
-    if (abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==431) return false;
+    if (!(abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==431)) return false;
     return true;
   });
 
@@ -1546,7 +1546,7 @@ int main(){
     // Btype is defined in Phoebe AddD0B_temp.C lines 2120-2137, then re-defined in lines 2148-2168: this is too complicated, so I've simplified (not equivalent to Phoebe and I might actually be TIGHTER, but I don't expect it to be significant)
     if (!(abs(b.d0_MC_MOTHER_ID())==521 || abs(b.d0_MC_GD_MOTHER_ID())==521 || abs(b.d0_MC_GD_GD_MOTHER_ID())==521)) return false;
     // flagTauonicD is defined in Phoebe's AddD0B_temp.C line 2144
-    if (abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==431) return false;
+    if (!(abs(b.mu_MC_MOTHER_ID())==15 && abs(b.mu_MC_GD_MOTHER_ID())==431)) return false;
     return true;
   });
 
