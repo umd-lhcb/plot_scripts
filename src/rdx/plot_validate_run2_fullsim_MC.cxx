@@ -4,7 +4,7 @@
 // and being ugly may make it the easiest to edit in this case, honestly.
 
 // Created: Feb 22, 2021
-// Last edited: Apr 27, 2021
+// Last edited: Apr 28, 2021
 // Note: relevant ntuples (see file names below) need to be downloaded, and the repofolder variable should
 // be edited to reflect their location.
 
@@ -775,7 +775,7 @@ int main(){
      // justDst from Phoebe AddB.C line 2814 (simplified for me)
      if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
      // my own requirements here...
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID()==100413))) return false;
+     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==100413)) return false;
      return true;
   });
 
@@ -787,7 +787,7 @@ int main(){
      // justDst from Phoebe AddB.C line 2814 (simplified for me)
      if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
      // my own requirements here...
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID()==100411))) return false;
+     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==100411)) return false;
      return true;
    });
 
@@ -799,7 +799,7 @@ int main(){
      // justDst from Phoebe AddB.C line 2814 (simplified for me)
      if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
      // my own requirements here...
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID()==415))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
+     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==415)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
      return true;
    });
 
@@ -811,7 +811,7 @@ int main(){
      // justDst from Phoebe AddB.C line 2814 (simplified for me)
      if (!(abs(b.dst_MC_MOTHER_ID())!=511)) return false;
      // my own requirements here...
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID()==10413))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
+     if (!(abs(b.dst_MC_GD_MOTHER_ID())==511 && abs(b.dst_MC_MOTHER_ID())==10413)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
      return true;
   });
 
@@ -823,7 +823,7 @@ int main(){
      // justDst from Phoebe AddB.C line 2814 (simplified for me)
      if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
      // my own requirements here...
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID()==100423))) return false;
+     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==100423)) return false;
      return true;
   });
 
@@ -835,7 +835,7 @@ int main(){
      // justDst from Phoebe AddB.C line 2814 (simplified for me)
      if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
      // my own requirements here...
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID()==100421))) return false;
+     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==100421)) return false;
      return true;
    });
 
@@ -847,7 +847,7 @@ int main(){
      // justDst from Phoebe AddB.C line 2814 (simplified for me)
      if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
      // my own requirements here...
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID()==425))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
+     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==425)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
      return true;
    });
 
@@ -859,7 +859,7 @@ int main(){
      // justDst from Phoebe AddB.C line 2814 (simplified for me)
      if (!(abs(b.dst_MC_MOTHER_ID())!=521)) return false;
      // my own requirements here...
-     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID()==10423))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
+     if (!(abs(b.dst_MC_GD_MOTHER_ID())==521 && abs(b.dst_MC_MOTHER_ID())==10423)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
      return true;
   });
 
@@ -1203,7 +1203,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==413)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==511 && abs(b.d0_MC_GD_MOTHER_ID()==100413))) return false;
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==511 && abs(b.d0_MC_GD_MOTHER_ID())==100413)) return false;
      return true;
   });
 
@@ -1217,7 +1217,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==413)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==511 && abs(b.d0_MC_GD_MOTHER_ID()==100411))) return false;
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==511 && abs(b.d0_MC_GD_MOTHER_ID())==100411)) return false;
      return true;
    });
 
@@ -1231,7 +1231,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==413)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==511 && abs(b.d0_MC_GD_MOTHER_ID()==415))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==511 && abs(b.d0_MC_GD_MOTHER_ID())==415)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
      return true;
    });
 
@@ -1245,7 +1245,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==413)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==511 && abs(b.d0_MC_GD_MOTHER_ID()==10413))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==511 && abs(b.d0_MC_GD_MOTHER_ID())==10413)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
      return true;
   });
 
@@ -1259,7 +1259,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==413)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID()==100423))) return false;
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID())==100423)) return false;
      return true;
   });
 
@@ -1273,7 +1273,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==413)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID()==100421))) return false;
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID())==100421)) return false;
      return true;
    });
 
@@ -1287,7 +1287,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==413)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID()==425))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID())==425)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
      return true;
    });
 
@@ -1301,7 +1301,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==413)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID()==10423))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID())==10423)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
      return true;
   });
 
@@ -1313,7 +1313,7 @@ int main(){
      // justDst defined in Phoebe AddD0B_temp.C line 2148 (I've simplified it for my purposes)
      if ((abs(b.d0_MC_MOTHER_ID())==521)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_MOTHER_ID())==521 && abs(b.d0_MC_MOTHER_ID()==100423))) return false;
+     if (!(abs(b.d0_MC_GD_MOTHER_ID())==521 && abs(b.d0_MC_MOTHER_ID())==100423)) return false;
      return true;
   });
 
@@ -1325,7 +1325,7 @@ int main(){
      // justDst defined in Phoebe AddD0B_temp.C line 2148 (I've simplified it for my purposes)
      if ((abs(b.d0_MC_MOTHER_ID())==521)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_MOTHER_ID())==521 && abs(b.d0_MC_MOTHER_ID()==100421))) return false;
+     if (!(abs(b.d0_MC_GD_MOTHER_ID())==521 && abs(b.d0_MC_MOTHER_ID())==100421)) return false;
      return true;
    });
 
@@ -1337,7 +1337,7 @@ int main(){
      // justDst defined in Phoebe AddD0B_temp.C line 2148 (I've simplified it for my purposes)
      if ((abs(b.d0_MC_MOTHER_ID())==521)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_MOTHER_ID())==521 && abs(b.d0_MC_MOTHER_ID()==425))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
+     if (!(abs(b.d0_MC_GD_MOTHER_ID())==521 && abs(b.d0_MC_MOTHER_ID())==425)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
      return true;
    });
 
@@ -1349,7 +1349,7 @@ int main(){
      // justDst defined in Phoebe AddD0B_temp.C line 2148 (I've simplified it for my purposes)
      if ((abs(b.d0_MC_MOTHER_ID())==521)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_MOTHER_ID())==521 && abs(b.d0_MC_MOTHER_ID()==10423))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
+     if (!(abs(b.d0_MC_GD_MOTHER_ID())==521 && abs(b.d0_MC_MOTHER_ID())==10423)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
      return true;
   });
 
@@ -1361,7 +1361,7 @@ int main(){
      // justDst defined in Phoebe AddD0B_temp.C line 2148 (I've simplified it for my purposes)
      if ((abs(b.d0_MC_MOTHER_ID())==511)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_MOTHER_ID())==511 && abs(b.d0_MC_MOTHER_ID()==100413))) return false;
+     if (!(abs(b.d0_MC_GD_MOTHER_ID())==511 && abs(b.d0_MC_MOTHER_ID())==100413)) return false;
      return true;
   });
 
@@ -1373,7 +1373,7 @@ int main(){
      // justDst defined in Phoebe AddD0B_temp.C line 2148 (I've simplified it for my purposes)
      if ((abs(b.d0_MC_MOTHER_ID())==511)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_MOTHER_ID())==511 && abs(b.d0_MC_MOTHER_ID()==100411))) return false;
+     if (!(abs(b.d0_MC_GD_MOTHER_ID())==511 && abs(b.d0_MC_MOTHER_ID())==100411)) return false;
      return true;
    });
 
@@ -1385,7 +1385,7 @@ int main(){
      // justDst defined in Phoebe AddD0B_temp.C line 2148 (I've simplified it for my purposes)
      if ((abs(b.d0_MC_MOTHER_ID())==511)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_MOTHER_ID())==511 && abs(b.d0_MC_MOTHER_ID()==415))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
+     if (!(abs(b.d0_MC_GD_MOTHER_ID())==511 && abs(b.d0_MC_MOTHER_ID())==415)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
      return true;
    });
 
@@ -1397,7 +1397,7 @@ int main(){
      // justDst defined in Phoebe AddD0B_temp.C line 2148 (I've simplified it for my purposes)
      if ((abs(b.d0_MC_MOTHER_ID())==511)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_MOTHER_ID())==511 && abs(b.d0_MC_MOTHER_ID()==10413))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
+     if (!(abs(b.d0_MC_GD_MOTHER_ID())==511 && abs(b.d0_MC_MOTHER_ID())==10413)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
      return true;
   });
 
@@ -1411,7 +1411,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==423)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID()==100423))) return false;
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID())==100423)) return false;
      return true;
   });
 
@@ -1425,7 +1425,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==423)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID()==100421))) return false;
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID())==100421)) return false;
      return true;
    });
 
@@ -1439,7 +1439,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==423)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID()==425))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID())==425)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D2*...
      return true;
    });
 
@@ -1453,7 +1453,7 @@ int main(){
      // implement requirement from Phoebe that D0 mom be D* (adjusted for my purposes)
      if (!(abs(b.d0_MC_MOTHER_ID())==423)) return false;
      // my own requirements here...
-     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID()==10423))) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
+     if (!(abs(b.d0_MC_GD_GD_MOTHER_ID())==521 && abs(b.d0_MC_GD_MOTHER_ID())==10423)) return false; // I'd really like to have "ishigher"/"CocktailHigher" here to differentiate from D1...
      return true;
   });
 
@@ -2618,17 +2618,17 @@ int main(){
   for (vector<proc_tag>::iterator pt = vec_proc_tag.begin(); pt != vec_proc_tag.end(); pt++) {
     vector<shared_ptr<Process>> processes = pt->Processes();
     string filetag = pt->FileTag();
-    Double_t d_dst_mom_upper;
-    if (filetag.find("higher") != string::npos) d_dst_mom_upper=118000;
-    else d_dst_mom_upper=22000;
+    // Double_t d_dst_mom_upper;
+    // if (filetag.find("higher") != string::npos) d_dst_mom_upper=118000;
+    // else d_dst_mom_upper=22000;
     if (filetag.find("_bd") != string::npos) { // reconstructed as B0 -> D*+ [-> D0 [-> K- pi+] spi+] mu-
       // ID plots
-      pm.Push<Hist1D>(Axis(240,-2000,22000, b0_trueid,"|B TrueID|"), "1", processes, plotloglumi).Tag(filetag);
-      pm.Push<Hist1D>(Axis(240,-2000,22000, dst_trueid,"|D^{*} TrueID|"), "1", processes, plotloglumi).Tag(filetag);
-      pm.Push<Hist1D>(Axis(210,-200,4000, spi_trueid,"|#pi_{s} TrueID|"), "1", processes, plotloglumi).Tag(filetag);
-      pm.Push<Hist1D>(Axis(240,-2000,22000, b0_mom_id,"|B Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
-      pm.Push<Hist1D>(Axis(240,-2000,d_dst_mom_upper, dst_mom_id,"|D^{*} Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
-      pm.Push<Hist1D>(Axis(240,-2000,22000, spi_mom_id,"|#pi_{s} Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
+      // pm.Push<Hist1D>(Axis(240,-2000,22000, b0_trueid,"|B TrueID|"), "1", processes, plotloglumi).Tag(filetag);
+      // pm.Push<Hist1D>(Axis(240,-2000,22000, dst_trueid,"|D^{*} TrueID|"), "1", processes, plotloglumi).Tag(filetag);
+      // pm.Push<Hist1D>(Axis(210,-200,4000, spi_trueid,"|#pi_{s} TrueID|"), "1", processes, plotloglumi).Tag(filetag);
+      // pm.Push<Hist1D>(Axis(240,-2000,22000, b0_mom_id,"|B Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
+      // pm.Push<Hist1D>(Axis(240,-2000,d_dst_mom_upper, dst_mom_id,"|D^{*} Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
+      // pm.Push<Hist1D>(Axis(240,-2000,22000, spi_mom_id,"|#pi_{s} Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
       // q2, mm2, El
       if (filetag=="Bd2DstMuTauNu_bd" || filetag=="Bd2DstTauNu_bd") {
         pm.Push<Hist1D>(Axis(40,-2,10, true_mm2_Bd2Dst, "True m_{miss}^{2} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
@@ -2685,8 +2685,8 @@ int main(){
     }
     else if (filetag.find("_bu") != string::npos) { // reconstructed as B- -> D0 [-> K- pi+] mu-
       // ID plots
-      pm.Push<Hist1D>(Axis(240,-2000,22000, b_trueid,"|B^{-} TrueID|"), "1", processes, plotloglumi).Tag(filetag);
-      pm.Push<Hist1D>(Axis(240,-2000,22000, b_mom_id,"|B^{-} Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
+      // pm.Push<Hist1D>(Axis(240,-2000,22000, b_trueid,"|B^{-} TrueID|"), "1", processes, plotloglumi).Tag(filetag);
+      // pm.Push<Hist1D>(Axis(240,-2000,22000, b_mom_id,"|B^{-} Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
       // q2, mm2, El
       if (filetag=="Bu2D0MuTauNu_bu") {
         pm.Push<Hist1D>(Axis(40,-2,10, true_mm2_Bu2D0, "True m_{miss}^{2} [GeV^{2}]"), "1", processes, plotshapes).Tag(filetag);
@@ -2744,14 +2744,14 @@ int main(){
       }
     }
     // Everyone should have these ID plots
-    pm.Push<Hist1D>(Axis(300,-20,580, mu_trueid,"|#mu TrueID|"), "1", processes, plotloglumi).Tag(filetag);
-    pm.Push<Hist1D>(Axis(250,-20,480, d0_trueid,"|D TrueID|"), "1", processes, plotloglumi).Tag(filetag);
-    pm.Push<Hist1D>(Axis(210,-200,4000, pi_trueid,"|#pi TrueID|"), "1", processes, plotloglumi).Tag(filetag);
-    pm.Push<Hist1D>(Axis(185,-20,350, k_trueid,"|K TrueID|"), "1", processes, plotloglumi).Tag(filetag);
-    pm.Push<Hist1D>(Axis(240,-2000,22000, mu_mom_id,"|#mu Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
-    pm.Push<Hist1D>(Axis(240,-2000,d_dst_mom_upper, d0_mom_id,"|D Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
-    pm.Push<Hist1D>(Axis(250,-20,480, k_mom_id,"|K Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
-    pm.Push<Hist1D>(Axis(250,-20,480, pi_mom_id,"|#pi Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
+    // pm.Push<Hist1D>(Axis(300,-20,580, mu_trueid,"|#mu TrueID|"), "1", processes, plotloglumi).Tag(filetag);
+    // pm.Push<Hist1D>(Axis(250,-20,480, d0_trueid,"|D TrueID|"), "1", processes, plotloglumi).Tag(filetag);
+    // pm.Push<Hist1D>(Axis(210,-200,4000, pi_trueid,"|#pi TrueID|"), "1", processes, plotloglumi).Tag(filetag);
+    // pm.Push<Hist1D>(Axis(185,-20,350, k_trueid,"|K TrueID|"), "1", processes, plotloglumi).Tag(filetag);
+    // pm.Push<Hist1D>(Axis(240,-2000,22000, mu_mom_id,"|#mu Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
+    // pm.Push<Hist1D>(Axis(240,-2000,d_dst_mom_upper, d0_mom_id,"|D Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
+    // pm.Push<Hist1D>(Axis(250,-20,480, k_mom_id,"|K Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
+    // pm.Push<Hist1D>(Axis(250,-20,480, pi_mom_id,"|#pi Mom ID|"), "1", processes, plotloglumi).Tag(filetag);
     // Everyone should have these fitvars
     if (filetag.find("trackeronly_fullsim") != string::npos) {
       pm.Push<Hist1D>(Axis(40,-2,10, fit_mm2, "m_{miss}^{2} [GeV^{2}]"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
