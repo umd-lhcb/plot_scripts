@@ -1,7 +1,7 @@
 // Code for making plots for run2 trackeronly MC validation (using plot_scripts) using D* normalization mode
 
 // Created: Apr 26, 2021
-// Last edited: Apr 26, 2021
+// Last edited: May 4, 2021
 // Note: relevant ntuples (see file names below) need to be downloaded, and the repofolder variable should
 // be edited to reflect their location.
 
@@ -21,6 +21,7 @@
 #include "TError.h" // Controls error level reporting
 #include "TColor.h" // Controls error level reporting
 #include "TLorentzVector.h"
+#include "TVector3.h"
 
 #include "core/utilities.hpp"
 #include "core/baby.hpp"
@@ -291,6 +292,31 @@ int main(){
     return (B_iso+Dst).M()-b.dst_M();
   });
 
+  NamedFunc b_chi2fit_dof("b_chi2fit_dof", [&](const Baby &b) {
+    return b.b0_ENDVERTEX_CHI2()/b.b0_ENDVERTEX_NDOF();
+  });
+
+  NamedFunc b_dxy("b_dxy", [&](const Baby &b) {
+    TVector3 b_flight(b.b0_ENDVERTEX_X()-b.b0_OWNPV_X(), b.b0_ENDVERTEX_Y()-b.b0_OWNPV_Y(), b.b0_ENDVERTEX_Z()-b.b0_OWNPV_Z());
+    return b_flight.Perp();
+  });
+
+  NamedFunc dst_chi2fit_dof("dst_chi2fit_dof", [&](const Baby &b) {
+    return b.dst_ENDVERTEX_CHI2()/b.dst_ENDVERTEX_NDOF();
+  });
+
+  NamedFunc d0_chi2fit_dof("d0_chi2fit_dof", [&](const Baby &b) {
+    return b.d0_ENDVERTEX_CHI2()/b.d0_ENDVERTEX_NDOF();
+  });
+
+  NamedFunc d0_log_IP("d0_log_IP", [&](const Baby &b) {
+    return log(b.d0_IP_OWNPV());
+  });
+
+  NamedFunc mu_eta("mu_eta", [&](const Baby &b) {
+    return 0.5*log((b.mu_P()+b.mu_PZ())/(b.mu_P()-b.mu_PZ()));
+  });
+
 
   ///////////////////////////////////////////// Make Plots /////////////////////////////////////////////////
 
@@ -330,8 +356,84 @@ int main(){
       pm.Push<Hist1D>(Axis(50,0,1000, iso_PT2, "iso_PT2 (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
       pm.Push<Hist1D>(Axis(40,0,40000, iso_P3, "iso_P3 (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
       pm.Push<Hist1D>(Axis(50,0,1000, iso_PT3, "iso_PT3 (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+
+      pm.Push<Hist1D>(Axis(40,-5,5, "b0_ISOLATION_CHARGE", "iso_CHARGE"), "b0_ISOLATION_Type==3", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-5,5, "b0_ISOLATION_CHARGE2", "iso_CHARGE2"), "b0_ISOLATION_Type2==3", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,40000, iso_P, "iso_P (MeV)"), "b0_ISOLATION_Type==3", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,0,1000, iso_PT, "iso_PT (MeV)"), "b0_ISOLATION_Type==3", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,40000, iso_P2, "iso_P2 (MeV)"), "b0_ISOLATION_Type2==3", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,0,1000, iso_PT2, "iso_PT2 (MeV)"), "b0_ISOLATION_Type2==3", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,40000, iso_P3, "iso_P3 (MeV)"), "b0_ISOLATION_Type3==3", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,0,1000, iso_PT3, "iso_PT3 (MeV)"), "b0_ISOLATION_Type3==3", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+
       pm.Push<Hist1D>(Axis(2,0,2, iso_CHARGE_times_dst_ID, "Iso track and D^{*} have opp. charge"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
       pm.Push<Hist1D>(Axis(60,-100,2000, iso_DeltaM, "iso_DeltaM (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      // other selection variables
+      pm.Push<Hist1D>(Axis(40,0,6000, "b0_M", "m_{B} (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,10, b_chi2fit_dof, "B #chi^{2}_{fit}/DOF"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0.999,1, "b0_DIRA_OWNPV", "B DIRA"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,10, b_dxy, "B transverse FD (d_{XY}, mm)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,1900,2100, "dst_M", "m_{D^{*}} (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,10, dst_chi2fit_dof, "D^{*} #chi^{2}_{fit}/DOF"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,0.3, "spi_TRACK_GhostProb", "#pi_{s} GhostProb"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,1800,1900, "d0_M", "m_{D^{0}} (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,5, d0_chi2fit_dof, "D^{0} #chi^{2}_{fit}/DOF"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0.9995,1, "d0_DIRA_OWNPV", "D^{0} DIRA"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,2000, "d0_FDCHI2_OWNPV", "D^{0} FD #chi^{2}"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,1000,9000, "d0_PT", "D^{0} p_{T} (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,160, "d0_IPCHI2_OWNPV", "D^{0} IP #chi^{2}"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-5,3, d0_log_IP, "D^{0} log(IP)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,0,10000, "k_PT", "K p_{T} (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,2000,102000, "k_P", "p_{K} (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,400, "k_IPCHI2_OWNPV", "K IP #chi^{2}"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "k_isMuon", "K isMuon"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(45,0,0.45, "k_TRACK_GhostProb", "K GhostProb"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,0,10000, "pi_PT", "#pi p_{T} (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,2000,102000, "pi_P", "p_{#pi} (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,400, "pi_IPCHI2_OWNPV", "#pi IP #chi^{2}"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "pi_isMuon", "#pi isMuon"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(45,0,0.45, "pi_TRACK_GhostProb", "#pi GhostProb"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "mu_isMuon", "#mu isMuon"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,400, "mu_IPCHI2_OWNPV", "#mu IP #chi^{2}"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(45,0,0.45, "mu_TRACK_GhostProb", "#mu GhostProb"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,2000,102000, "mu_P", "p_{#mu} (MeV)"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,1,6, mu_eta, "#eta_{#mu}"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      //variables for BDTmu
+      pm.Push<Hist1D>(Axis(40,0,4, "TrackChi2PerDof", "TrackChi2PerDof"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,5,45, "TrackNumDof", "TrackNumDof"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      //pm.Push<Hist1D>(Axis(40,0,20, "TrackLikelihood", "TrackLikelihood"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(45,0,0.45, "TrackGhostProbability", "TrackGhostProbability"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,40, "TrackFitMatchChi2", "TrackFitMatchChi2"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,40, "TrackFitVeloChi2", "TrackFitVeloChi2"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(20,0,20, "TrackFitVeloNDoF", "TrackFitVeloNDoF"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(60,0,60, "TrackFitTChi2", "TrackFitTChi2"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,0,40, "TrackFitTNDoF", "TrackFitTNDoF"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "RichUsedAero", "RichUsedAero"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "RichUsedR1Gas", "RichUsedR1Gas"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "RichUsedR2Gas", "RichUsedR2Gas"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "RichAboveMuThres", "RichAboveMuThres"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "RichAboveKaThres", "RichAboveKaThres"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-5,5, "RichDLLe", "RichDLLe"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-5,5, "RichDLLmu", "RichDLLmu"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-10,10, "RichDLLk", "RichDLLk"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-10,10, "RichDLLp", "RichDLLp"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-10,10, "RichDLLbt", "RichDLLbt"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(45,-10,5, "MuonBkgLL", "MuonBkgLL"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(45,-10,5, "MuonMuLL", "MuonMuLL"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(10,0,10, "MuonNShared", "MuonNShared"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "InAccEcal", "InAccEcal"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      //pm.Push<Hist1D>(Axis(40,0,20, "EcalPIDe", "EcalPIDe"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "InAccHcal", "InAccHcal"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-5,5, "HcalPIDe", "HcalPIDe"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-5,5, "HcalPIDmu", "HcalPIDmu"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "InAccPrs", "InAccPrs"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      //pm.Push<Hist1D>(Axis(40,0,20, "PrsPIDe", "PrsPIDe"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "InAccBrem", "InAccBrem"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(40,-5,5, "BremPIDe", "BremPIDe"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "VeloCharge", "VeloCharge"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(2,0,2, "mu_isMuonTight", "mu_isMuonTight"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,2000,102000, "TrackP", "TrackP"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
+      pm.Push<Hist1D>(Axis(50,0,10000, "TrackPt", "TrackPt"), "1", processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
       // Everyone should have these fitvars
       for (Int_t i=0; i<static_cast<Int_t>(fitsample_selections.size()); i++) {
         pm.Push<Hist1D>(Axis(40,-2,10, fit_mm2, "m_{miss}^{2} [GeV^{2}]"), fitsample_selections[i], processes, plotshapesratio).Tag(filetag).RatioTitle("TrackerOnly","FullSim");
