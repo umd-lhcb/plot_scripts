@@ -61,20 +61,20 @@ int main(int argc, char *argv[]){
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////// Defining processes //////////////////////////////////////////
 
-  string L0 = "muplus_L0Global_TIS && (Y_L0Global_TIS || Dst_2010_minus_L0HadronDecision_TOS)";
-  string HLT1_run1 = "Kplus_Hlt1TrackAllL0Decision_TOS || piminus0_Hlt1TrackAllL0Decision_TOS";
-  string HLT2_run1 = "D0_Hlt2CharmHadD02HH_D02KPiDecision_TOS";
-  string HLT1_run2 = "Kplus_Hlt1Phys_Dec";
-  string HLT2_run2 = "D0_Hlt2XcMuXForTauB2XcMuDecision_Dec";
+  string L0 = "mu_L0Global_TIS && (b0_L0Global_TIS || dst_L0HadronDecision_TOS)";
+  string HLT1_run1 = "k_Hlt1TrackAllL0Decision_TOS || pi_Hlt1TrackAllL0Decision_TOS";
+  string HLT2_run1 = "d0_Hlt2CharmHadD02HH_D02KPiDecision_TOS";
+  string HLT1_run2 = "k_Hlt1TrackMVADecision_TOS || pi_Hlt1TrackMVADecision_TOS  || d0_Hlt1TwoTrackMVADecision_TOS";
+  string HLT2_run2 = "d0_Hlt2XcMuXForTauB2XcMuDecision_Dec";
   string trig_run1 = L0 + "&&(" + HLT1_run1 + ")&&"+HLT2_run1;
   string trig_run2 = L0 + "&&(" + HLT1_run2 + ")&&"+HLT2_run2;
 
   string repofolder = "ntuples/";
   vector<shared_ptr<Process> > procs;
-  procs.push_back(Process::MakeShared<Baby_run1>("Data~2012", Process::Type::background, colors("run1"),
-                                                set<string>({repofolder+"pre-0.9.0/Dst-cutflow_data/Dst--20_04_03--cutflow_data--data--2012--md.root"}), trig_run1));
-  procs.push_back(Process::MakeShared<Baby_run2>("Data~2016", Process::Type::background, colors("run2"),
-                                                set<string>({repofolder+"pre-0.9.0/Dst-cutflow_data/Dst--20_04_03--cutflow_data--data--2016--md.root"}), trig_run2));
+  procs.push_back(Process::MakeShared<Baby_run1_mc_b0>("D^{*+}\\mu\\nu~2012", Process::Type::background, colors("run1"),
+                                                set<string>({repofolder+"0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), trig_run1));
+  procs.push_back(Process::MakeShared<Baby_run2_mc_b0>("D^{*+}\\mu\\nu~2016", Process::Type::background, colors("data"),
+                                                set<string>({repofolder+"0.9.4-trigger_emulation/Dst_D0-mc/Dst_D0--21_04_21--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11574021_D0TAUNU.SAFESTRIPTRIG.DST.root"}), trig_run2));
 
 
   // Stripping cuts for Run 1 as a reference
@@ -100,33 +100,33 @@ int main(int argc, char *argv[]){
 
   // Custom NamedFunc
   NamedFunc mu_eta("mu_eta", [&](const Baby &b){
-       return log((b.muplus_P()+b.muplus_PZ())/(b.muplus_P()-b.muplus_PZ()))/2.;
+       return log((b.mu_P()+b.mu_PZ())/(b.mu_P()-b.mu_PZ()))/2.;
   });
   NamedFunc muk_log("muk_log", [&](const Baby &b){
-       return log10(1-(b.muplus_PX()*b.Kplus_PX() + b.muplus_PY()*b.Kplus_PY() + b.muplus_PZ()*b.Kplus_PZ())/(b.muplus_P()*b.Kplus_P()));
+       return log10(1-(b.mu_PX()*b.k_PX() + b.mu_PY()*b.k_PY() + b.mu_PZ()*b.k_PZ())/(b.mu_P()*b.k_P()));
   });
   NamedFunc mupi_log("mupi_log", [&](const Baby &b){
-       return log10(1-(b.muplus_PX()*b.piminus0_PX() + b.muplus_PY()*b.piminus0_PY() + b.muplus_PZ()*b.piminus0_PZ())/(b.muplus_P()*b.piminus0_P()));
+       return log10(1-(b.mu_PX()*b.pi_PX() + b.mu_PY()*b.pi_PY() + b.mu_PZ()*b.pi_PZ())/(b.mu_P()*b.pi_P()));
   });
   NamedFunc muspi_log("muspi_log", [&](const Baby &b){
-       return log10(1-(b.muplus_PX()*b.piminus_PX() + b.muplus_PY()*b.piminus_PY() + b.muplus_PZ()*b.piminus_PZ())/(b.muplus_P()*b.piminus_P()));
+       return log10(1-(b.mu_PX()*b.spi_PX() + b.mu_PY()*b.spi_PY() + b.mu_PZ()*b.spi_PZ())/(b.mu_P()*b.spi_P()));
   });
   NamedFunc log_ip("log_ip", [&](const Baby &b){
-                               return log(b.D0_IP_OWNPV());
+                               return log(b.d0_IP_OWNPV());
   });
   NamedFunc b0_dxy("b0_dxy", [&](const Baby &b){
-                               return b.Y_FD_OWNPV()*sin(b.Y_FlightDir_Zangle());
+                               return b.b0_FD_OWNPV()*sin(b.b0_FlightDir_Zangle());
   });
 
   ///////// Automatically appending cutflow cuts
-  vector<NamedFunc> cuts = {"1", "(Kplus_PT > 800) && (!Kplus_isMuon) && Kplus_IPCHI2_OWNPV > 45",
-                            "(piminus0_PT > 800) && (!piminus0_isMuon) && piminus0_IPCHI2_OWNPV > 45",
-                            "D0_P>2000 && D0_FDCHI2_OWNPV > 250 && (D0_MM-1864.83) < 23.4 && (D0_MM-1864.83) > -23.4 && (Kplus_PT>1700 || piminus0_PT>1700) && D0_IPCHI2_OWNPV > 9"
+  vector<NamedFunc> cuts = {"1", "(k_PT > 800) && (!k_isMuon) && k_IPCHI2_OWNPV > 45",
+                            "(pi_PT > 800) && (!pi_isMuon) && pi_IPCHI2_OWNPV > 45",
+                            "d0_P>2000 && d0_FDCHI2_OWNPV > 250 && (d0_MM-1864.83) < 23.4 && (d0_MM-1864.83) > -23.4 && (k_PT>1700 || pi_PT>1700) && d0_IPCHI2_OWNPV > 9"
                             && log_ip > -3.5,
-                            "muplus_isMuon && muplus_PIDmu > 2 && muplus_PIDe < 1 && muplus_P < 100000"
+                            "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && mu_P < 100000"
                             && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5,
-                            "piminus_TRACK_GhostProb < 0.5 && (Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF) < 10 && (Dst_2010_minus_MM - D0_MM-145.43) < 2 &&  (Dst_2010_minus_MM - D0_MM-145.43) > -2",
-                            "Y_ISOLATION_BDT < 0.15 && (Y_ENDVERTEX_CHI2/Y_ENDVERTEX_NDOF) < 6 && Y_MM<5280 && Y_DIRA_OWNPV>0.9995" && b0_dxy < 7};
+                            "spi_TRACK_GhostProb < 0.5 && (dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF) < 10 && (dst_MM - d0_MM-145.43) < 2 &&  (dst_MM - d0_MM-145.43) > -2",
+                            "b0_ISOLATION_BDT < 0.15 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_MM<5280 && b0_DIRA_OWNPV>0.9995" && b0_dxy < 7};
   
                             
   vector<string> rownames = {"Trig. + Strip.", "Kaon", "Pion", "$D^0 \\rightarrow K \\pi$","$\\mu$",
@@ -143,18 +143,18 @@ int main(int argc, char *argv[]){
   table_rows.push_back(TableRow("$q^2 > 6\\text{ GeV}^2$",fullcut && "FitVar_q2/1000000 > 6", 0,0, "1"));
 
   //////////////////////// Step 2 cuts ////////////////////////
-  NamedFunc step2_k   = "(Kplus_PT > 800) && (!Kplus_isMuon) && Kplus_IPCHI2_OWNPV > 45"; 
-  NamedFunc step2_pi   = "(piminus0_PT > 800) && (!piminus0_isMuon) && piminus0_IPCHI2_OWNPV > 45";
-  NamedFunc step2_d0 = "D0_P>2000 && D0_FDCHI2_OWNPV > 250 && (D0_MM-1864.83) < 23.4 && (D0_MM-1864.83) > -23.4 && (Kplus_PT>1700 || piminus0_PT>1700) && D0_IPCHI2_OWNPV > 9" && log_ip > -3.5;
+  NamedFunc step2_k   = "(k_PT > 800) && (!k_isMuon) && k_IPCHI2_OWNPV > 45"; 
+  NamedFunc step2_pi   = "(pi_PT > 800) && (!pi_isMuon) && pi_IPCHI2_OWNPV > 45";
+  NamedFunc step2_d0 = "d0_P>2000 && d0_FDCHI2_OWNPV > 250 && (d0_MM-1864.83) < 23.4 && (d0_MM-1864.83) > -23.4 && (k_PT>1700 || pi_PT>1700) && d0_IPCHI2_OWNPV > 9" && log_ip > -3.5;
   // Missing BDTmu
-  NamedFunc step2_mu = "muplus_isMuon && muplus_PIDmu > 2 && muplus_PIDe < 1 && muplus_P < 100000 " && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5;
+  NamedFunc step2_mu = "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && mu_P < 100000 " && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5;
   // Added the spi cut here since it does nothing
-  NamedFunc step2_dsp = "piminus_TRACK_GhostProb < 0.5 && (Dst_2010_minus_ENDVERTEX_CHI2/Dst_2010_minus_ENDVERTEX_NDOF) < 10 && (Dst_2010_minus_MM - D0_MM-145.43) < 2 &&  (Dst_2010_minus_MM - D0_MM-145.43) > -2";
-  NamedFunc step2_b0 = "Y_ISOLATION_BDT < 0.15 && (Y_ENDVERTEX_CHI2/Y_ENDVERTEX_NDOF) < 6 && Y_MM<5280 && Y_DIRA_OWNPV>0.9995" && b0_dxy < 7;
+  NamedFunc step2_dsp = "spi_TRACK_GhostProb < 0.5 && (dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF) < 10 && (dst_MM - d0_MM-145.43) < 2 &&  (dst_MM - d0_MM-145.43) > -2";
+  NamedFunc step2_b0 = "b0_ISOLATION_BDT < 0.15 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_MM<5280 && b0_DIRA_OWNPV>0.9995" && b0_dxy < 7;
  
 
   PlotMaker pm;
-  pm.Push<Table>("cutflow", table_rows,procs,0).TotColumn("Ratio", 1/(0.82*1.81)); // Pushing table
+  pm.Push<Table>("cutflow", table_rows,procs,0).TotColumn("Ratio", 614577/1500395.); // BKK events for the two MC samples
   
   pm.min_print_ = true;
   pm.MakePlots(1);
