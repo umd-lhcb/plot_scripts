@@ -72,6 +72,7 @@ public:
   std::string Name() const;
   std::string Title() const;
 
+  Hist1D & SetTitle(const std::string &title);
   Hist1D & Tag(const std::string &tag);
   Hist1D & TopRight(const std::string &label);
   Hist1D & LeftLabel(const std::vector<std::string> &label);
@@ -85,6 +86,7 @@ public:
   NamedFunc cut_;//!<Event selection
   std::vector<NamedFunc> weights_;//!<Event weights, one for each process
   NamedFunc weight_;//!<Event weight
+  std::string overrideTitle_;//!<Title override
   std::string tag_;//!<Filename tag to identify plot
   std::string top_right_;//!<Label to plot on the right over the plot, typically TeV
   std::vector<std::string> left_label_;//!<Label to plot under the legend, to the left

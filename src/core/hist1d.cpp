@@ -282,6 +282,7 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   cut_(cut),
   weights_(weights),
   weight_(weights[0]),
+  overrideTitle_("unset"),
   tag_(""),
   top_right_("unset"),
   left_label_({}),
@@ -348,7 +349,8 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   if(this_opt_.DisplayLumiEntry() && ((this_opt_.Stack() == StackType::data_norm && datas_.size() > 0) || show_lumi_))
     add_legend_line_ = true;
   else add_legend_line_ = false;
-
+  add_legend_line_ = false; // Temp FIXME
+  
   blank_.SetFillStyle(0);
   blank_.SetFillColor(kWhite);
   blank_.SetLineWidth(0);
@@ -576,6 +578,7 @@ string Hist1D::Name() const{
 string Hist1D::Title() const{
   bool cut = (cut_.Name() != "" && cut_.Name() != "1");
   bool weight = weight_.Name() != "1" && weight_.Name() != "weight";
+  if(overrideTitle_ != "unset") return overrideTitle_;
   if(cut && weight){
     return CodeToRootTex(cut_.Name())+" (weight="+CodeToRootTex(weight_.Name())+")";
   }else if(cut){
@@ -585,6 +588,11 @@ string Hist1D::Title() const{
   }else{
     return "";
   }
+}
+
+Hist1D & Hist1D::SetTitle(const string &title){
+  overrideTitle_ = title;
+  return *this;
 }
 
 Hist1D & Hist1D::Tag(const string &tag){
@@ -1476,7 +1484,7 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
     if(show_lumi_) label << fixed  << "L=" << setprecision(1) << luminosity_ << " fb^{-1}";
     if(this_opt_.Stack() == StackType::data_norm && datas_.size() > 0){
       if(show_lumi_) label << ", ";
-      else label << "MC scaled by ";
+      else label << "Scaling ";
       label <<fixed<< setprecision(1)<< "(" << 100.*mc_scale_ << " #pm " << 100.*mc_scale_error_ << ")%";
     }
     auto entry = leg->AddEntry(&blank_, label.str().c_str(), "f");
@@ -1594,7 +1602,7 @@ double Hist1D::GetLegendRatio() const{
   found
 */
 double Hist1D::GetYield(std::vector<std::unique_ptr<SingleHist1D> >::const_iterator h) const{
-  TH1D hist = (*h)->scaled_hist_;
+  TH1D hist = (*h)->raw_hist_;
 
   //Subtract underlying histogram
   if((*h)->process_->type_ == Process::Type::background

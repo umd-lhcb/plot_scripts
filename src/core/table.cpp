@@ -273,8 +273,9 @@ void Table::PrintHeader(ofstream &file, double luminosity) const{
   // Efficiency with respect to previous row
   if(do_eff_ && nSM > 0) file<<" | r ";
   
-  if(datas_.size() > 0) file << " | ";
+  if(datas_.size() > 0 && tot_title_ != "Ratio") file << " | ";
   for(size_t i = 0; i < datas_.size(); ++i) file << 'r';
+  if(tot_title_ == "Ratio" && datas_.size() + backgrounds_.size() > 1)file << " | r";
   if(datas_.size() > 1) file << 'r';
 
   file << " }\n";
@@ -308,6 +309,8 @@ void Table::PrintHeaderFooter(ofstream &file, double luminosity) const{
     for(size_t i = 0; i < signals_.size(); ++i) file<<" & $\\frac{S}{\\sqrt{S+B}}$ ";
   if(do_eff_ && nSM > 0) file<<" & $\\epsilon_\\text{prev}$ [\\%] ";
   for(size_t i = 0; i < datas_.size(); ++i) file << " & " << ToLatex(datas_.at(i)->process_->name_);
+  if(tot_title_ == "Ratio" && datas_.size() + backgrounds_.size() > 1)
+    file << " & " << tot_title_ << " $\\times$ "<<RoundNumber(tot_factor_,2);
   if(datas_.size() > 1) file << " & Data Tot. ";
 
 
@@ -337,7 +340,7 @@ void Table::PrintRow(ofstream &file, size_t irow, double luminosity) const{
       file << " & "  << AddCommas(luminosity*signals_.at(i)->sumw_.at(irow), precision_);
     if(nSM > 1 && tot_title_ != "None"){
       file << " & ";
-      if(tot_title_ == "Ratio")
+      if(tot_title_ == "Ratio" && backgrounds_.size() > 1)
         file << AddCommas(backgrounds_.at(1)->sumw_.at(irow)/backgrounds_.at(0)->sumw_.at(irow)*tot_factor_, 2);
       else
         file << AddCommas(Nbkg + Nsig, precision_);
@@ -361,6 +364,9 @@ void Table::PrintRow(ofstream &file, size_t irow, double luminosity) const{
     // Adding data yields
     for(size_t i = 0; i < datas_.size(); ++i){
       file << " & "  << AddCommas(datas_.at(i)->sumw_.at(irow), 0);
+    }
+    if(tot_title_ == "Ratio" && datas_.size() + backgrounds_.size() > 1){
+      file << " & "<< AddCommas(datas_.at(0)->sumw_.at(irow)/backgrounds_.at(0)->sumw_.at(irow)*tot_factor_, 2);
     }
     if(datas_.size() > 1)  file << " & "  << AddCommas(GetYield(datas_, irow),0);
     
@@ -448,6 +454,7 @@ size_t Table::NumColumns() const{
   size_t nSM = backgrounds_.size() + signals_.size();
   return 1
     + (nSM <= 1 || tot_title_ == "None" ? nSM : nSM+1)
+    + (nSM+datas_.size() > 1 && tot_title_ == "Ratio" ? 1 : 0)
     + (datas_.size() <= 1 ? datas_.size() : datas_.size()+1)
     + (do_fom_ ? 1 : 0)*signals_.size()
     + (do_eff_ ? 1 : 0);
@@ -472,7 +479,7 @@ double Table::GetError(const vector<unique_ptr<TableColumn> > &columns,
 }
 
 Table & Table::TotColumn(const string &title, const double &factor){
-  if(title == "Ratio" && backgrounds_.size()<=1)
+  if(title == "Ratio" && (backgrounds_.size()+datas_.size())<=1 )
     ERROR(" Need at least two backgrounds to do ratio");
   tot_title_ = title;
   tot_factor_ = factor;

@@ -43,19 +43,19 @@ int main(int argc, char *argv[]){
     .Bottom(BottomType::off)
     .YAxis(YAxisType::log)
     .Stack(StackType::data_norm).LegendColumns(3)
-    .Overflow(OverflowType::none);
+    .Overflow(OverflowType::both);
   PlotOpt lin_lumi = log_lumi().YAxis(YAxisType::linear);
   PlotOpt log_shapes = log_lumi().Stack(StackType::shapes)
-    .ShowBackgroundError(false);
+    .ShowBackgroundError(false).Bottom(BottomType::ratio);
   PlotOpt lin_shapes = log_shapes().YAxis(YAxisType::linear);
   PlotOpt log_lumi_info = log_lumi().Title(TitleType::info);
-  PlotOpt lin_lumi_info = lin_lumi().Title(TitleType::info);
+  PlotOpt lin_lumi_info = lin_lumi().Title(TitleType::info).Bottom(BottomType::ratio);
   PlotOpt log_shapes_info = log_shapes().Title(TitleType::info).Bottom(BottomType::ratio);
   PlotOpt lin_shapes_info = lin_shapes().Title(TitleType::info).Bottom(BottomType::ratio);
   PlotOpt lin_lumi_info_print = lin_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   PlotOpt log_lumi_info_print = log_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   
-  vector<PlotOpt> linplot = {lin_shapes, log_shapes};
+  vector<PlotOpt> linplot = {lin_lumi_info};
   Palette colors("txt/colors.txt", "default");
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,9 +74,9 @@ int main(int argc, char *argv[]){
 
   string repofolder = "ntuples/";
   vector<shared_ptr<Process> > procs;
-  procs.push_back(Process::MakeShared<Baby_run1_mc_b0>("Data~MD~2011", Process::Type::background, colors("run1"),
+  procs.push_back(Process::MakeShared<Baby_run1_mc_b0>("Data MD 2011", Process::Type::background, colors("run1"),
                                                 set<string>({repofolder+"0.9.2-2011_production/Dst_D0-std/Dst_D0--20_10_12--std--LHCb_Collision11_Beam3500GeV-VeloClosed-MagDown_Real_Data_Reco14_Stripping21r1_90000000_SEMILEPTONIC.DST.root"}), trig_run1));
-  procs.push_back(Process::MakeShared<Baby_run2_mc_b0>("Data~MD~2016", Process::Type::background, colors("data"),
+  procs.push_back(Process::MakeShared<Baby_run2_mc_b0>("Data MD 2016", Process::Type::data, colors("data"),
                                                 set<string>({repofolder+"0.9.4-trigger_emulation/Dst_D0-std/Dst_D0--21_04_27--std--LHCb_Collision16_Beam6500GeV-VeloClosed-MagDown_Real_Data_Reco16_Stripping28r1_90000000_SEMILEPTONIC.DST.root"}), trig_run2));
 
 
@@ -128,20 +128,36 @@ int main(int argc, char *argv[]){
   table_rows.push_back(TableRow("$q^2 < 6\\text{ GeV}^2$",fullcut && "FitVar_q2/1000000 < 6", 1,0, "1"));
   table_rows.push_back(TableRow("$q^2 > 6\\text{ GeV}^2$",fullcut && "FitVar_q2/1000000 > 6", 0,0, "1"));
 
-  //////////////////////// Step 2 cuts ////////////////////////
-  NamedFunc step2_k   = "(k_PT > 800) && (!k_isMuon) && k_IPCHI2_OWNPV > 45"; 
-  NamedFunc step2_pi   = "(pi_PT > 800) && (!pi_isMuon) && pi_IPCHI2_OWNPV > 45";
-  NamedFunc step2_d0 = "d0_P>2000 && d0_FDCHI2_OWNPV > 250 && (d0_MM-1864.83) < 23.4 && (d0_MM-1864.83) > -23.4 && (k_PT>1700 || pi_PT>1700) && d0_IPCHI2_OWNPV > 9" && log_ip > -3.5;
-  // Missing BDTmu
-  NamedFunc step2_mu = "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && mu_P < 100000 " && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5;
-  // Added the spi cut here since it does nothing
-  NamedFunc step2_dsp = "spi_TRACK_GhostProb < 0.5 && (dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF) < 10 && (dst_MM - d0_MM-145.43) < 2 &&  (dst_MM - d0_MM-145.43) > -2";
-  NamedFunc step2_b0 = "b0_ISOLATION_BDT < 0.15 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_MM<5280 && b0_DIRA_OWNPV>0.9995" && b0_dxy < 7;
- 
+
 
   PlotMaker pm;
   pm.Push<Table>("cutflow", table_rows,procs,0).TotColumn("Ratio", 596.061/841.275/2); // Lumis and xsec
   
+  pm.Push<Hist1D>(Axis(100, 1, 6,mu_eta, "#eta(#mu)", {2.4, 4}), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline");
+  pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline");
+  pm.Push<Hist1D>(Axis(70, -1, 13, "FitVar_q2/1000000", "q^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline");
+  
+  pm.Push<Hist1D>(Axis(70, 0, 3, "FitVar_El/1000", "E*_{l} [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(60,0,30, "spi_P/1000", "p(#pi^{-}_{slow}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(70,0,210, "d0_P/1000", "p(D^{0}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(100,0,100, "mu_P/1000", "p(#mu^{+}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(50,0,2, "spi_PT/1000", "p_{T}(#pi^{-}_{slow}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(100,0,25, "d0_PT/1000", "p_{T}(D^{0}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(100,0,10, "mu_PT/1000", "p_{T}(#mu^{+}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+
+  pm.Push<Hist1D>(Axis(96,140,152, "dst_M - d0_M","unset"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(96,140,152, "dst_MM - d0_MM"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(80,1820,1900, "d0_M","unset"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(80,1820,1900, "d0_MM","unset"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(100,0,200, "dst_FD_ORIVX"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(70,0,0.1, "mu_TRACK_GhostProb"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(70,0,14, "mu_PIDmu"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(100,0,3, "mu_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(40,-1,0.15, "b0_ISOLATION_BDT"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+ 
+  pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}");
+  pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000>6" && fullcut , procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} > 6 GeV^{2}");
+
   pm.min_print_ = true;
   pm.MakePlots(1);
 
