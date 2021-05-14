@@ -66,22 +66,33 @@ int main(int argc, char *argv[]){
   string HLT2_run1 = "d0_Hlt2CharmHadD02HH_D02KPiDecision_TOS";
   
   string L0_run2 = "(b0_L0Global_TIS || d0_L0HadronDecision_TOS)";
-  string HLT1_run2 = "(d0_Hlt1TrackMVADecision_TOS  || d0_Hlt1TwoTrackMVADecision_TOS) && ((d0_Hlt1TwoTrackMVADecision_TOS || k_Hlt1TrackMVADecision_TOS) && k_PT > 1700 || (d0_Hlt1TwoTrackMVADecision_TOS || pi_Hlt1TrackMVADecision_TOS) && pi_PT > 1700)";
+  string HLT1_run2 = "(d0_Hlt1TrackMVALooseDecision_TOS  || d0_Hlt1TwoTrackMVADecision_TOS) && ((d0_Hlt1TwoTrackMVADecision_TOS || k_Hlt1TrackMVALooseDecision_TOS) && k_PT > 1700 || (d0_Hlt1TwoTrackMVADecision_TOS || pi_Hlt1TrackMVALooseDecision_TOS) && pi_PT > 1700)";
   string HLT2_run2 = "b0_Hlt2XcMuXForTauB2XcMuDecision_TOS";
   
   string trig_run1 = L0_run1 + "&& (" + HLT1_run1 + ") &&"+HLT2_run1;
   string trig_run2 = L0_run2 + "&& (" + HLT1_run2 + ") &&"+HLT2_run2;
 
+  NamedFunc isNorm("isNorm", [&](const Baby &b){
+       return abs(b.mu_MC_MOTHER_ID())==511 & abs(b.d0_MC_MOTHER_ID())==413 & abs(b.d0_MC_GD_MOTHER_ID())==511;
+  });
+  NamedFunc isSignal("isSignal", [&](const Baby &b){
+       return abs(b.mu_MC_MOTHER_ID())==15 & abs(b.d0_MC_MOTHER_ID())==413 & abs(b.d0_MC_GD_MOTHER_ID())==511;
+  });
+
   string repofolder = "ntuples/";
   vector<shared_ptr<Process> > procs;
-  procs.push_back(Process::MakeShared<Baby_run1_mc_b0>("D^{*+} mu nu 2012", Process::Type::data, colors("green"),
-                                                set<string>({repofolder+"0.9.3-production_for_validation/Dst_D0-mc/Dst_D0--21_01_30--mc--MC_2012_Beam4000GeV-2012-MagDown-Nu2.5-Pythia8_Sim08e_Digi13_Trig0x409f0045_Reco14a_Stripping20Filtered_11574020_DSTTAUNU.SAFESTRIPTRIG.DST.root"}), trig_run1));
-  procs.push_back(Process::MakeShared<Baby_run2_mc_b0>("D^{*+} mu nu 2016", Process::Type::data, colors("darkblue"),
-                                                set<string>({repofolder+"0.9.4-trigger_emulation/Dst_D0-mc/Dst_D0--21_04_21--mc--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09j_Trig0x6139160F_Reco16_Turbo03a_Filtered_11574021_D0TAUNU.SAFESTRIPTRIG.DST.root"}), trig_run2));
-  procs.push_back(Process::MakeShared<Baby_run1_mc_b0>("Data 2011", Process::Type::background, colors("run1"),
-                                                set<string>({repofolder+"0.9.2-2011_production/Dst_D0-std/Dst_D0--20_10_12--std--LHCb_Collision11_Beam3500GeV-VeloClosed-MagDown_Real_Data_Reco14_Stripping21r1_90000000_SEMILEPTONIC.DST.root"}), trig_run1));
-  procs.push_back(Process::MakeShared<Baby_run2_mc_b0>("Data 2016", Process::Type::data, colors("data"),
-                                                set<string>({repofolder+"0.9.4-trigger_emulation/Dst_D0-std/Dst_D0--21_04_27--std--LHCb_Collision16_Beam6500GeV-VeloClosed-MagDown_Real_Data_Reco16_Stripping28r1_90000000_SEMILEPTONIC.DST.root"}), trig_run2));
+   // procs.push_back(Process::MakeShared<Baby_run1_bare>("D^{*+}#mu#nu~2011", Process::Type::background, colors("green"),
+   //                                               set<string>({repofolder+"0.9.0-cutflow/Dst-cutflow_mc/Dst--20_06_05--cutflow_mc--bare--MC_2011_Beam3500GeV-2011-MagDown-Nu2-Pythia8_Sim08h_Digi13_Trig0x40760037_Reco14c_Stripping20r1NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root"}), trig_run1 && isNorm));
+   // procs.push_back(Process::MakeShared<Baby_run2_bare>("D^{*+}#mu#nu~2016", Process::Type::data, colors("darkblue"),
+   //                                               set<string>({repofolder+"0.9.0-cutflow/Dst-cutflow_mc/Dst--20_06_05--cutflow_mc--bare--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09b_Trig0x6138160F_Reco16_Turbo03_Stripping26NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root"}), trig_run2 && isNorm));
+  // procs.push_back(Process::MakeShared<Baby_run1_bare>("D^{*+}#tau#nu~2011", Process::Type::background, colors("green"),
+  //                                               set<string>({repofolder+"0.9.0-cutflow/Dst-cutflow_mc/Dst--20_06_05--cutflow_mc--bare--MC_2011_Beam3500GeV-2011-MagDown-Nu2-Pythia8_Sim08h_Digi13_Trig0x40760037_Reco14c_Stripping20r1NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root"}), trig_run1 && isSignal));
+  // procs.push_back(Process::MakeShared<Baby_run2_bare>("D^{*+}#tau#nu~2016", Process::Type::data, colors("darkblue"),
+  //                                               set<string>({repofolder+"0.9.0-cutflow/Dst-cutflow_mc/Dst--20_06_05--cutflow_mc--bare--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09b_Trig0x6138160F_Reco16_Turbo03_Stripping26NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root"}), trig_run2 && isSignal));
+   procs.push_back(Process::MakeShared<Baby_run1_bare>("D^{**}#mu#nu~2011", Process::Type::background, colors("green"),
+                                                 set<string>({repofolder+"0.9.0-cutflow/Dst-cutflow_mc/Dst--20_06_05--cutflow_mc--bare--MC_2011_Beam3500GeV-2011-MagDown-Nu2-Pythia8_Sim08h_Digi13_Trig0x40760037_Reco14c_Stripping20r1NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root"}), trig_run1 && !isNorm && !isSignal));
+   procs.push_back(Process::MakeShared<Baby_run2_bare>("D^{**}#mu#nu~2016", Process::Type::data, colors("darkblue"),
+                                                 set<string>({repofolder+"0.9.0-cutflow/Dst-cutflow_mc/Dst--20_06_05--cutflow_mc--bare--MC_2016_Beam6500GeV-2016-MagDown-Nu1.6-25ns-Pythia8_Sim09b_Trig0x6138160F_Reco16_Turbo03_Stripping26NoPrescalingFlagged_11874091_ALLSTREAMS.DST.root"}), trig_run2 && !isNorm && !isSignal));
 
 
 
@@ -105,7 +116,7 @@ int main(int argc, char *argv[]){
                                return b.b0_FD_OWNPV()*sin(b.b0_FlightDir_Zangle());
   });
 
-  // ((d0_Hlt1TwoTrackMVADecision_TOS || k_Hlt1TrackMVALooseDecision_TOS) && k_PT > 1.7 || (d0_Hlt1TwoTrackMVADecision_TOS || pi_Hlt1TrackMVALooseDecision_TOS) && pi_PT > 1.7)
+
   ///////// Automatically appending cutflow cuts
   vector<NamedFunc> cuts = {"1", "(k_PT > 800)  && k_P > 2000 && k_IPCHI2_OWNPV > 45 && k_TRACK_GhostProb < 0.5",
                             "(pi_PT > 800) && pi_P > 2000 && pi_IPCHI2_OWNPV > 45 && pi_TRACK_GhostProb < 0.5",
@@ -144,21 +155,19 @@ int main(int argc, char *argv[]){
  
 
   PlotMaker pm;
-  //pm.Push<Table>("cutflow", table_rows,procs,0).TotColumn("Ratio", 614577/1500395.*0.23/0.07*0.080/0.059); // BKK events for the two MC samples
-  //pm.Push<Hist1D>(Axis(70, -1, 13, "FitVar_q2/1000000", "q^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("mc");
-  pm.Push<Hist1D>(Axis(35, -2, 12, "FitVar_q2/1000000", "q^{2} [GeV^{2}]"), "FitVar_Mmiss2/1000000<0.5" && fullcut, procs, linplot).RatioTitle("Markers", "Data 2011").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  pm.Push<Table>("cutflow", table_rows,procs,0).TotColumn("Ratio");
   
-  // pm.Push<Hist1D>(Axis(100,0,3, "mu_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
-  // pm.Push<Hist1D>(Axis(100,0,3, "k_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
-  // pm.Push<Hist1D>(Axis(100,0,3, "pi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
-  // pm.Push<Hist1D>(Axis(100,0,3, "spi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(40,0,3, "mu_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(40,0,3, "k_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(40,0,3, "pi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(40,0,3, "spi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
 
-  // pm.Push<Hist1D>(Axis(100, 1, 6,mu_eta, "#eta(#mu)", {2.4, 4}), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("mc");
-  // pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("mc");
-  // pm.Push<Hist1D>(Axis(70, -1, 13, "FitVar_q2/1000000", "q^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("mc");
+  // pm.Push<Hist1D>(Axis(40, 1, 6,mu_eta, "#eta(#mu)"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("mc");
+  // pm.Push<Hist1D>(Axis(40, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("mc");
+  // pm.Push<Hist1D>(Axis(40, -1, 13, "FitVar_q2/1000000", "q^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("mc");
   
-  // pm.Push<Hist1D>(Axis(70, 0, 3, "FitVar_El/1000", "E*_{l} [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
-  // pm.Push<Hist1D>(Axis(60,0,30, "spi_P/1000", "p(#pi^{-}_{slow}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(40, 0, 3, "FitVar_El/1000", "E*_{l} [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(40,0,30, "spi_P/1000", "p(#pi^{-}_{slow}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
   // pm.Push<Hist1D>(Axis(70,0,210, "d0_P/1000", "p(D^{0}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
   // pm.Push<Hist1D>(Axis(100,0,100, "mu_P/1000", "p(#mu^{+}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");
   // pm.Push<Hist1D>(Axis(50,0,2, "spi_PT/1000", "p_{T}(#pi^{-}_{slow}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("mc");

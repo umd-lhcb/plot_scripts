@@ -16,6 +16,11 @@ public:
            std::size_t lines_before = 0,
            std::size_t line_after = 0,
            const NamedFunc &weight = "weight");
+  TableRow(const std::string &label,
+           const std::vector<NamedFunc> &cuts,
+           std::size_t lines_before = 0,
+           std::size_t line_after = 0,
+           const NamedFunc &weight = "weight");
   TableRow(const TableRow &) = default;
   TableRow& operator=(const TableRow &) = default;
   TableRow(TableRow &&) = default;
@@ -23,6 +28,7 @@ public:
   ~TableRow() = default;
 
   std::string label_;
+  std::vector<NamedFunc> cuts_;//!< Cuts to be applied
   NamedFunc cut_, weight_;
   std::size_t lines_before_, lines_after_;
   bool is_data_row_;

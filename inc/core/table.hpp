@@ -17,7 +17,8 @@ public:
   class TableColumn final: public Figure::FigureComponent{
   public:
     TableColumn(const Table &table,
-		const std::shared_ptr<Process> &process);
+		const std::shared_ptr<Process> &process,
+                std::vector<NamedFunc> &cuts);
     ~TableColumn() = default;
 
     void RecordEvent(const Baby &baby) final;

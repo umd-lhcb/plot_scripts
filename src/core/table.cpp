@@ -37,17 +37,17 @@ namespace{
   }
 }
 
-Table::TableColumn::TableColumn(const Table &table,
-				const shared_ptr<Process> &process):
+Table::TableColumn::TableColumn(const Table &table, const shared_ptr<Process> &process,
+                                vector<NamedFunc> &cuts):
   FigureComponent(table, process),
   sumw_(table.rows_.size(), 0.),
   sumw2_(table.rows_.size(), 0.),
-  proc_and_table_cut_(table.rows_.size(), process->cut_),
+  proc_and_table_cut_(cuts.size(), process->cut_),
   cut_vector_(),
   wgt_vector_(),
   val_vector_(){
   for(size_t irow = 0; irow < table.rows_.size(); ++irow){
-    proc_and_table_cut_.at(irow) = table.rows_.at(irow).cut_ && process->cut_;
+    proc_and_table_cut_.at(irow) = cuts[irow] && process->cut_;
   }
 }
 
@@ -127,16 +127,24 @@ Table::Table(const string &name,
   backgrounds_(),
   signals_(),
   datas_(){
+  unsigned iproc = 0;
   for(const auto &process: processes){
+    vector<NamedFunc> cuts;
+    for(const auto &row:rows_ ){
+      // Adding cuts_[0] if not enough xvars_ were provided
+      if(iproc < row.cuts_.size()) cuts.push_back(row.cuts_[iproc]); 
+      else cuts.push_back(row.cuts_[0]);      
+    }
+    iproc++;
     switch(process->type_){
     case Process::Type::data:
-      datas_.emplace_back(new TableColumn(*this, process));
+      datas_.emplace_back(new TableColumn(*this, process, cuts));
       break;
     case Process::Type::background:
-      backgrounds_.emplace_back(new TableColumn(*this, process));
+      backgrounds_.emplace_back(new TableColumn(*this, process, cuts));
       break;
     case Process::Type::signal:
-      signals_.emplace_back(new TableColumn(*this, process));
+      signals_.emplace_back(new TableColumn(*this, process, cuts));
       break;
     default:
       break;
