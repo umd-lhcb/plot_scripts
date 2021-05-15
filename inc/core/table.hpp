@@ -68,13 +68,14 @@ public:
   bool print_table_;
   bool print_pie_;
   bool print_titlepie_;
-  std::string tot_title_;
+  std::string tot_title_, tag_;
   double tot_factor_;
   double precision_;
   std::vector<PlotOpt> plot_options_;//!<Styles with which to draw pie chart
 
   Table & TotColumn(const std::string &title, const double &factor=1.);
   Table & Precision(const double &precision);
+  Table & Tag(const std::string &tag);
   
 private:
   std::vector<std::unique_ptr<TableColumn> > backgrounds_;//!<Background components of the figure

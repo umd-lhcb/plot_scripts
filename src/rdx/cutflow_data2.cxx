@@ -101,9 +101,10 @@ int main(int argc, char *argv[]){
                                return b.b0_FD_OWNPV()*sin(b.b0_FlightDir_Zangle());
   });
 
-  // ((d0_Hlt1TwoTrackMVADecision_TOS || k_Hlt1TrackMVALooseDecision_TOS) && k_PT > 1.7 || (d0_Hlt1TwoTrackMVADecision_TOS || pi_Hlt1TrackMVALooseDecision_TOS) && pi_PT > 1.7)
+  
+                            
   ///////// Automatically appending cutflow cuts
-  vector<NamedFunc> cuts = {"1", "(k_PT > 800)  && k_P > 2000 && k_IPCHI2_OWNPV > 45 && k_TRACK_GhostProb < 0.5",
+  vector<NamedFunc> cuts1 = {"1", "(k_PT > 800)  && k_P > 2000 && k_IPCHI2_OWNPV > 45 && k_TRACK_GhostProb < 0.5",
                             "(pi_PT > 800) && pi_P > 2000 && pi_IPCHI2_OWNPV > 45 && pi_TRACK_GhostProb < 0.5",
                             "d0_PT>2000 && (d0_ENDVERTEX_CHI2 / d0_ENDVERTEX_NDOF < 4) && d0_IPCHI2_OWNPV > 9  && (k_PT+pi_PT > 2500) && (d0_DIRA_OWNPV > 0.9998) && d0_FDCHI2_OWNPV > 250 && (d0_M-1865.49) < 23.4 && (d0_M-1865.49) > -23.4"
                             && log_ip > -3.5,
@@ -113,30 +114,47 @@ int main(int argc, char *argv[]){
                             "b0_ENDVERTEX_CHI2 < 24 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_M<5200 && b0_DIRA_OWNPV>0.9995 && b0_DISCARDMu_CHI2 <= 6" && b0_dxy < 7,
                             "b0_ISOLATION_BDT < 0.15",
                             "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && (!k_isMuon) && (!pi_isMuon) "};
-  
-                            
+
+  bool doRun2Cuts = true;
+  string trk_pT = "800", d0_dira = "0.9998", b0_dira = "0.9995", d0_fd = "250";
+  if(doRun2Cuts) {
+    trk_pT = "200"; d0_dira = "0.999"; b0_dira = "0.999"; d0_fd = "25";
+  }
+  vector<NamedFunc> cuts2 = {"1", "(k_PT > "+trk_pT+")  && k_P > 2000 && k_IPCHI2_OWNPV > 45 && k_TRACK_GhostProb < 0.5",
+                            "(pi_PT > "+trk_pT+") && pi_P > 2000 && pi_IPCHI2_OWNPV > 45 && pi_TRACK_GhostProb < 0.5",
+                            "d0_PT>2000 && (d0_ENDVERTEX_CHI2 / d0_ENDVERTEX_NDOF < 4) && d0_IPCHI2_OWNPV > 9  && (d0_DIRA_OWNPV > "+d0_dira+") && d0_FDCHI2_OWNPV > "+d0_fd+" && (d0_M-1865.49) < 23.4 && (d0_M-1865.49) > -23.4"
+                            && log_ip > -3.5,
+                            "mu_P > 3000 && mu_P < 100000 && mu_IPCHI2_OWNPV > 45 && mu_TRACK_GhostProb < 0.5"
+                            && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5,
+                            "spi_TRACK_GhostProb < 0.25 && (dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF) < 10 && (dst_M - d0_M-145.454) < 2 &&  (dst_M - d0_M-145.454) > -2",
+                            "b0_ENDVERTEX_CHI2 < 24 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_M<5200 && b0_DIRA_OWNPV>"+b0_dira+" && b0_DISCARDMu_CHI2 <= 6" && b0_dxy < 7,
+                            "b0_ISOLATION_BDT < 0.15",
+                            "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && (!k_isMuon) && (!pi_isMuon) "};
+
+
   vector<string> rownames = {"Trig. + Strip.", "Kaon", "Pion", "$D^0 \\rightarrow K \\pi$","$\\mu$",
     "$D^{*+} \\rightarrow D^0 \\pi$", "$B^{0} \\rightarrow D^{*+} \\mu$", "ISO", "PID"};
   vector<TableRow> table_rows;
-  NamedFunc fullcut = "1";
-  for(size_t ind = 0; ind < cuts.size(); ind++) {
+  NamedFunc fullcut1 = "1", fullcut2 = "1";
+  for(size_t ind = 0; ind < cuts1.size(); ind++) {
     string title = (ind==0 ? rownames[ind] : "+ " + rownames[ind]);
     int lines = (ind==0 ? 1 : 0);
-    fullcut = fullcut && cuts[ind];
-    table_rows.push_back(TableRow(title,fullcut, 0,lines, "1"));
+    fullcut1 = fullcut1 && cuts1[ind];
+    fullcut2 = fullcut2 && cuts2[ind];
+    table_rows.push_back(TableRow(title,{fullcut1, fullcut2}, 0,lines, "1"));
   }
-  table_rows.push_back(TableRow("$q^2 < 6\\text{ GeV}^2$",fullcut && "FitVar_q2/1000000 < 6", 1,0, "1"));
-  table_rows.push_back(TableRow("$q^2 > 6\\text{ GeV}^2$",fullcut && "FitVar_q2/1000000 > 6", 0,0, "1"));
+  table_rows.push_back(TableRow("$q^2 < 6\\text{ GeV}^2$",{fullcut1 && "FitVar_q2/1000000 < 6", fullcut2 && "FitVar_q2/1000000 < 6"}, 1,0, "1"));
+  table_rows.push_back(TableRow("$q^2 > 6\\text{ GeV}^2$",{fullcut1 && "FitVar_q2/1000000 > 6",fullcut2 && "FitVar_q2/1000000 > 6"}, 0,0, "1"));
 
 
 
   PlotMaker pm;
-  pm.Push<Table>("cutflow", table_rows,procs,0).TotColumn("Ratio", 596.061/841.275/2); // Lumis and xsec
+  pm.Push<Table>("cutflow", table_rows,procs,0).TotColumn("Ratio", 596.061/841.275/2).Tag("data_"); // Lumis and xsec
   
-  pm.Push<Hist1D>(Axis(100,0,3, "mu_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  pm.Push<Hist1D>(Axis(100,0,3, "k_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  pm.Push<Hist1D>(Axis(100,0,3, "pi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  pm.Push<Hist1D>(Axis(100,0,3, "spi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
+  // pm.Push<Hist1D>(Axis(100,0,3, "mu_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
+  // pm.Push<Hist1D>(Axis(100,0,3, "k_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
+  // pm.Push<Hist1D>(Axis(100,0,3, "pi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
+  // pm.Push<Hist1D>(Axis(100,0,3, "spi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
 
   // pm.Push<Hist1D>(Axis(100, 1, 6,mu_eta, "#eta(#mu)", {2.4, 4}), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("data");
   // pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("data");

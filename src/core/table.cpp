@@ -121,6 +121,7 @@ Table::Table(const string &name,
   print_pie_(print_pie),
   print_titlepie_(print_titlepie),
   tot_title_("SM Tot."),
+  tag_(""),
   tot_factor_(1.),
   precision_(0),
   plot_options_({PlotOpt("txt/plot_styles.txt", "Pie")}),
@@ -160,8 +161,8 @@ void Table::Print(double luminosity,
   if(subdir != "") mkdir(("tables/"+subdir).c_str(), 0777);
   string fmt_lumi = CopyReplaceAll(RoundNumber(luminosity,1).Data(),".","p");
   string file_name = subdir != ""
-    ? "tables/"+subdir+"/"+name_+"_lumi_"+fmt_lumi+".tex"
-    : "tables/"+name_+"_lumi_"+fmt_lumi+".tex";
+    ? "tables/"+subdir+"/"+tag_+name_+"_lumi_"+fmt_lumi+".tex"
+    : "tables/"+tag_+name_+"_lumi_"+fmt_lumi+".tex";
   std::ofstream file(file_name);
   file  << fixed << setprecision(precision_);
   PrintHeader(file, luminosity);
@@ -304,8 +305,10 @@ void Table::PrintFooter(ofstream &file, double luminosity) const{
 void Table::PrintHeaderFooter(ofstream &file, double luminosity) const{
 
   size_t nSM = backgrounds_.size() + signals_.size();
-  file <<" \\multicolumn{1}{c|}{${\\cal L} = "<<setprecision(1)<<luminosity<<"$ fb$^{-1}$} "
-        << setprecision(precision_);
+  // file <<" \\multicolumn{1}{c|}{${\\cal L} = "<<setprecision(1)<<luminosity<<"$ fb$^{-1}$} "
+  //       << setprecision(precision_);
+  file <<" \\multicolumn{1}{c|}{{\\bf Cut}} ";
+  luminosity += 1; // TEMP
 
   for(size_t i = 0; i < backgrounds_.size(); ++i) file << " & " << ToLatex(backgrounds_.at(i)->process_->name_);
   for(size_t i = 0; i < signals_.size(); ++i) file << " & " << ToLatex(signals_.at(i)->process_->name_);
@@ -431,7 +434,7 @@ void Table::PrintPie(std::size_t irow, double luminosity) const{
   // Printing legend
   if(irow==0){
     leg.Draw();
-    plot_name = "plots/pie_"+name_+"_legend_lumi"+RoundNumber(luminosity,0)+".pdf";
+    plot_name = "plots/pie_"+name_+"_legend_lumi"+RoundNumber(luminosity,0)+tag_+".pdf";
     can.SaveAs(plot_name.c_str());
     cout<<" open "<<plot_name<<endl;
   }
@@ -451,7 +454,7 @@ void Table::PrintPie(std::size_t irow, double luminosity) const{
   TLatex total(0.68,0.5,RoundNumber(Yield_tot,1));
   //if(print_titlepie_) total.Draw();
   plot_name = "plots/pie_"+name_+"_"+CodeToPlainText(rows_.at(irow).cut_.Name())
-    +"_perc_lumi"+RoundNumber(luminosity,0).Data()+".pdf";
+    +"_perc_lumi"+RoundNumber(luminosity,0).Data()+tag_+".pdf";
   can.SaveAs(plot_name.c_str());
   cout<<" open "<<plot_name<<endl;
 
@@ -475,6 +478,11 @@ double Table::GetYield(const vector<unique_ptr<TableColumn> > &columns,
     yield += column->sumw_.at(irow);
   }
   return yield;
+}
+
+Table & Table::Tag(const string &tag){
+  tag_ = tag;
+  return *this;
 }
 
 double Table::GetError(const vector<unique_ptr<TableColumn> > &columns,
