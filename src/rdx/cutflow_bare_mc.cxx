@@ -144,12 +144,12 @@ int main(int argc, char *argv[]){
   ///////// Automatically appending cutflow cuts
   vector<NamedFunc> cuts1 = {L0_run1, HLT1_run1, HLT2_run1, strip_run1, "(k_PT > 800)  && k_P > 2000 && k_IPCHI2_OWNPV > 45 && k_TRACK_GhostProb < 0.5",
                             "(pi_PT > 800) && pi_P > 2000 && pi_IPCHI2_OWNPV > 45 && pi_TRACK_GhostProb < 0.5",
-                            "d0_PT>2000 && (d0_ENDVERTEX_CHI2 / d0_ENDVERTEX_NDOF < 4) && d0_IPCHI2_OWNPV > 9  && (k_PT+pi_PT > 2500) && (d0_DIRA_OWNPV > 0.9998) && d0_FDCHI2_OWNPV > 250 && (d0_M-1865.49) < 23.4 && (d0_M-1865.49) > -23.4"
+                            "d0_PT>2000 && (d0_ENDVERTEX_CHI2 / d0_ENDVERTEX_NDOF < 4) && d0_IPCHI2_OWNPV > 9  && (d0_DIRA_OWNPV > 0.9998) && d0_FDCHI2_OWNPV > 250 && (d0_M-1865.49) < 23.4 && (d0_M-1865.49) > -23.4"
                             && log_ip > -3.5,
                             "mu_P > 3000 && mu_P < 100000 && mu_IPCHI2_OWNPV > 45 && mu_TRACK_GhostProb < 0.5"
                             && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5,
                             "spi_TRACK_GhostProb < 0.25 && (dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF) < 10 && (dst_M - d0_M-145.454) < 2 &&  (dst_M - d0_M-145.454) > -2",
-                            "b0_ENDVERTEX_CHI2 < 24 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_M<5200 && b0_DIRA_OWNPV>0.9995 && b0_DISCARDMu_CHI2 <= 6" && b0_dxy < 7,
+                            "b0_ENDVERTEX_CHI2 < 24 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_M<5280 && b0_DIRA_OWNPV>0.9995 && b0_DISCARDMu_CHI2 <= 6" && b0_dxy < 7,
                             "b0_ISOLATION_BDT < 0.15",
                             "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && (!k_isMuon) && (!pi_isMuon) "};
 

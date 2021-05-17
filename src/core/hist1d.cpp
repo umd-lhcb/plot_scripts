@@ -1047,7 +1047,7 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
   double right = 1.-this_opt_.RightMargin();
   double bottom = 1.-this_opt_.TopMargin();
   double top = 1.;
-  if(this_opt_.Title() == TitleType::info){
+   if(this_opt_.Title() == TitleType::info || overrideTitle_ != "unset"){
     if(Title() != ""){
       out.push_back(make_shared<TLatex>(0.5*(left+right), 0.5*(bottom+top),
                                         Title().c_str()));
@@ -1453,7 +1453,7 @@ vector<shared_ptr<TLegend> > Hist1D::GetLegends(){
   size_t n_entries = datas_.size() + signals_.size() + backgrounds_.size();
   if(add_legend_line_) ++n_entries;
   size_t n_columns = min(n_entries, static_cast<size_t>(this_opt_.LegendColumns()));
-
+  
   double left = this_opt_.LeftMargin()+this_opt_.LegendPad();
   double top = 1.-this_opt_.TopMargin()-this_opt_.LegendPad();
   double bottom = top-this_opt_.TrueLegendHeight(n_entries);

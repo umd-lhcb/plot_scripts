@@ -44,7 +44,7 @@ int main(int argc, char *argv[]){
     .YAxis(YAxisType::log)
     .Stack(StackType::data_norm).LegendColumns(3)
     .Overflow(OverflowType::both);
-  PlotOpt lin_lumi = log_lumi().YAxis(YAxisType::linear);
+  PlotOpt lin_lumi = log_lumi().YAxis(YAxisType::linear).Bottom(BottomType::ratio);
   PlotOpt log_shapes = log_lumi().Stack(StackType::shapes)
     .ShowBackgroundError(false).Bottom(BottomType::ratio);
   PlotOpt lin_shapes = log_shapes().YAxis(YAxisType::linear);
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
   PlotOpt lin_lumi_info_print = lin_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   PlotOpt log_lumi_info_print = log_lumi().Title(TitleType::info).Bottom(BottomType::ratio).PrintVals(true);
   
-  vector<PlotOpt> linplot = {lin_lumi_info};
+  vector<PlotOpt> linplot = {lin_lumi};
   Palette colors("txt/colors.txt", "default");
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,30 +106,31 @@ int main(int argc, char *argv[]){
   ///////// Automatically appending cutflow cuts
   vector<NamedFunc> cuts1 = {"1", "(k_PT > 800)  && k_P > 2000 && k_IPCHI2_OWNPV > 45 && k_TRACK_GhostProb < 0.5",
                             "(pi_PT > 800) && pi_P > 2000 && pi_IPCHI2_OWNPV > 45 && pi_TRACK_GhostProb < 0.5",
-                            "d0_PT>2000 && (d0_ENDVERTEX_CHI2 / d0_ENDVERTEX_NDOF < 4) && d0_IPCHI2_OWNPV > 9  && (k_PT+pi_PT > 2500) && (d0_DIRA_OWNPV > 0.9998) && d0_FDCHI2_OWNPV > 250 && (d0_M-1865.49) < 23.4 && (d0_M-1865.49) > -23.4"
+                            "d0_PT>2000 && (d0_ENDVERTEX_CHI2 / d0_ENDVERTEX_NDOF < 4) && d0_IPCHI2_OWNPV > 9  && d0_DIRA_OWNPV > 0.9998 && d0_FDCHI2_OWNPV > 250 && (d0_M-1865.49) < 23.4 && (d0_M-1865.49) > -23.4"
                             && log_ip > -3.5,
                             "mu_P > 3000 && mu_P < 100000 && mu_IPCHI2_OWNPV > 45 && mu_TRACK_GhostProb < 0.5"
                             && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5,
                             "spi_TRACK_GhostProb < 0.25 && (dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF) < 10 && (dst_M - d0_M-145.454) < 2 &&  (dst_M - d0_M-145.454) > -2",
                             "b0_ENDVERTEX_CHI2 < 24 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_M<5200 && b0_DIRA_OWNPV>0.9995 && b0_DISCARDMu_CHI2 <= 6" && b0_dxy < 7,
                             "b0_ISOLATION_BDT < 0.15",
-                            "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && (!k_isMuon) && (!pi_isMuon) "};
+                            "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && (!k_isMuon) && (!pi_isMuon) && k_PIDK > 4 && pi_PIDK < 2"};
 
-  bool doRun2Cuts = true;
+  bool doRun2Cuts = false;
   string trk_pT = "800", d0_dira = "0.9998", b0_dira = "0.9995", d0_fd = "250";
   if(doRun2Cuts) {
     trk_pT = "200"; d0_dira = "0.999"; b0_dira = "0.999"; d0_fd = "25";
   }
   vector<NamedFunc> cuts2 = {"1", "(k_PT > "+trk_pT+")  && k_P > 2000 && k_IPCHI2_OWNPV > 45 && k_TRACK_GhostProb < 0.5",
                             "(pi_PT > "+trk_pT+") && pi_P > 2000 && pi_IPCHI2_OWNPV > 45 && pi_TRACK_GhostProb < 0.5",
-                            "d0_PT>2000 && (d0_ENDVERTEX_CHI2 / d0_ENDVERTEX_NDOF < 4) && d0_IPCHI2_OWNPV > 9  && (d0_DIRA_OWNPV > "+d0_dira+") && d0_FDCHI2_OWNPV > "+d0_fd+" && (d0_M-1865.49) < 23.4 && (d0_M-1865.49) > -23.4"
+                            "d0_PT>2000 && (d0_ENDVERTEX_CHI2 / d0_ENDVERTEX_NDOF < 4) && d0_IPCHI2_OWNPV > 9  && (d0_DIRA_OWNPV > "+d0_dira
+                            +") && d0_FDCHI2_OWNPV > "+d0_fd+" && (d0_M-1865.49) < 23.4 && (d0_M-1865.49) > -23.4"
                             && log_ip > -3.5,
                             "mu_P > 3000 && mu_P < 100000 && mu_IPCHI2_OWNPV > 45 && mu_TRACK_GhostProb < 0.5"
                             && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5,
                             "spi_TRACK_GhostProb < 0.25 && (dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF) < 10 && (dst_M - d0_M-145.454) < 2 &&  (dst_M - d0_M-145.454) > -2",
-                            "b0_ENDVERTEX_CHI2 < 24 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_M<5200 && b0_DIRA_OWNPV>"+b0_dira+" && b0_DISCARDMu_CHI2 <= 6" && b0_dxy < 7,
+                            "b0_ENDVERTEX_CHI2 < 24 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_M<5280 && b0_DIRA_OWNPV>"+b0_dira+" && b0_DISCARDMu_CHI2 <= 6" && b0_dxy < 7,
                             "b0_ISOLATION_BDT < 0.15",
-                            "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && (!k_isMuon) && (!pi_isMuon) "};
+                            "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && (!k_isMuon) && (!pi_isMuon) && k_PIDK > 4 && pi_PIDK < 2"};
 
 
   vector<string> rownames = {"Trig. + Strip.", "Kaon", "Pion", "$D^0 \\rightarrow K \\pi$","$\\mu$",
@@ -147,40 +148,51 @@ int main(int argc, char *argv[]){
   table_rows.push_back(TableRow("$q^2 > 6\\text{ GeV}^2$",{fullcut1 && "FitVar_q2/1000000 > 6",fullcut2 && "FitVar_q2/1000000 > 6"}, 0,0, "1"));
 
 
+  //string selcut = "FitVar_q2/1000000<6", seltitle = "q^{2} < 6 GeV^{2}";
+  string selcut = "FitVar_Mmiss2/1000000<0.5", seltitle = "m^{2}_{miss} < 0.5 GeV^{2}";
 
   PlotMaker pm;
   pm.Push<Table>("cutflow", table_rows,procs,0).TotColumn("Ratio", 596.061/841.275/2).Tag("data_"); // Lumis and xsec
-  
-  // pm.Push<Hist1D>(Axis(100,0,3, "mu_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(100,0,3, "k_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(100,0,3, "pi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(100,0,3, "spi_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
 
-  // pm.Push<Hist1D>(Axis(100, 1, 6,mu_eta, "#eta(#mu)", {2.4, 4}), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("data");
-  // pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("data");
-  // pm.Push<Hist1D>(Axis(70, -1, 13, "FitVar_q2/1000000", "q^{2} [GeV^{2}]"), fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("Baseline").Tag("data");
-  
-  // pm.Push<Hist1D>(Axis(70, 0, 3, "FitVar_El/1000", "E*_{l} [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(60,0,30, "spi_P/1000", "p(#pi^{-}_{slow}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(70,0,210, "d0_P/1000", "p(D^{0}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(100,0,100, "mu_P/1000", "p(#mu^{+}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(50,0,2, "spi_PT/1000", "p_{T}(#pi^{-}_{slow}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(100,0,25, "d0_PT/1000", "p_{T}(D^{0}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(100,0,10, "mu_PT/1000", "p_{T}(#mu^{+}) [GeV]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
+   ///////// FIT VARIABLES
+  pm.Push<Hist1D>(Axis(70, -1, 13, "FitVar_q2/1000000", "q^{2} [GeV^{2}]"), fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle("Baseline").Tag("data");  
+  pm.Push<Hist1D>(Axis(70, 0, 3, "FitVar_El/1000", "E*_{l} [GeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle("Baseline").Tag("data");
+  pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000>6" && fullcut1 , procs, linplot).RatioTitle("2016", "2011").SetTitle("q^{2} > 6 GeV^{2}").Tag("data");
 
-  // pm.Push<Hist1D>(Axis(96,140,152, "dst_M - d0_M","unset"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(96,140,152, "dst_MM - d0_MM"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(80,1820,1900, "d0_M","unset"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(80,1820,1900, "d0_MM","unset"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(100,0,200, "dst_FD_ORIVX"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(70,0,0.1, "mu_TRACK_GhostProb"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(70,0,14, "mu_PIDmu"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(100,0,3, "mu_TRACK_CHI2NDOF"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(40,-1,0.15, "b0_ISOLATION_BDT"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
+  ///////// KINEMATIC VARIABLES (P, PT, ETA)
+  pm.Push<Hist1D>(Axis(80, 1.5, 5.5,mu_eta, "#eta(#mu)"), fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle("Baseline").Tag("data");
+  pm.Push<Hist1D>(Axis(60,0,30, "spi_P/1000", "p(#pi^{-}_{slow}) [GeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(70,0,210, "d0_P/1000", "p(D^{0}) [GeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0,100, "mu_P/1000", "p(#mu^{+}) [GeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(50,0,2, "spi_PT/1000", "p_{T}(#pi^{-}_{slow}) [GeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0,25, "d0_PT/1000", "p_{T}(D^{0}) [GeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0,10, "mu_PT/1000", "p_{T}(#mu^{+}) [GeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+
+  ///////// mu, K, pi VARIABLES
+  pm.Push<Hist1D>(Axis(70,0,140, "k_PIDK"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(75,-140,10, "pi_PIDK"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0,3, "k_TRACK_CHI2NDOF", "K #chi^{2}_{track}/Ndof"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0,3, "pi_TRACK_CHI2NDOF", "#pi #chi^{2}_{track}/Ndof"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0,3, "spi_TRACK_CHI2NDOF", "#pi_{slow} #chi^{2}_{track}/Ndof"), selcut && fullcut1, procs,linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0,3, "mu_TRACK_CHI2NDOF", "#mu #chi^{2}_{track}/Ndof"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(50,0,0.05, "mu_TRACK_GhostProb"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(70,0,14, "mu_PIDmu"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+
+  ///////// D* VARIABLES
+  pm.Push<Hist1D>(Axis(72,141,150, "dst_MM - d0_MM", "Prefit m(D*)-m(D^{0}) [MeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(60,1835,1895, "d0_MM", "Prefit m(D^{0}) [MeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0,100, "dst_FD_ORIVX"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(70,0.99986,1, "d0_DIRA_OWNPV"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0,20000, "d0_FDCHI2_OWNPV"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  
+  ///////// B VARIABLES
+  pm.Push<Hist1D>(Axis(46,-1,0.15, "b0_ISOLATION_BDT"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(100,0.9995,1, "b0_DIRA_OWNPV"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(50,0,25, "b0_ENDVERTEX_CHI2"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
+  pm.Push<Hist1D>(Axis(70,2,5.5, "b0_M/1000", "B^{0} mass [GeV]"), selcut && fullcut1, procs, linplot).RatioTitle("2016", "2011").SetTitle(seltitle).Tag("data");
  
-  // pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000<6" && fullcut, procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} < 6 GeV^{2}").Tag("data");
-  // pm.Push<Hist1D>(Axis(80, -2, 10, "FitVar_Mmiss2/1000000", "m_{miss}^{2} [GeV^{2}]"), "FitVar_q2/1000000>6" && fullcut , procs, linplot).RatioTitle("2016", "2012").SetTitle("q^{2} > 6 GeV^{2}").Tag("data");
-
   pm.min_print_ = true;
   pm.MakePlots(1);
 
