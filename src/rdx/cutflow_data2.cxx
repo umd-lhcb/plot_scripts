@@ -115,7 +115,7 @@ int main(int argc, char *argv[]){
                             "b0_ISOLATION_BDT < 0.15",
                             "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && (!k_isMuon) && (!pi_isMuon) && k_PIDK > 4 && pi_PIDK < 2"};
 
-  bool doRun2Cuts = false;
+  bool doRun2Cuts = true;
   string trk_pT = "800", d0_dira = "0.9998", b0_dira = "0.9995", d0_fd = "250";
   if(doRun2Cuts) {
     trk_pT = "200"; d0_dira = "0.999"; b0_dira = "0.999"; d0_fd = "25";
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]){
                             "mu_P > 3000 && mu_P < 100000 && mu_IPCHI2_OWNPV > 45 && mu_TRACK_GhostProb < 0.5"
                             && mu_eta > 1.7 && mu_eta < 5 && muk_log>-6.5 && mupi_log>-6.5 && muspi_log>-6.5,
                             "spi_TRACK_GhostProb < 0.25 && (dst_ENDVERTEX_CHI2/dst_ENDVERTEX_NDOF) < 10 && (dst_M - d0_M-145.454) < 2 &&  (dst_M - d0_M-145.454) > -2",
-                            "b0_ENDVERTEX_CHI2 < 24 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_M<5280 && b0_DIRA_OWNPV>"+b0_dira+" && b0_DISCARDMu_CHI2 <= 6" && b0_dxy < 7,
+                            "b0_ENDVERTEX_CHI2 < 24 && (b0_ENDVERTEX_CHI2/b0_ENDVERTEX_NDOF) < 6 && b0_M<5280 && b0_DIRA_OWNPV>"+b0_dira && b0_dxy < 7,
                             "b0_ISOLATION_BDT < 0.15",
                             "mu_isMuon && mu_PIDmu > 2 && mu_PIDe < 1 && (!k_isMuon) && (!pi_isMuon) && k_PIDK > 4 && pi_PIDK < 2"};
 
