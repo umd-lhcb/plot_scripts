@@ -50,7 +50,6 @@ ntuples
 *.#*
 sftp-config.json
 .DS_Store
-.envrc
 
 # LaTeX
 *.tex
