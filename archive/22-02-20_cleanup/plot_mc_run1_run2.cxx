@@ -61,13 +61,16 @@ int main(int argc, char *argv[]){
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
   ////////////////////////////////////////// Defining processes //////////////////////////////////////////
 
-  string L0 = "mu_L0Global_TIS && (b0_L0Global_TIS || dst_L0HadronDecision_TOS)";
+  string L0_run1 = "mu_L0Global_TIS && (b0_L0Global_TIS || dst_L0HadronDecision_TOS)";
   string HLT1_run1 = "k_Hlt1TrackAllL0Decision_TOS || pi_Hlt1TrackAllL0Decision_TOS";
   string HLT2_run1 = "d0_Hlt2CharmHadD02HH_D02KPiDecision_TOS";
+  
+  string L0_run2 = "b0_L0Global_TIS || dst_L0HadronDecision_TOS";
   string HLT1_run2 = "k_Hlt1TrackMVADecision_TOS || pi_Hlt1TrackMVADecision_TOS  || d0_Hlt1TwoTrackMVADecision_TOS";
-  string HLT2_run2 = "d0_Hlt2XcMuXForTauB2XcMuDecision_Dec";
-  string trig_run1 = L0 + "&&(" + HLT1_run1 + ")&&"+HLT2_run1;
-  string trig_run2 = L0 + "&&(" + HLT1_run2 + ")&&"+HLT2_run2;
+  string HLT2_run2 = "d0_Hlt2XcMuXForTauB2XcMuDecision_TOS";
+  
+  string trig_run1 = L0_run1 + "&&(" + HLT1_run1 + ")&&"+HLT2_run1;
+  string trig_run2 = L0_run2 + "&&(" + HLT1_run2 + ")&&"+HLT2_run2;
 
   // Custom NamedFunc
   NamedFunc mu_eta("mu_eta", [&](const Baby &b){

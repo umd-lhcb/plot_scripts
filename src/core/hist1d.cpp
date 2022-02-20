@@ -349,7 +349,7 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
   if(this_opt_.DisplayLumiEntry() && ((this_opt_.Stack() == StackType::data_norm && datas_.size() > 0) || show_lumi_))
     add_legend_line_ = true;
   else add_legend_line_ = false;
-  add_legend_line_ = false; // Temp FIXME
+  //add_legend_line_ = false; // Temp FIXME
   
   blank_.SetFillStyle(0);
   blank_.SetFillColor(kWhite);
