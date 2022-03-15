@@ -1,55 +1,52 @@
 tree:
-  b0_dira: Double_t
-  b0_discard_mu_chi2: Double_t
-  b0_endvtx_chi2: Double_t
-  b0_endvtx_ndof: Double_t
-  b0_fd_trans: Double_t
-  b0_l0_global_tis: bool
-  b0_m: Double_t
-  b0_p: Double_t
-  b0_pt: Double_t
-  d0_dira: Double_t
-  d0_endvtx_chi2: Double_t
-  d0_endvtx_ndof: Double_t
-  d0_fd_chi2: Double_t
-  d0_hlt2_tos: bool
+  GpsTime: ULong64_t
+  b_discard_mu_chi2: double
+  b_endvtx_chi2ndof: double
+  b_fd_trans: double
+  b_hlt2_tos: bool
+  b_l0_global_tis: bool
+  b_m: double
+  b_m_ok: bool
+  b_m_sb: bool
+  b_p: double
+  b_pt: double
+  d0_dira: double
+  d0_dst_veto_deltam: double
+  d0_dst_veto_ok: bool
+  d0_endvtx_chi2ndof: double
+  d0_fd_chi2: double
+  d0_hlt1_twotrackmva_tos: bool
   d0_id: int32_t
-  d0_ip: Double_t
-  d0_ip_chi2: Double_t
+  d0_ip: double
+  d0_ip_chi2: double
   d0_l0_hadron_tos: bool
-  d0_m: Double_t
+  d0_m: double
+  d0_m_hypo_ok: bool
+  d0_m_ok: bool
   d0_ok: bool
-  d0_p: Double_t
+  d0_p: double
   d0_pid_ok: bool
-  d0_pt: Double_t
-  d_mass_window_ok: bool
-  dst_endvtx_chi2: Double_t
-  dst_endvtx_ndof: Double_t
-  dst_hlt1_phys_tos: bool
-  dst_id: int32_t
-  dst_iso_deltam: Double_t
-  dst_m: Double_t
-  dst_p: Double_t
-  dst_pt: Double_t
-  dstmu_ok: bool
-  el: Double_t
+  d0_pt: double
+  d0mu_ok: bool
+  dx_m_ok: bool
+  el: double
   event: ULong64_t
   eventNumber: ULong64_t
   global_cut_ok: bool
+  hlt1: bool
+  hlt2: bool
+  in_fit_range: bool
   is_1os: bool
+  is_1os_loose: bool
   is_2os: bool
-  is_data: bool
+  is_2os_loose: bool
   is_dd: bool
-  is_in_fit_range: bool
+  is_dd_loose: bool
   is_iso: bool
-  is_normal: bool
-  is_sb: bool
-  is_std: bool
-  is_ws_mu: bool
-  is_ws_pi: bool
-  iso_bdt1: Double_t
-  iso_bdt2: Double_t
-  iso_bdt3: Double_t
+  is_iso_loose: bool
+  iso_bdt1: double
+  iso_bdt2: double
+  iso_bdt3: double
   iso_chrg1: int32_t
   iso_chrg2: int32_t
   iso_nnk1: float
@@ -64,41 +61,55 @@ tree:
   iso_type1: int32_t
   iso_type2: int32_t
   iso_type3: int32_t
-  k_gh_prob: Double_t
-  k_hlt1_tal0_tos: bool
-  k_ip_chi2: Double_t
+  k_eta: double
+  k_gh_prob: double
+  k_hlt1_trackmva_tos: bool
+  k_ip_chi2: double
   k_is_mu: bool
-  k_p: Double_t
-  k_pid_k: Double_t
-  k_pt: Double_t
-  mm2: Double_t
-  mu_eta: Double_t
-  mu_gh_prob: Double_t
-  mu_ip_chi2: Double_t
+  k_p: double
+  k_pid_e: double
+  k_pid_k: double
+  k_pid_mu: double
+  k_pt: double
+  l0: bool
+  mm2: double
+  mu_eta: double
+  mu_gh_prob: double
+  mu_ip_chi2: double
   mu_is_mu: bool
-  mu_l0_global_tis: bool
   mu_ok: bool
-  mu_p: Double_t
-  mu_pid_e: Double_t
-  mu_pid_mu: Double_t
+  mu_p: double
+  mu_pid_e: double
+  mu_pid_k: double
+  mu_pid_mu: double
   mu_pid_ok: bool
-  mu_pt: Double_t
+  mu_pt: double
   mu_ubdt: float
   mu_ubdt_ok: bool
-  pi_gh_prob: Double_t
-  pi_hlt1_tal0_tos: bool
-  pi_ip_chi2: Double_t
+  nspdhits: float
+  ntracks: double
+  pi_eta: double
+  pi_gh_prob: double
+  pi_hlt1_trackmva_tos: bool
+  pi_ip_chi2: double
   pi_is_mu: bool
-  pi_p: Double_t
-  pi_pid_k: Double_t
-  pi_pt: Double_t
+  pi_p: double
+  pi_pid_e: double
+  pi_pid_k: double
+  pi_pid_mu: double
+  pi_pt: double
   polarity: int16_t
-  prs_in: Double_t
-  q2: Double_t
+  prs_in: double
+  q2: double
   run: UInt_t
   runNumber: UInt_t
-  spi_gh_prob: Double_t
-  spi_trk_type: int32_t
+  skim_global_ok: bool
   trg_ok: bool
   trks_ok: bool
+  w1os: double
+  w2os: double
+  wdd: double
+  wiso: double
+  wpid_ubdt: double
+  wskim_iso: double
 

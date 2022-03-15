@@ -1093,7 +1093,7 @@ vector<shared_ptr<TLatex> > Hist1D::GetTitleTexts() const{
 
     ostringstream oss;
     if(top_right_ == "unset") {
-      if(show_lumi_) oss << setprecision(1) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
+      if(show_lumi_) oss << setprecision(2) << luminosity_ << " fb^{-1} (13 TeV)" << flush;
       else oss << "13 TeV" << flush;
     } else oss << top_right_ << flush;
     out.push_back(make_shared<TLatex>(right, bottom+0.2*(top-bottom),
