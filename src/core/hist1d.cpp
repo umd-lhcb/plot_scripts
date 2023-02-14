@@ -1235,7 +1235,7 @@ std::vector<TH1D> Hist1D::GetBottomPlots(double &the_min, double &the_max) const
   }
   out.back() = band;
   out.back().SetFillStyle(1001);
-  out.back().SetFillColorAlpha(out.front().GetLineColor(),0.2);
+  out.back().SetFillColorAlpha(out.back().GetLineColor(),0.2);
   out.back().SetLineWidth(0);
   out.back().SetMarkerStyle(0);
   out.back().SetMarkerSize(0);
