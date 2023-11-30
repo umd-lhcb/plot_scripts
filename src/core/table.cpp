@@ -308,7 +308,7 @@ void Table::PrintHeaderFooter(ofstream &file, double luminosity) const{
   // file <<" \\multicolumn{1}{c|}{${\\cal L} = "<<setprecision(1)<<luminosity<<"$ fb$^{-1}$} "
   //       << setprecision(precision_);
   file <<" \\multicolumn{1}{c|}{{\\bf Cut}} ";
-  luminosity += 1; // TEMP
+  luminosity = luminosity + 1; // TEMP
 
   for(size_t i = 0; i < backgrounds_.size(); ++i) file << " & " << ToLatex(backgrounds_.at(i)->process_->name_);
   for(size_t i = 0; i < signals_.size(); ++i) file << " & " << ToLatex(signals_.at(i)->process_->name_);

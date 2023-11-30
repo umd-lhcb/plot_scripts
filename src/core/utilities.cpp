@@ -217,7 +217,7 @@ string MakeTemp(string prefix){
   if(file_name == nullptr) ERROR("Could not allocate file name");
   strcpy(file_name, prefix.c_str());
   int unused = mkstemp(file_name);
-  unused += 0;
+  unused = unused + 1;
   prefix = file_name;
   delete[] file_name;
   return prefix;

@@ -102,7 +102,7 @@ bool ThreadPool::ReadyToAct(size_t ithread, unique_ptr<function<void()> > &task)
 void ThreadPool::Queue::Push(FuncPtr &func){
   lock_guard<mutex> lock(mutex_);
   queue_.push(unique_ptr<function<void()> >());
-  queue_.back() = move(func);
+  queue_.back() = std::move(func);
 }
 
 ThreadPool::Queue::FuncPtr ThreadPool::Queue::Pop(){
@@ -110,7 +110,7 @@ ThreadPool::Queue::FuncPtr ThreadPool::Queue::Pop(){
   if(queue_.empty()){
     return FuncPtr();
   }else{
-    Queue::FuncPtr func = move(queue_.front());
+    Queue::FuncPtr func = std::move(queue_.front());
     queue_.pop();
     return func;
   }

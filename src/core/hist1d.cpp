@@ -331,13 +331,13 @@ Hist1D::Hist1D(const Axis &xaxis, const NamedFunc &cut,
 
     switch(process->type_){
     case Process::Type::data:
-      datas_.push_back(move(hist));
+      datas_.push_back(std::move(hist));
       break;
     case Process::Type::background:
-      backgrounds_.push_back(move(hist));
+      backgrounds_.push_back(std::move(hist));
       break;
     case Process::Type::signal:
-      signals_.push_back(move(hist));
+      signals_.push_back(std::move(hist));
       break;
     default:
       break;
