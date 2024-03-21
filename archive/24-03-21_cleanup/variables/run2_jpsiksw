@@ -1,0 +1,12 @@
+tree:
+  b_eta: double
+  b_m: double
+  b_ownpv_ndof: double
+  b_p: double
+  b_pt: double
+  eventNumber: ULong64_t
+  ntracks: int32_t
+  runNumber: UInt_t
+  sw_bkg: double
+  sw_sig: double
+
