@@ -66,7 +66,8 @@ int main(int argc, char *argv[]){
   
   string datafull = "../lhcb-ntuples-gen/ntuples/0.9.8-JpsiK_L0/JpsiK-std-step2/*";
   string datasw = "../lhcb-ntuples-gen/run2-JpsiK/fit/fit_results/JpsiK-24_03_23_10_26-std-fit-2016/fit.root";
-  string mcfull = "../lhcb-ntuples-gen/ntuples/0.9.8-JpsiK_L0/JpsiK-mc-step2/*";
+  string mcfull2 = "../lhcb-ntuples-gen/ntuples/0.9.8-JpsiK_L0/JpsiK-mc-step2/*";
+  string mcfull = "../lhcb-ntuples-gen/ntuples/0.9.9-JpsiK_noPID/JpsiK-mc-step2/JpsiK--24_03_31*";
 
   // string datafull = "../lhcb-ntuples-gen/ntuples/0.9.6-2016_production/JpsiK-std-step2/JpsiK--22_02_26--std--data--2016-*";
   // string datasw = "../lhcb-ntuples-gen/run2-JpsiK/fit/fit_results/JpsiK-22_02_26_23_52-std-fit-2016/fit.root";
@@ -77,8 +78,10 @@ int main(int argc, char *argv[]){
                                                          set<string>({datasw}), globalCuts));
   procs.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K MC after w", Process::Type::background, colors("green"),
                                                        set<string>({mcfull}), globalCuts));
-  procs.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K MC before w", Process::Type::background, colors("blue"),
+  procs.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K MC before w fix", Process::Type::background, colors("blue"),
                                                        set<string>({mcfull}), globalCuts));
+  procs.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K MC before w bad PID", Process::Type::background, colors("purple"),
+                                                       set<string>({mcfull2}), globalCuts));
    procs.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K data before sWeights", Process::Type::data, colors("red"),
                                                          set<string>({datafull}), globalCuts));
  
@@ -102,18 +105,33 @@ int main(int argc, char *argv[]){
   procs3.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K data", Process::Type::data, colors("red"),
                                                         set<string>({datafull}), globalCuts));
  
+  vector<shared_ptr<Process> > procs4;
+  procs4.push_back(Process::MakeShared<Baby_run2_jpsiksw>("J/#psi K bkg-sub data", Process::Type::background, colors("data"),
+                                                         set<string>({datasw}), globalCuts));
+  procs4.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K MC no PID", Process::Type::data, colors("red"),
+                                                       set<string>({mcfull}), globalCuts));
+  procs4.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K MC cuts_{PID strip}", Process::Type::data, colors("blue"),
+                                                       set<string>({mcfull}), globalCuts+" && amu_pid_mu>0 && k_pid_k > 0 && mu_pid_mu>0"));
+  procs4.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K MC cuts_{PID full}", Process::Type::data, colors("purple"),
+                                                       set<string>({mcfull}), globalCuts+" && amu_pid_mu>2 && k_pid_k > 4 && mu_pid_mu>2"));
+  procs4.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K MC w_{PID}", Process::Type::data, colors("green"),
+                                                       set<string>({mcfull}), globalCuts));
+  procs4.push_back(Process::MakeShared<Baby_run2_jpsik>("J/#psi K MC w_{PID} + cuts_{PID strip}", Process::Type::data, colors("orange"),
+                                                       set<string>({mcfull2}), globalCuts));
 
 
   NamedFunc logbpt("logbpt", [&](const Baby &b){
     return log(b.b_pt());
   });
-  vector<NamedFunc> weights({"sw_sig", "wpid*wtrk*wjk_occ*wjk_kin", "wpid*wtrk", "1"});
+  vector<NamedFunc> weights({"sw_sig", "wpid*wtrk*wjk_occ*wjk_kin", "wpid*wtrk", "wpid*wtrk", "1"});
   vector<NamedFunc> weights2({"wpid*wtrk*wjk_occ*wjk_kin", "wpid*wtrk*wjk_occ*wjk_kin", "1", "1"});
+  vector<NamedFunc> weights4({"sw_sig", "wtrk", "wtrk", "wtrk", "wpid*wtrk", "wpid*wtrk"});
   PlotMaker pm;
-  pm.Push<Hist1D>(Axis(100,1.7,6.7, "b_eta", "#eta(B)"), "1", procs, shapeplot, weights).RatioTitle("Process", "MC after w").Tag("bins100");
-  pm.Push<Hist1D>(Axis(9,2,6, "b_eta", "#eta(B)"), "1", procs, shapeplot, weights).RatioTitle("Process", "MC after w").Tag("bins9");
-  pm.Push<Hist1D>(Axis(20,0,30000, "b_pt", "p_{T}(B) [MeV]"), "1", procs, shapeplot, weights).RatioTitle("Process", "MC after w").Tag("bins20");
-  pm.Push<Hist1D>(Axis(100,5,12.5, logbpt, "log(B^{0} p_{T} [MeV])"), "1", procs, shapeplot, weights).RatioTitle("Process", "MC after w").Tag("bins100");
+  pm.Push<Hist1D>(Axis(100,1.7,6.7, "b_eta", "#eta(B)"), "1", procs4, shapeplot, weights4).RatioTitle("Process", "Bkg-subtracted data").Tag("MCcomp");
+  // pm.Push<Hist1D>(Axis(100,1.7,6.7, "b_eta", "#eta(B)"), "1", procs, shapeplot, weights).RatioTitle("Process", "MC after w").Tag("bins100");
+  // pm.Push<Hist1D>(Axis(9,2,6, "b_eta", "#eta(B)"), "1", procs, shapeplot, weights).RatioTitle("Process", "MC after w").Tag("bins9");
+  // pm.Push<Hist1D>(Axis(20,0,30000, "b_pt", "p_{T}(B) [MeV]"), "1", procs, shapeplot, weights).RatioTitle("Process", "MC after w").Tag("bins20");
+  // pm.Push<Hist1D>(Axis(100,5,12.5, logbpt, "log(B^{0} p_{T} [MeV])"), "1", procs, shapeplot, weights).RatioTitle("Process", "MC after w").Tag("bins100");
   // pm.Push<Hist1D>(Axis(100,1.7,6.7, "b_eta", "#eta(B)"), "1", procs2, shapeplot, weights2).RatioTitle("Process", "MC after L0").Tag("L0");
   // pm.Push<Hist1D>(Axis(100,1.7,6.7, "b_eta", "#eta(B)"), "1", procs3, shapeplot, weights2).RatioTitle("Process", "MC after p_{T}").Tag("mupt");
 
