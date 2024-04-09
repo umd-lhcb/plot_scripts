@@ -63,10 +63,10 @@ int main(){
                                                      set<string>({datantp}), globalCuts));
   procs.push_back(Process::MakeShared<Baby_run2_std>("D*^{+}#mu#nu MC all w", Process::Type::data, colors("blue"),
                                                      set<string>({mcntp}), globalCuts));
-  procs.push_back(Process::MakeShared<Baby_run2_std>("D*^{+}#mu#nu MC all w but w_{J/#psi K}", Process::Type::data, colors("green"),
-                                                     set<string>({mcntp}), globalCuts));
-  procs.push_back(Process::MakeShared<Baby_run2_std>("D*^{+}#mu#nu MC all w but w_{PID}", Process::Type::data, colors("red"),
-                                                     set<string>({mcntp}), globalCuts));
+  // procs.push_back(Process::MakeShared<Baby_run2_std>("D*^{+}#mu#nu MC all w but w_{J/#psi K}", Process::Type::data, colors("green"),
+  //                                                    set<string>({mcntp}), globalCuts));
+  // procs.push_back(Process::MakeShared<Baby_run2_std>("D*^{+}#mu#nu MC all w but w_{PID}", Process::Type::data, colors("red"),
+  //                                                    set<string>({mcntp}), globalCuts));
 
 
      
@@ -84,10 +84,31 @@ int main(){
   //vector<NamedFunc> weights({woverjk, "1"});
   PlotMaker pm;
 
-  pm.Push<Hist1D>(Axis(50,0,30, "b_pt", "p_{T}(B^{0}) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  // Greg's binning
+  pm.Push<Hist1D>(Axis(50,0,8, "k_pt", "p_{T}(K) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  pm.Push<Hist1D>(Axis(50,2,5, "k_eta", "#eta(K)"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  pm.Push<Hist1D>(Axis(50,0,8, "pi_pt", "p_{T}(#pi) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  pm.Push<Hist1D>(Axis(50,2,5, "pi_eta", "#eta(#pi)"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  pm.Push<Hist1D>(Axis(50,0,2, "spi_pt", "p_{T}(#pi_{slow}) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  pm.Push<Hist1D>(Axis(50,1.8,5.2, "spi_eta", "#eta(#pi_{slow})"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  pm.Push<Hist1D>(Axis(50,0,3, "mu_pt", "p_{T}(#mu^{+}) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  pm.Push<Hist1D>(Axis(50,1.8,5.2, "mu_eta", "#eta(#mu^{+})"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  pm.Push<Hist1D>(Axis(50,2,20, "b_pt", "p_{T}(B^{0}) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
   pm.Push<Hist1D>(Axis(50,1.7,5, "b_eta", "#eta(B^{0})"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
-  pm.Push<Hist1D>(Axis(50,0,13, "mu_pt", "p_{T}(#mu^{+}) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
-  pm.Push<Hist1D>(Axis(50,1.7,5, "mu_eta", "#eta(#mu^{+})"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+
+
+  // // Eta and pT of all particles
+  // pm.Push<Hist1D>(Axis(50,0,13, "k_pt", "p_{T}(K) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(50,1.7,5, "k_eta", "#eta(K)"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(50,0,13, "pi_pt", "p_{T}(#pi) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(50,1.7,5, "pi_eta", "#eta(#pi)"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(50,0,2, "spi_pt", "p_{T}(#pi_{slow}) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(50,1.7,5, "spi_eta", "#eta(#pi_{slow})"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+
+  // pm.Push<Hist1D>(Axis(50,0,30, "b_pt", "p_{T}(B^{0}) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(50,1.7,5, "b_eta", "#eta(B^{0})"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(50,0,13, "mu_pt", "p_{T}(#mu^{+}) [GeV]"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
+  // pm.Push<Hist1D>(Axis(50,1.7,5, "mu_eta", "#eta(#mu^{+})"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
 
   //pm.Push<Hist1D>(Axis(100,5,12.5, logbpt, "log(B^{0} p_{T} [MeV])"), "mm2<0.5", procs, linplot, weights).RatioTitle("MC", "Data").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
   //pm.Push<Hist1D>(Axis(100,1.7,6.7, "b_eta", "#eta(B^{0})"), "mm2<0.5", procs, linplot, weights).RatioTitle("Data", "MC").SetTitle("m^{2}_{miss} < 0.5 GeV^{2}").Tag("mc");
