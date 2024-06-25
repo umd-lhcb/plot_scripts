@@ -89,46 +89,60 @@ int main(){
                   ("DDX 3-body: +#sigma_{dalitz}^{quad} (wdal_qp)", Process::Type::background, colors("purple"),
                    set<string>({ntpBd}), globalCuts + "&& is_dal_variable")); 
 
-  vector<shared_ptr<Process> > procs3;
-  procs3.push_back(Process::MakeShared<Baby_run2_std>
+  vector<shared_ptr<Process> > procsLin;
+  procsLin.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX 3-body", Process::Type::background, colors("purple"),
                    set<string>({ntpBd}), globalCuts + "&& is_dal_variable"));
-  procs3.push_back(Process::MakeShared<Baby_run2_std>
+  procsLin.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX 2-body", Process::Type::background, colors("yellow"),
                    set<string>({ntpBd}), globalCuts + "&& !is_dal_variable")); 
-  procs3.push_back(Process::MakeShared<Baby_run2_std>
+  procsLin.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX: +#sigma_{dalitz}^{lin} (wdal_lp)", Process::Type::data, colors("darkblue"),
                    set<string>({ntpBd}), globalCuts)); 
-  procs3.push_back(Process::MakeShared<Baby_run2_std>
+  procsLin.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX: -#sigma_{dalitz}^{lin} (wdal_lm)", Process::Type::data, colors("red"),
                    set<string>({ntpBd}), globalCuts)); 
 
-  vector<shared_ptr<Process> > procs4;
-  procs4.push_back(Process::MakeShared<Baby_run2_std>
+  vector<shared_ptr<Process> > procsQuad;
+  procsQuad.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX 3-body", Process::Type::background, colors("purple"),
                    set<string>({ntpBd}), globalCuts + "&& is_dal_variable"));
-  procs4.push_back(Process::MakeShared<Baby_run2_std>
+  procsQuad.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX 2-body", Process::Type::background, colors("yellow"),
                    set<string>({ntpBd}), globalCuts + "&& !is_dal_variable")); 
-  procs4.push_back(Process::MakeShared<Baby_run2_std>
+  procsQuad.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX: +#sigma_{dalitz}^{quad} (wdal_qp)", Process::Type::data, colors("darkblue"),
                    set<string>({ntpBd}), globalCuts)); 
-  procs4.push_back(Process::MakeShared<Baby_run2_std>
+  procsQuad.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX: -#sigma_{dalitz}^{quad} (wdal_qm)", Process::Type::data, colors("red"),
                    set<string>({ntpBd}), globalCuts)); 
 
-  vector<shared_ptr<Process> > procs5;
-  procs5.push_back(Process::MakeShared<Baby_run2_std>
+  vector<shared_ptr<Process> > procs2body;
+  procs2body.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX 3-body", Process::Type::background, colors("purple"),
                    set<string>({ntpBd}), globalCuts + "&& is_dal_variable"));
-  procs5.push_back(Process::MakeShared<Baby_run2_std>
+  procs2body.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX 2-body", Process::Type::background, colors("yellow"),
                    set<string>({ntpBd}), globalCuts + "&& !is_dal_variable")); 
-  procs5.push_back(Process::MakeShared<Baby_run2_std>
+  procs2body.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX: +50% 2-body", Process::Type::data, colors("darkblue"),
                    set<string>({ntpBd}), globalCuts)); 
-  procs5.push_back(Process::MakeShared<Baby_run2_std>
+  procs2body.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX: -50% 2-body", Process::Type::data, colors("red"),
+                   set<string>({ntpBd}), globalCuts)); 
+
+  vector<shared_ptr<Process> > procsKstar;
+  procsKstar.push_back(Process::MakeShared<Baby_run2_std>
+                  ("DDX 3-body", Process::Type::background, colors("purple"),
+                   set<string>({ntpBd}), globalCuts + "&& is_dal_variable"));
+  procsKstar.push_back(Process::MakeShared<Baby_run2_std>
+                  ("DDX 2-body", Process::Type::background, colors("yellow"),
+                   set<string>({ntpBd}), globalCuts + "&& !is_dal_variable")); 
+  procsKstar.push_back(Process::MakeShared<Baby_run2_std>
+                  ("DDX: +#sigma_{K*}", Process::Type::data, colors("darkblue"),
+                   set<string>({ntpBd}), globalCuts)); 
+  procsKstar.push_back(Process::MakeShared<Baby_run2_std>
+                  ("DDX: -#sigma_{K*}", Process::Type::data, colors("red"),
                    set<string>({ntpBd}), globalCuts)); 
 
 
@@ -136,25 +150,36 @@ int main(){
   string basew = "skim_global_ok*wff*wpid_ubdt*wtrg*wtrk*wbr_dd*w_missDDX*wjk";
   vector<NamedFunc> weights({basew, basew, basew+"*wdal_lm", basew+"*wdal_qm"});
   vector<NamedFunc> weights2({basew, basew, basew+"*wdal_lp", basew+"*wdal_qp"});
-  vector<NamedFunc> weights3({basew, basew, basew+"*wdal_lp", basew+"*wdal_lm"});
-  vector<NamedFunc> weights4({basew, basew, basew+"*wdal_qp", basew+"*wdal_qm"});
-  vector<NamedFunc> weights5({basew, basew, basew+"*(1+0.5*!is_dal_variable)", basew+"*(1-0.5*!is_dal_variable)"});
+  vector<NamedFunc> weightsLin({basew, basew, basew+"*wdal_lp", basew+"*wdal_lm"});
+  vector<NamedFunc> weightsQuad({basew, basew, basew+"*wdal_qp", basew+"*wdal_qm"});
+  vector<NamedFunc> weights2body({basew, basew, basew+"*(1+0.5*!is_dal_variable)", basew+"*(1-0.5*!is_dal_variable)"});
+  vector<NamedFunc> weightsKstar({basew, basew, basew+"*wkst_p", basew+"*wkst_m"});
   PlotMaker pm;
 
-  pm.Push<Hist1D>(Axis(50, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procs, linplot, weights);
-  pm.Push<Hist1D>(Axis(34, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procs3, stackplot, weights3).Tag("fitlin");
-  pm.Push<Hist1D>(Axis(34, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procs4, stackplot, weights4).Tag("fitquad");
-  pm.Push<Hist1D>(Axis(34, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procs5, stackplot, weights5).Tag("fit2body");
-  pm.Push<Hist1D>(Axis(50, -2, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "q2>10.25", procs3, stackplot, weights3).Tag("fitlin");
-  pm.Push<Hist1D>(Axis(50, -2, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "q2>10.25", procs4, stackplot, weights4).Tag("quadlin");
+  // Individual contributions
+  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs, linplot, weights).Tag("linesMinus");
+  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs2, linplot, weights2).Tag("linesPlus");
+  pm.Push<Hist1D>(Axis(50, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procs, linplot, weights).Tag("linesMinus");
+  pm.Push<Hist1D>(Axis(50, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procs2, linplot, weights2).Tag("linesPlus");
+  pm.Push<Hist1D>(Axis(43, -2.0, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "1", procs, linplot, weights).Tag("linesMinus");
+  pm.Push<Hist1D>(Axis(43, -2.0, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "1", procs2, linplot, weights2).Tag("linesPlus");
 
-  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs, linplot, weights);
-  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs2, linplot, weights2).Tag("plus");
-  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs3, stackplot, weights3).Tag("fitlin");
-  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs4, stackplot, weights4).Tag("fitquad");
-  // pm.Push<Hist1D>(Axis(4,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs3, stackplot, weights3).Tag("fitlin");
-  // pm.Push<Hist1D>(Axis(4,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs4, stackplot, weights4).Tag("fitquad");
-  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs5, stackplot, weights5).Tag("fit2body");
+  // Stacked plots
+  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsLin, stackplot, weightsLin).Tag("dalLin");
+  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsQuad, stackplot, weightsQuad).Tag("dalQuad");
+  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs2body, stackplot, weights2body).Tag("2body");
+  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsKstar, stackplot, weightsKstar).Tag("Kstar");
+
+  pm.Push<Hist1D>(Axis(34, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procsLin, stackplot, weightsLin).Tag("dalLin");
+  pm.Push<Hist1D>(Axis(34, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procsQuad, stackplot, weightsQuad).Tag("dalQuad");
+  pm.Push<Hist1D>(Axis(34, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procs2body, stackplot, weights2body).Tag("2body");
+  pm.Push<Hist1D>(Axis(34, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procsKstar, stackplot, weightsKstar).Tag("Kstar");
+  
+  pm.Push<Hist1D>(Axis(43, -2, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "1", procsLin, stackplot, weightsLin).Tag("dalLin");
+  pm.Push<Hist1D>(Axis(43, -2, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "1", procsQuad, stackplot, weightsQuad).Tag("dalQuad");
+  pm.Push<Hist1D>(Axis(43, -2, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "1", procs2body, stackplot, weights2body).Tag("2body");
+  pm.Push<Hist1D>(Axis(43, -2, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "1", procsKstar, stackplot, weightsKstar).Tag("Kstar");
+
 
   pm.min_print_ = true;
   pm.MakePlots(1);
