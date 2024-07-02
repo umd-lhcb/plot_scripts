@@ -20,15 +20,15 @@ public:
                                              Type type,
                                              int color,
                                              const std::set<std::string> &files,
-                                             const NamedFunc &cut = true){
+                                             const NamedFunc &cut = true, int lineStyle=1){
     return std::shared_ptr<Process>(new Process(static_cast<BabyType*>(nullptr),
-                                                name, type, color, files, cut));
+                                                name, type, color, files, cut, lineStyle));
   }
 
   std::string name_;
   Type type_;
   NamedFunc cut_;
-  int color_;
+  int color_, lineStyle_;
 
   std::set<Baby*> Babies() const;
 
@@ -41,7 +41,8 @@ private:
           Type type,
           int color,
           const std::set<std::string> &files,
-          const NamedFunc &cut);
+          const NamedFunc &cut,
+          int lineStyle);
 
   Process() = delete;
   Process(const Process &) = delete;
@@ -59,10 +60,10 @@ Process::Process(BabyType * /*dummy_baby*/,
                  Type type,
                  int color,
                  const std::set<std::string> &files,
-                 const NamedFunc &cut):
+                 const NamedFunc &cut, int lineStyle):
   TAttFill(color, type == Type::background ? 1001 : 0),
   TAttLine(type == Type::background ? 1 : color,
-           1,
+           lineStyle,
            type == Type::background ? 1 :
            type == Type::signal ? 5
            : 3),
@@ -70,7 +71,8 @@ Process::Process(BabyType * /*dummy_baby*/,
   name_(name),
   type_(type),
   cut_(cut),
-  color_(color){
+  color_(color),
+  lineStyle_(lineStyle){
   std::lock_guard<std::mutex> lock(mutex_);
   for(const auto &file: files){
     const auto &full_files = Glob(file);

@@ -51,6 +51,7 @@ int main(){
   
   vector<PlotOpt> linplot = {lin_shapes};
   vector<PlotOpt> stackplot = {lin_lumi_norm};
+  //vector<PlotOpt> stackplot = {lin_lumi};
   Palette colors("txt/colors.txt", "default");
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,10 +166,10 @@ int main(){
   pm.Push<Hist1D>(Axis(43, -2.0, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "1", procs2, linplot, weights2).Tag("linesPlus");
 
   // Stacked plots
-  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsLin, stackplot, weightsLin).Tag("dalLin");
-  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsQuad, stackplot, weightsQuad).Tag("dalQuad");
-  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs2body, stackplot, weights2body).Tag("2body");
-  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsKstar, stackplot, weightsKstar).Tag("Kstar");
+  pm.Push<Hist1D>(Axis(50,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsLin, stackplot, weightsLin).Tag("dalLin");
+  pm.Push<Hist1D>(Axis(50,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsQuad, stackplot, weightsQuad).Tag("dalQuad");
+  pm.Push<Hist1D>(Axis(50,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs2body, stackplot, weights2body).Tag("2body");
+  pm.Push<Hist1D>(Axis(50,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsKstar, stackplot, weightsKstar).Tag("Kstar");
 
   pm.Push<Hist1D>(Axis(34, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procsLin, stackplot, weightsLin).Tag("dalLin");
   pm.Push<Hist1D>(Axis(34, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "q2>10.25", procsQuad, stackplot, weightsQuad).Tag("dalQuad");

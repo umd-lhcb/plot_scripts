@@ -15,6 +15,8 @@ tree:
   b_ndof: int32_t
   b_p: double
   b_pt: double
+  b_true_pt: double
+  b_true_pz: double
   d0_comp: double
   d0_comp2: double
   d0_dira: double
@@ -74,6 +76,9 @@ tree:
   is_ddx: bool
   is_ddx_mu: bool
   is_iso: bool
+  is_dd: bool
+  is_1os: bool
+  is_2os: bool
   is_iso_loose: bool
   is_kst: bool
   is_miss_ddx: bool
@@ -112,6 +117,8 @@ tree:
   k_py: double
   k_pz: double
   l0: bool
+  l0_global_tis_emu: double
+  l0_hadron_tos_emu: double
   mc_id: int32_t
   mm2: double
   mm2_raw: double
@@ -204,49 +211,6 @@ tree:
   wdd: double
   wdd_new: double
   wff: double
-  wff_dstrun1: double
-  wff_dstrun1_var1: double
-  wff_dstrun1_var10: double
-  wff_dstrun1_var11: double
-  wff_dstrun1_var12: double
-  wff_dstrun1_var13: double
-  wff_dstrun1_var14: double
-  wff_dstrun1_var15: double
-  wff_dstrun1_var16: double
-  wff_dstrun1_var17: double
-  wff_dstrun1_var18: double
-  wff_dstrun1_var19: double
-  wff_dstrun1_var2: double
-  wff_dstrun1_var20: double
-  wff_dstrun1_var3: double
-  wff_dstrun1_var4: double
-  wff_dstrun1_var5: double
-  wff_dstrun1_var6: double
-  wff_dstrun1_var7: double
-  wff_dstrun1_var8: double
-  wff_dstrun1_var9: double
-  wff_var1: double
-  wff_var10: double
-  wff_var11: double
-  wff_var12: double
-  wff_var13: double
-  wff_var14: double
-  wff_var15: double
-  wff_var16: double
-  wff_var17: double
-  wff_var18: double
-  wff_var19: double
-  wff_var2: double
-  wff_var20: double
-  wff_var21: double
-  wff_var22: double
-  wff_var3: double
-  wff_var4: double
-  wff_var5: double
-  wff_var6: double
-  wff_var7: double
-  wff_var8: double
-  wff_var9: double
   wiso: double
   wjk: double
   wkst_m: double
