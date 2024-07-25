@@ -60,8 +60,22 @@ int main(){
   string globalCuts = "mu_ubdt_ok && (k_p < 200) && (pi_p < 200) && (mu_p < 100) && (iso_p1 < 200) && (iso_p2 < 200) && (iso_p3 < 200) && (nspdhits < 450) && is_iso";
 
   string folder = "ntuples/0.9.10-l0_weights/Dst_D0-mc-tracker_only-DDX/";
-  string ntpBd = folder + "Dst--24_05_09--mc--12895400--2016--md--tracker_only.root";
+  //string ntpBu = folder + "Dst--24_05_09--mc--12895400--2016--md--tracker_only.root";
   //string ntpBd = folder + "Dst--24_05_09--mc--11894610--2016--md--tracker_only.root";
+  string ntpBd = "ntuples/0.9.11-hasMuon/Dst_D0-mc-tracker_only-DDX/Dst--24_07_02--mc--11894610--2016--mu--tracker_only.root";
+  string ntpDs = "ntuples/0.9.11-hasMuon/Dst_D0-mc-tracker_only-DstDspi/Dst--24_07_24--mc--12895410--2016--m*";
+  vector<shared_ptr<Process> > procsDs;
+  procsDs.push_back(Process::MakeShared<Baby_run2_std>
+                  ("DDX 2-body", Process::Type::background, colors("yellow"),
+                   set<string>({ntpBd}), globalCuts + "&& !is_dal_variable")); 
+  procsDs.push_back(Process::MakeShared<Baby_run2_std>
+                  ("DDX 3-body nominal", Process::Type::background, colors("darkblue"),
+                   set<string>({ntpBd}), globalCuts + "&& is_dal_variable"));
+  procsDs.push_back(Process::MakeShared<Baby_run2_std>
+                  ("D* D_{s} #pi", Process::Type::background, colors("green"),
+                   set<string>({ntpDs}), globalCuts));
+
+  
   vector<shared_ptr<Process> > procs;
   procs.push_back(Process::MakeShared<Baby_run2_std>
                   ("DDX 2-body", Process::Type::background, colors("yellow"),
@@ -155,7 +169,13 @@ int main(){
   vector<NamedFunc> weightsQuad({basew, basew, basew+"*wdal_qp", basew+"*wdal_qm"});
   vector<NamedFunc> weights2body({basew, basew, basew+"*(1+0.5*!is_dal_variable)", basew+"*(1-0.5*!is_dal_variable)"});
   vector<NamedFunc> weightsKstar({basew, basew, basew+"*wkst_p", basew+"*wkst_m"});
+  vector<NamedFunc> weightsDs({basew, basew, basew});
   PlotMaker pm;
+
+  // Ds
+  pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procsDs, linplot, weightsDs).Tag("Ds");
+  pm.Push<Hist1D>(Axis(43, -2.0, 10.9, "mm2", "m^{2}_{miss} [GeV^{2}]"), "1", procsDs, linplot, weightsDs).Tag("Ds");
+  pm.Push<Hist1D>(Axis(50, 100,2650, "1000*el", "E^{*}_{#mu} [MeV]"), "1", procsDs, linplot, weightsDs).Tag("Ds");
 
   // Individual contributions
   pm.Push<Hist1D>(Axis(100,-0.4,12.6, "q2", "q^{2} [GeV^{2}]"), "1", procs, linplot, weights).Tag("linesMinus");
